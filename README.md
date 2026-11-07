@@ -71,6 +71,8 @@ cost of the call that filled the cache, since a grader's run has no cache.
 Scores are reported on the 6 development documents during the build; 2 documents are held
 out until the final run (see DESIGN.md).
 
+P4 model and method measurements (vision models, page method, noise floor, call grouping): [logs/P4_report.md](logs/P4_report.md).
+
 ## AI assistance
 
 Built with Claude Code as a coding assistant; every design decision, review and commit is mine.

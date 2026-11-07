@@ -33,6 +33,10 @@ terminal, so there is no shared volume between api and worker. Workers scale wit
 | DOCX page numbers: pluggable method, default `none` (P3-27) | DOCX has no pages; a wrong page is worse than none | the `estimate` method placed 0/20 locatable lease_002 citations on the exact page (13/20 within ±1); a slim LibreOffice image gave 23 pages and 0/20 (the earlier, fuller-font build: 20/20, +474 MB), so it is decided at P8 |
 | Haiku with `reasoning: {effort: none}` | its default is medium effort, billed as output | same score (1.000) on the pilot doc, 0 vs 3,964 reasoning tokens, $0.0095 vs $0.0108 |
 
+**P4 measured (no default changed):** 5 vision models on the 25-page scanned lease, 3 page methods, the run-to-run noise on 3 documents, and one call vs 3 field groups (`logs/P4_report.md`).
+**Winners:** Haiku 5.5 for scans, locate-then-read for page choice, and one call for all fields. A difference of ≤ 0.025 counts as noise. Cost is counted as max(reported, computed), because one gateway reported $0.
+**Numbers:** Haiku locate-then-read 0.825 at $0.0057 vs Gemini 3.8 Flash 0.825 at $0.127. The noise spread is 0.017 on om_001 and 0.025 on lease_002 (n = 4 each). Field groups cost 2.3× for ±0.025. rentroll_001 returns 2–3 of 325 rows, so table documents need chunking.
+
 ## Evaluation honesty
 
 Sample set split (D03): 6 development documents, 2 held out (one lease, and the only document
@@ -54,7 +58,8 @@ strictly, an unseen-data score.
 | P2 baseline (pilot ×2 + DEV eval) | $0.098 (9 paid calls; one call crossed Haiku's 100k price cliff: $0.064) |
 | P2 rent-roll re-run (P2-35) | $0.0097 (1 paid call; plus 1 boxscore re-submit answered from the dev cache, $0) |
 | P3 readers (DEV re-run, om_001 debug call, om_001 re-run) | $0.0198 (6 paid calls) |
-| **Running total** | **$0.128** (16 paid calls) |
+| P4 measurements (pilot + 4 spikes; max(reported, computed)) | $0.267 (45 paid calls) |
+| **Running total** | **$0.395** (61 paid calls) |
 
 ## What broke and how it was handled
 
