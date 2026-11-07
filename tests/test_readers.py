@@ -106,6 +106,28 @@ def test_pdf_block_model_header_footer_callout_numbers_fake_bold():
     assert tops[0] == "Widget Co quarterly sheet" and tops[-1] == "Widget footer line"
 
 
+def test_multiline_pdf_block_copied_verbatim_into_json_still_parses():
+    """om_001 failure shape (P3 eval: answer + repair unparseable): PDF blocks hold several
+    lines; a model copying a block verbatim into a JSON string wrote a raw newline, which
+    strict json.loads rejects. Each rendered block must be one line with no control chars."""
+    from app.llm.jsonparse import parse_json_object
+    from app.pipeline import baseline
+
+    dm = read_document("pdf", make_pdf([LAYOUT_PAGE]))
+    multi = [b for b in dm.blocks if "\n" in b.text]
+    assert multi  # the reader keeps line structure in the map
+    fields = {"fields": {"note": {"name": "Note", "description": "Invented note."}}}
+    msgs, _ = baseline.build_messages(fields, dm.blocks, "pdf")
+    prompt = msgs[1]["content"]
+    for b in multi:
+        line = b.render()
+        assert line in prompt.splitlines()  # one prompt line per block
+        assert not any(ord(c) < 32 for c in line)
+        # what a model copying the citation verbatim (no escaping needed) sends back
+        answer = '{"entries": [{"note": {"value": "x", "citation": "' + line + '"}}]}'
+        assert parse_json_object(answer)["entries"][0]["note"]["citation"] == line
+
+
 def test_pdf_scan_page_becomes_grayscale_jpeg_and_mixed_page_is_flagged():
     dm = read_document("pdf", make_pdf([LAYOUT_PAGE, SCAN_PAGE, MIXED_PAGE]))
     img = [b for b in dm.blocks if b.kind == "image"]

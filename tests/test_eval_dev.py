@@ -40,6 +40,23 @@ def test_held_out_docs_are_refused_without_final_sealed(monkeypatch, capsys):
     assert "refused" in capsys.readouterr().out
 
 
+def test_report_goes_to_the_given_path_never_an_older_phase_report(tmp_path):
+    assert eval_dev.REPORT.name == "eval_latest.md"  # default is not a phase report
+    rec = {"doc": "widget_doc", "status": "SUCCESS", "valid": True, "score": 0.5}
+    summary = eval_dev.summarise([rec], "abc1234", "invented", None)
+    out = tmp_path / "logs" / "P9_eval.md"
+    eval_dev.write_report([rec], summary, out)
+    assert out.exists() and "widget_doc" in out.read_text(encoding="utf-8")
+    assert not (tmp_path / "logs" / "eval_latest.md").exists()
+
+
+def test_reuse_from_needs_live_docs(monkeypatch):
+    monkeypatch.setattr(eval_dev, "call", lambda *a, **k: pytest.fail("no HTTP expected"))
+    monkeypatch.setattr(sys, "argv", ["eval_dev.py", "--reuse-from", "abc1234"])
+    with pytest.raises(SystemExit):
+        eval_dev.main()
+
+
 def test_default_doc_list_never_includes_held_out():
     rows = {"d1": {}, "d2": {}, **{h: {} for h in eval_dev.HELD_OUT}}
     assert [d for d in rows if d not in eval_dev.HELD_OUT] == ["d1", "d2"]
