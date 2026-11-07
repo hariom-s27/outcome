@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "deny": [
+      "Read(./.env)", "Edit(./.env)", "Write(./.env)",
+      "Read(**/.env)", "Edit(**/.env)", "Write(**/.env)",
+      "Read(**/.env.local)", "Read(**/.env.*.local)", "Read(**/.env.dev*)", "Read(**/.env.prod*)",
+      "Read(**/.env.test*)", "Read(**/.env.bak)", "Read(**/.env.backup)", "Read(**/.env.old)",
+      "Read(./sample/sample-data-output-validated/**)",
+      "Edit(./sample/sample-data-output-validated/**)",
+      "Read(./sample/sample-data-documents/lease_003.pdf)",
+      "Read(./sample/sample-data-documents/budget_001.pdf)",
+      "Read(./cache/**)", "Edit(./cache/**)", "Write(./cache/**)",
+      "Edit(./contract/**)", "Write(./contract/**)",
+      "Edit(./tools/validate.py)", "Write(./tools/validate.py)",
+      "Edit(./ASSIGNMENT.md)", "Write(./ASSIGNMENT.md)",
+      "Edit(./sample/**)", "Write(./sample/**)",
+      "Bash(cat .env:*)", "Bash(type .env:*)", "Bash(more .env:*)", "Bash(less .env:*)",
+      "Bash(head .env:*)", "Bash(tail .env:*)",
+      "Bash(env)", "Bash(env:*)", "Bash(printenv)", "Bash(printenv:*)", "Bash(export -p)",
+      "Bash(git commit:*)", "Bash(git push:*)", "Bash(git reset --hard:*)", "Bash(git rebase:*)",
+      "Bash(rm -rf:*)",
+      "PowerShell(Get-Content .env:*)", "PowerShell(type .env:*)", "PowerShell(cat .env:*)",
+      "PowerShell(Get-ChildItem env:*)", "PowerShell(gci env:*)", "PowerShell(dir env:*)",
+      "PowerShell(git commit:*)", "PowerShell(git push:*)", "PowerShell(git reset --hard:*)",
+      "PowerShell(git rebase:*)"
+    ],
+    "ask": [
+      "Bash(uv add:*)", "Bash(uv remove:*)", "Bash(uv pip install:*)", "Bash(pip install:*)",
+      "PowerShell(uv add:*)", "PowerShell(uv remove:*)", "PowerShell(uv pip install:*)",
+      "PowerShell(pip install:*)",
+      "Edit(./pyproject.toml)", "Write(./pyproject.toml)",
+      "Edit(./.claude/**)", "Write(./.claude/**)",
+      "Edit(./.pre-commit-config.yaml)", "Write(./.pre-commit-config.yaml)"
+    ],
+    "allow": [
+      "Bash(uv run pytest:*)", "Bash(uv run ruff:*)", "Bash(uv run pre-commit run:*)",
+      "Bash(uv run python tools/validate.py:*)",
+      "PowerShell(uv run pytest:*)", "PowerShell(uv run ruff:*)",
+      "PowerShell(uv run pre-commit run:*)", "PowerShell(uv run python tools/validate.py:*)",
+      "Bash(git status:*)", "Bash(git diff:*)", "Bash(git log:*)", "Bash(git show:*)",
+      "Bash(git ls-files:*)", "Bash(git branch:*)", "Bash(git rev-parse:*)",
+      "PowerShell(git status:*)", "PowerShell(git diff:*)", "PowerShell(git log:*)",
+      "PowerShell(git ls-files:*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR/.venv/Scripts/python.exe\" \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard.py\" || exit 2",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

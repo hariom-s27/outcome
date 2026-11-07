@@ -1,0 +1,31 @@
+# secrets: only the example file is tracked
+.env
+.env.*
+!.env.example
+
+# data we were given (never committed) and local caches
+sample/
+cache/
+_freshclone/
+
+# process files stay on disk for the agent to read but are not committed (replaces D04);
+# logs/ IS committed
+claude/
+decisions/
+research/
+prompts/
+
+# python tooling
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+
+# archives and document binaries (synthetic test fixtures are the only exception)
+*.zip
+*.pdf
+*.xlsx
+*.docx
+*.csv
+!tests/fixtures/**

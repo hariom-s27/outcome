@@ -1,0 +1,98 @@
+"""Regression tests for the PreToolUse guard (stdlib unittest; also collected by pytest).
+
+Each case runs the guard as Claude Code does: JSON payload on stdin, exit 2 = blocked.
+"""
+
+from __future__ import annotations
+
+import json
+import subprocess
+import sys
+import unittest
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+GUARD = ROOT / ".claude" / "hooks" / "guard.py"
+R = ROOT.as_posix()
+DOCS = R + "/sample/sample-data-documents/"
+ANSWERS = R + "/sample/sample-data-output-validated/"
+GIT = "git "
+
+BLOCK, ALLOW = True, False
+
+CASES = [
+    # .env files (only .env.example allowed)
+    (BLOCK, "Read", {"file_path": R + "/.env"}),
+    (BLOCK, "Read", {"file_path": R + "/.env.local"}),
+    (ALLOW, "Read", {"file_path": R + "/.env.example"}),
+    (BLOCK, "Bash", {"command": "type .env"}),
+    (BLOCK, "PowerShell", {"command": "Get-Content .env"}),
+    (BLOCK, "Bash", {"command": "cp .env.example .env"}),
+    (ALLOW, "Bash", {"command": 'python -c "print(1)" && cat .env.example'}),
+    (BLOCK, "Glob", {"pattern": "**/.env*"}),
+    # answers, held-out docs, cache/
+    (BLOCK, "Read", {"file_path": ANSWERS + "lease_002.json"}),
+    (BLOCK, "Read", {"file_path": DOCS + "budget_001.pdf"}),
+    (BLOCK, "Read", {"file_path": DOCS + "lease_003.pdf"}),
+    (ALLOW, "Read", {"file_path": DOCS + "lease_001.pdf"}),
+    (BLOCK, "Grep", {"pattern": "x", "path": R + "/cache"}),
+    (BLOCK, "Bash", {"command": "ls cache/"}),
+    (ALLOW, "Bash", {"command": "rm -r .pytest_cache/ __pycache__/ .ruff_cache/"}),
+    (ALLOW, "Bash", {"command": "ls ~/.cache/pre-commit"}),
+    # git writes
+    (BLOCK, "Bash", {"command": GIT + "commit -m test"}),
+    (BLOCK, "PowerShell", {"command": "& " + GIT + "-c user.name=x commit -m t"}),
+    (BLOCK, "Bash", {"command": GIT + "pu" + "sh origin main"}),
+    (BLOCK, "Bash", {"command": GIT + "reset --hard HEAD"}),
+    (BLOCK, "Bash", {"command": GIT + "rebase main"}),
+    (ALLOW, "Bash", {"command": GIT + "add pyproject.toml && " + GIT + "status"}),
+    (ALLOW, "Bash", {"command": GIT + "reset"}),
+    # environment printing
+    (BLOCK, "Bash", {"command": "printenv"}),
+    (BLOCK, "Bash", {"command": "env"}),
+    (BLOCK, "Bash", {"command": "echo $LLM_API_KEY"}),
+    (BLOCK, "PowerShell", {"command": "Get-ChildItem env:"}),
+    (BLOCK, "PowerShell", {"command": "echo $env:LLM_API_KEY"}),
+    (ALLOW, "PowerShell", {"command": "$env:UV_PYTHON_DOWNLOADS='never'; uv sync"}),
+    (BLOCK, "Bash", {"command": "python -c 'import os; print(os.environ)'"}),
+    (BLOCK, "Bash", {"command": "docker compose config"}),
+    # frozen files
+    (BLOCK, "Write", {"file_path": R + "/contract/openapi.yaml", "content": "x"}),
+    (BLOCK, "Edit", {"file_path": str(ROOT / "tools" / "validate.py")}),
+    (BLOCK, "Edit", {"file_path": R + "/ASSIGNMENT.md"}),
+    (ALLOW, "Read", {"file_path": R + "/contract/openapi.yaml"}),
+    (BLOCK, "Bash", {"command": "echo x > contract/README.md"}),
+    (ALLOW, "Bash", {"command": "cat contract/README.md"}),
+    (ALLOW, "Write", {"file_path": R + "/app/api.py"}),
+    # .claude/ via shell (edits there must go through Edit/Write, which ask)
+    (BLOCK, "Bash", {"command": "uv run ruff format .claude/hooks/guard.py"}),
+    (BLOCK, "Bash", {"command": "uv run ruff format .claude\\hooks"}),
+    (BLOCK, "PowerShell", {"command": "Set-Content .claude/settings.json '{}'"}),
+    (BLOCK, "Bash", {"command": "rm -r .claude"}),
+    (BLOCK, "Bash", {"command": 'sed -i s/a/b/ ".claude/settings.json"'}),
+    (BLOCK, "Bash", {"command": "cat ~/.claude/settings.json"}),
+    (ALLOW, "Bash", {"command": "uv run ruff format scripts/ && cat CLAUDE.md"}),
+    (ALLOW, "Edit", {"file_path": R + "/.claude/hooks/guard.py"}),  # Edit -> settings "ask"
+]
+
+
+def run_guard(stdin: str) -> int:
+    proc = subprocess.run(
+        [sys.executable, str(GUARD)], input=stdin, capture_output=True, text=True, timeout=30
+    )
+    return proc.returncode
+
+
+class GuardCases(unittest.TestCase):
+    def test_cases(self) -> None:
+        for expect_block, tool, tool_input in CASES:
+            payload = json.dumps({"tool_name": tool, "tool_input": tool_input, "cwd": R})
+            with self.subTest(tool=tool, input=tool_input):
+                self.assertEqual(run_guard(payload), 2 if expect_block else 0)
+
+    def test_malformed_payload_fails_closed(self) -> None:
+        self.assertEqual(run_guard("not json"), 2)
+
+
+if __name__ == "__main__":
+    unittest.main()

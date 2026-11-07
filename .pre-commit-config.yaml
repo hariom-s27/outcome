@@ -1,0 +1,37 @@
+# Install once per clone:  uv run pre-commit install
+# Run on everything:       uv run pre-commit run --all-files
+# Local hooks are stdlib-only Python scripts in scripts/guards/ (see each file's docstring).
+repos:
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.30.1
+    hooks:
+      - id: gitleaks
+
+  - repo: local
+    hooks:
+      - id: forbidden-paths
+        name: forbidden paths (.env*, sample/, cache/)
+        entry: python scripts/guards/forbidden_paths.py
+        language: python
+      - id: sample-binaries
+        name: document binaries only under tests/fixtures/
+        entry: python scripts/guards/sample_binaries.py
+        language: python
+      - id: max-size
+        name: files at most 5 MB
+        entry: python scripts/guards/max_size.py
+        language: python
+      - id: key-strings
+        name: no key-like strings
+        entry: python scripts/guards/key_strings.py
+        language: python
+      - id: sample-values
+        name: no sample answer values in text
+        entry: python scripts/guards/sample_values.py
+        language: python
+      - id: frozen-hash
+        name: given files unchanged (contract/, tools/validate.py, ASSIGNMENT.md)
+        entry: python scripts/guards/frozen_hash.py
+        language: python
+        pass_filenames: false
+        always_run: true
