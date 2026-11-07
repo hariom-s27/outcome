@@ -55,6 +55,27 @@ class SampleValuesScan(unittest.TestCase):
         )
         self.assertFalse(any("zephyrine" in p.lower() or "987" in p for p in problems))
 
+    def _scan_word(self, text: str) -> list[str]:
+        Path("log.md").write_text(text, encoding="utf-8")
+        return sample_values.scan(["log.md"], {"gizmotron": "vendor_name"}, {}, FIELD_KEYS)
+
+    def test_answer_inside_a_field_key_is_not_flagged(self) -> None:
+        # P2-34: underscore is part of a word, so a key that merely contains the value passes
+        self.assertEqual(self._scan_word("| gizmotron_fee_total | 0.50 |\n"), [])
+        self.assertEqual(self._scan_word("| total_gizmotron | 1.00 |\n"), [])
+
+    def test_answer_standing_alone_in_a_log_line_is_flagged(self) -> None:
+        self.assertEqual(
+            self._scan_word("| gizmotron | 0.50 |\n"),
+            ["log.md:1: matches an answer value for field 'vendor_name'"],
+        )
+
+    def test_answer_inside_prose_is_flagged(self) -> None:
+        self.assertEqual(
+            self._scan_word("The supplier was Gizmotron, per page two.\n"),
+            ["log.md:1: matches an answer value for field 'vendor_name'"],
+        )
+
     def test_same_value_inside_outputs_is_not_flagged(self) -> None:
         text = '{"widget_owner": {"value": "Zephyrine Quarry Lot"}, "n": 987654}\n'
         self.assertEqual(self._scan("outputs/doc_x.json", text), [])

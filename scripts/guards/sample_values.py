@@ -108,7 +108,7 @@ def scan(
 ) -> list[str]:
     """-> problem lines (file:line + field name); matched values are never included."""
     str_re = (
-        re.compile(rf"(?<![0-9A-Za-z])({_alternation(strings)})(?![0-9A-Za-z])", re.IGNORECASE)
+        re.compile(rf"(?<![0-9A-Za-z_])({_alternation(strings)})(?![0-9A-Za-z_])", re.IGNORECASE)
         if strings
         else None
     )
