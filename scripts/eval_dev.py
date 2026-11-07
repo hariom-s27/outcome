@@ -32,6 +32,8 @@ from typing import Any
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+import dry_run
+import run_gates
 from make_outputs import DOCS, OUT, ROOT, SCHEMAS, TERMINAL, TIMEOUT_S, call, manifest, multipart
 
 from app.contract_check import validator
@@ -182,7 +184,37 @@ def fmt_doc(r: dict) -> str:
     )
 
 
-def summarise(records: list[dict], rid: str, label: str, aborted: str | None) -> dict:
+def paid_run_gates(
+    live_docs: list[str], allow_dirty: bool, skip_dry_run: bool, git=None
+) -> tuple[bool, dict[str, Any]]:
+    """PR-09 + R-A before any paid run. Returns (may run, what the report records)."""
+    ok, msg = run_gates.clean_tree_gate(allow_dirty, **({"git": git} if git else {}))
+    print(msg)
+    gates: dict[str, Any] = {"allow_dirty_used": allow_dirty and msg.startswith("DIRTY")}
+    if not ok:
+        return False, gates
+    if skip_dry_run:
+        print("dry run SKIPPED by --skip-dry-run")
+        gates["dry_run"] = "skipped"
+        return True, gates
+    passed, recs = dry_run.run(live_docs)
+    for r in recs:
+        if not r.get("ok"):
+            print(dry_run.fmt(r))
+    print(f"dry run {'passed' if passed else 'FAILED'} ({len(recs)} docs)")
+    gates["dry_run"] = "passed" if passed else "failed"
+    if not passed:
+        print("refused: fix the dry-run failure first, or --skip-dry-run with Hariom's yes")
+    return passed, gates
+
+
+def summarise(
+    records: list[dict],
+    rid: str,
+    label: str,
+    aborted: str | None,
+    gates: dict[str, Any] | None = None,
+) -> dict:
     scored = [r for r in records if "score" in r]
     lat = [r["latency_ms"] for r in scored if r.get("latency_ms")]
     totals = Counter()
@@ -217,6 +249,9 @@ def summarise(records: list[dict], rid: str, label: str, aborted: str | None) ->
         "cache_hits": sum(r.get("cache_hits", 0) for r in scored),
         "p50_latency_ms": int(statistics.median(lat)) if lat else 0,
         "aborted": aborted,
+        # P4-05/06: a report must say when a gate was bypassed
+        "dry_run": (gates or {}).get("dry_run", "not_run"),
+        "allow_dirty_used": bool((gates or {}).get("allow_dirty_used", False)),
     }
 
 
@@ -258,6 +293,9 @@ def write_report(records: list[dict], summary: dict, report: Path = REPORT) -> N
         f"{summary['p50_latency_ms'] / 1000:.1f} s · reasoning tokens "
         f"{summary['tokens_reasoning']}"
         + (f" · ABORTED: {summary['aborted']}" if summary["aborted"] else ""),
+        "",
+        f"Gates: dry run `{summary.get('dry_run', 'not_run')}` · --allow-dirty used: "
+        f"`{summary.get('allow_dirty_used', False)}`",
         "",
         "## Errors by truth value type (cells in matched rows)",
         "",
@@ -310,6 +348,16 @@ def main() -> int:
         metavar="RUN_ID",
         help="run only --docs live; re-score every other DEV doc from this saved run",
     )
+    ap.add_argument(
+        "--allow-dirty",
+        action="store_true",
+        help="run on an uncommitted tree (Hariom's yes only; recorded)",
+    )
+    ap.add_argument(
+        "--skip-dry-run",
+        action="store_true",
+        help="skip the dry-run gate (Hariom's yes only; recorded)",
+    )
     args = ap.parse_args()
     if args.reuse_from and (args.reuse or not args.docs):
         ap.error("--reuse-from needs --docs and cannot be combined with --reuse")
@@ -325,6 +373,11 @@ def main() -> int:
     if unknown:
         print(f"unknown doc ids: {', '.join(unknown)}")
         return 2
+    gates: dict[str, Any] = {}
+    if not args.reuse:  # a paid run: clean tree (PR-09) and dry run (R-A) first
+        ok, gates = paid_run_gates(docs, args.allow_dirty, args.skip_dry_run)
+        if not ok:
+            return 2
 
     rid = args.reuse or run_id()
     run_dir = RUNS / rid
@@ -370,7 +423,7 @@ def main() -> int:
             aborted = "2 documents in a row ended with an LLM failure reason"
             break
 
-    summary = summarise(records, rid, args.label, aborted)
+    summary = summarise(records, rid, args.label, aborted, gates)
     print(
         f"\nMEAN {summary['mean_score']:.3f} n={summary['n_docs']} "
         f"all_valid={summary['all_valid']} "
