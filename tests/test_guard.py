@@ -37,6 +37,10 @@ CASES = [
     (ALLOW, "Read", {"file_path": DOCS + "lease_001.pdf"}),
     (BLOCK, "Grep", {"pattern": "x", "path": R + "/cache"}),
     (BLOCK, "Bash", {"command": "ls cache/"}),
+    (BLOCK, "Bash", {"command": "uv run python tools/validate.py cache/runs/"}),
+    (BLOCK, "PowerShell", {"command": "Get-Content sample\\sample-data-output-validated\\x.json"}),
+    (BLOCK, "Read", {"file_path": R + "/cache/spikes/a1.txt"}),
+    (BLOCK, "Bash", {"command": "cat ./sample/sample-data-documents/lease_003.docx"}),
     (ALLOW, "Bash", {"command": "rm -r .pytest_cache/ __pycache__/ .ruff_cache/"}),
     (ALLOW, "Bash", {"command": "ls ~/.cache/pre-commit"}),
     # git writes
@@ -64,6 +68,32 @@ CASES = [
     (BLOCK, "Bash", {"command": "echo x > contract/README.md"}),
     (ALLOW, "Bash", {"command": "cat contract/README.md"}),
     (ALLOW, "Write", {"file_path": R + "/app/api.py"}),
+    # frozen files (PR-08): reading or running is allowed, writing/moving/deleting is not
+    (ALLOW, "Bash", {"command": "uv run python tools/validate.py out/ --schema-dir s/ 2>&1"}),
+    (ALLOW, "PowerShell", {"command": "uv run python tools\\validate.py out\\ > logs/v.txt"}),
+    (ALLOW, "PowerShell", {"command": "Get-Content tools/validate.py | Select-Object -First 5"}),
+    (ALLOW, "Bash", {"command": "cat ASSIGNMENT.md > logs/brief_copy.txt"}),
+    (ALLOW, "Bash", {"command": "sed -n 1,20p tools/validate.py"}),
+    (ALLOW, "Bash", {"command": "cp contract/schema.json logs/x.json"}),
+    (ALLOW, "PowerShell", {"command": "Copy-Item -Path contract/a.yaml -Destination logs/"}),
+    (ALLOW, "Bash", {"command": GIT + "diff -- contract/ tools/validate.py"}),
+    (BLOCK, "Bash", {"command": "echo x >> tools/validate.py"}),
+    (BLOCK, "PowerShell", {"command": "'x' > .\\ASSIGNMENT.md"}),
+    (BLOCK, "PowerShell", {"command": "Set-Content -Path contract/a.yaml -Value x"}),
+    (BLOCK, "PowerShell", {"command": "Add-Content ASSIGNMENT.md 'x'"}),
+    (BLOCK, "PowerShell", {"command": "'x' | Out-File -FilePath:tools\\validate.py"}),
+    (BLOCK, "PowerShell", {"command": "Remove-Item -Recurse contract"}),
+    (BLOCK, "PowerShell", {"command": "Move-Item tools/validate.py tools/old.py"}),
+    (BLOCK, "PowerShell", {"command": "Copy-Item logs/x.py -Destination tools/validate.py"}),
+    (BLOCK, "PowerShell", {"command": "Copy-Item logs/x.md ASSIGNMENT.md"}),
+    (BLOCK, "Bash", {"command": "rm -f contract/openapi.yaml"}),
+    (BLOCK, "Bash", {"command": "mv ASSIGNMENT.md a.md"}),
+    (BLOCK, "Bash", {"command": "cp /tmp/x.py " + R + "/tools/validate.py"}),
+    (BLOCK, "Bash", {"command": "cp -t contract/ logs/x.json"}),
+    (BLOCK, "Bash", {"command": "sed -i s/a/b/ tools/validate.py"}),
+    (BLOCK, "Bash", {"command": "echo x | tee contract/README.md"}),
+    (BLOCK, "Bash", {"command": GIT + "checkout HEAD -- tools/validate.py"}),
+    (BLOCK, "PowerShell", {"command": GIT + "restore contract/"}),
     # .claude/ via shell (edits there must go through Edit/Write, which ask)
     (BLOCK, "Bash", {"command": "uv run ruff format .claude/hooks/guard.py"}),
     (BLOCK, "Bash", {"command": "uv run ruff format .claude\\hooks"}),
@@ -92,6 +122,16 @@ class GuardCases(unittest.TestCase):
 
     def test_malformed_payload_fails_closed(self) -> None:
         self.assertEqual(run_guard("not json"), 2)
+
+    def test_bad_shapes_fail_closed(self) -> None:
+        for payload in (
+            {"tool_name": "Bash", "tool_input": "ls"},
+            {"tool_name": "Bash", "tool_input": {"command": 123}},
+            {"tool_name": "Read", "tool_input": ["x"]},
+            [1, 2],
+        ):
+            with self.subTest(payload=payload):
+                self.assertEqual(run_guard(json.dumps(payload)), 2)
 
 
 if __name__ == "__main__":

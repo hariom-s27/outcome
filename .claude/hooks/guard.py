@@ -9,8 +9,11 @@ Blocks when a tool path or shell command:
   - mentions the answer folder, a held-out document, or cache/
   - runs git commit / push / rebase / reset --hard
   - prints environment variables
-  - edits a frozen file: contract/, tools/validate.py, ASSIGNMENT.md
+  - writes, moves, deletes or restores a frozen file: contract/, tools/validate.py,
+    ASSIGNMENT.md (Edit/Write tools; shell redirects, rm/mv/cp-to, Set-Content, sed -i,
+    git checkout/restore ...). Reading or running them is allowed (PR-08).
   - (shell only) mentions .claude/ at all, so edits there always go through the ask step
+Secret paths (.env*, answers, held-out docs, cache/) stay blocked on any mention.
 """
 
 from __future__ import annotations
@@ -34,12 +37,19 @@ SHELL_TOOLS = {"Bash", "PowerShell"}
 CLAUDE_DIR = re.compile(r"(?<![\w.-])\.claude(?=[/\\\s\"']|$)", re.IGNORECASE)
 
 FROZEN_REL = re.compile(r"^(contract/|tools/validate\.py$|assignment\.md$)")
-FROZEN_MENTION = re.compile(r"(?<![\w.-])(contract[/\\]|tools[/\\]validate\.py|assignment\.md)")
-SHELL_WRITE = re.compile(
-    r"(>|\bsed\s+-i|\brm\b|\bmv\b|\bcp\b|\btee\b|\btruncate\b|\bdel\b|\bset-content\b"
-    r"|\badd-content\b|\bout-file\b|\bremove-item\b|\bmove-item\b|\bcopy-item\b"
-    r"|\bclear-content\b|\bnew-item\b|\bren(ame-item)?\b|\bgit\s+(checkout|restore|mv|rm)\b)"
-)
+# A shell argument that names a frozen file (relative, absolute or ./-prefixed). Loose on
+# purpose: a false block costs one round trip, a missed write costs the contract.
+FROZEN_ARG = re.compile(r"(?:^|/)(?:contract(?:/.*)?|tools/validate\.py|assignment\.md)$")
+REDIRECT = re.compile(r">{1,2}\s*[\"']?([^\s\"';|&<>()]+)")
+# Shell verbs that change any file named in their arguments (bash + PowerShell + aliases).
+WRITE_VERBS = {
+    "rm", "rmdir", "del", "erase", "rd", "ri", "remove-item", "unlink", "shred",
+    "mv", "move", "mi", "move-item", "ren", "rename", "rni", "rename-item",
+    "tee", "tee-object", "truncate", "set-content", "sc", "add-content", "ac",
+    "out-file", "clear-content", "clc", "new-item", "ni",
+}  # fmt: skip
+COPY_VERBS = {"cp", "copy", "cpi", "copy-item", "xcopy", "robocopy", "install"}
+GIT_WRITE_SUBS = {"checkout", "restore", "mv", "rm", "stash"}
 
 ENV_PRINT_TOKENS = {"env", "printenv", "env.exe", "printenv.exe"}
 ENV_PRINT_RE = re.compile(
@@ -115,6 +125,69 @@ def sealed_block(text: str, is_path: bool) -> str | None:
     return None
 
 
+def _arg_paths(tok: str) -> list[str]:
+    """A shell token -> the path(s) it may name: quotes, -Param: prefixes and commas removed."""
+    t = tok.strip("\"'").replace("\\", "/").lower()
+    if t.startswith("-") and ":" in t:
+        t = t.split(":", 1)[1]
+    return [p.strip("\"'").rstrip("/") for p in t.split(",") if p.strip("\"'")]
+
+
+def _is_frozen(tok: str) -> bool:
+    return any(FROZEN_ARG.search(p) for p in _arg_paths(tok))
+
+
+def _copy_targets(args: list[str]) -> list[str]:
+    """Destination argument(s) of cp / Copy-Item; sources are reads and stay allowed."""
+    targets, positional, i = [], [], 0
+    while i < len(args):
+        low = args[i].lower()
+        name = low.split(":", 1)[0]
+        if name in ("-t", "--target-directory") or (
+            len(name) > 2 and "-destination".startswith(name)
+        ):
+            if ":" in low:
+                targets.append(args[i])
+            elif i + 1 < len(args):
+                targets.append(args[i + 1])
+            i += 2
+            continue
+        if low.startswith("--target-directory="):
+            targets.append(low.split("=", 1)[1])
+        elif name in ("-path", "-literalpath", "-lp"):
+            i += 2  # source
+            continue
+        elif not low.startswith("-") or low == "-":
+            positional.append(args[i])
+        i += 1
+    if not targets and len(positional) >= 2:
+        targets.append(positional[-1])
+    return targets
+
+
+def frozen_write_block(command: str) -> str | None:
+    """Block shell commands that write, move, delete or restore a frozen file. Reads and runs
+    (cat, Get-Content, uv run python tools/validate.py ...) stay allowed."""
+    reason = "command may modify a frozen file (contract/, tools/validate.py, ASSIGNMENT.md)"
+    if any(_is_frozen(m) for m in REDIRECT.findall(command)):
+        return reason
+    for seg in _segments(command):
+        toks = _tokens(seg.replace("\\", "/"))  # posix shlex would eat Windows backslashes
+        for i, tok in enumerate(toks):
+            verb, args = _base(tok), toks[i + 1 :]
+            if verb in WRITE_VERBS and any(_is_frozen(a) for a in args):
+                return reason
+            if verb == "sed" and any(a == "-i" or a.startswith(("-i", "--in-place")) for a in args):
+                if any(_is_frozen(a) for a in args):
+                    return reason
+            if verb in COPY_VERBS and any(_is_frozen(a) for a in _copy_targets(args)):
+                return reason
+            if verb in ("git", "git.exe") and any(a.lower() in GIT_WRITE_SUBS for a in args):
+                if any(_is_frozen(a) for a in args):
+                    return reason
+    return None
+
+
 def rel_path(path: str, cwd: str) -> str:
     p = path.replace("\\", "/")
     root = (os.environ.get("CLAUDE_PROJECT_DIR") or cwd or "").replace("\\", "/").rstrip("/")
@@ -154,9 +227,8 @@ def check(payload: dict) -> str | None:
             return reason
         if reason := env_print_block(command):
             return reason
-        low = command.lower()
-        if FROZEN_MENTION.search(low) and SHELL_WRITE.search(low):
-            return "command may modify a frozen file (contract/, tools/validate.py, ASSIGNMENT.md)"
+        if reason := frozen_write_block(command):
+            return reason
     return None
 
 

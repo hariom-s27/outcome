@@ -69,7 +69,9 @@ uv run python tools/validate.py outputs/ --schema-dir sample/schemas   # exit 0 
 
 ## Known gotchas
 - The guard blocks any path or command containing `.env` (except `.env.example`), `cache/`,
-  the answer folder or the held-out doc ids — even in harmless commands. Rephrase, don't bypass.
+  the answer folder or the held-out doc ids — even in harmless commands. Frozen files are
+  blocked only for writes (reads and `uv run python tools/validate.py` are fine).
+  If a guard blocks you: STOP and report. Never rephrase or reach the goal another way.
 - Shell commands may not mention `.claude/` at all; edit files there with Edit/Write (asks).
   Guard regression tests: `uv run python -m unittest discover -s tests -v`.
 - `tools/validate.py` in directory mode prints nothing for valid files; use the exit code, or
