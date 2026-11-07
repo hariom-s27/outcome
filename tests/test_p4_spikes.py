@@ -133,3 +133,41 @@ def test_score_refuses_held_out(tmp_path):
     p.write_text(json.dumps({"status": "FAILED"}), encoding="utf-8")
     with pytest.raises(SystemExit):
         score.score_file(p, {})
+
+
+def test_call_stats_byproducts_from_invented_calls(tmp_path):
+    lines = [
+        {"doc": "d", "variant": "v", "purpose": "extract", "model_requested": "m/a",
+         "json_mode_sent": True, "status": "ok", "model_returned": "m/a-1",
+         "tokens_reasoning": 5, "cost_reported_usd": 0.002, "cost_computed_usd": 0.0021,
+         "image_tokens_per_image_est": 1000, "finish_reason": "stop"},
+        {"doc": "d", "variant": "v", "purpose": "repair", "model_requested": "m/a",
+         "json_mode_sent": True, "status": "ok", "model_returned": "m/a-1",
+         "tokens_reasoning": None, "cost_reported_usd": None, "cost_computed_usd": 0.001,
+         "image_tokens_per_image_est": 1200, "finish_reason": "length"},
+        {"doc": "d", "variant": "v", "model_requested": "m/a", "json_mode_sent": True,
+         "status": "skipped_max_usd"},
+        {"doc": "d", "variant": "other", "model_requested": "m/b", "status": "ok"},
+    ]  # fmt: skip
+    (tmp_path / "calls.jsonl").write_text(
+        "\n".join(json.dumps(x) for x in lines) + "\n", encoding="utf-8"
+    )
+    st = score.call_stats(tmp_path)[("d", "v")]
+    assert st["calls_ok"] == 2 and st["calls_logged"] == 3
+    assert st["models_requested"] == ["m/a"] and st["models_returned"] == ["m/a-1"]
+    assert st["json_mode_sent"] is True and st["json_mode_ok"] is True
+    assert st["repair_calls"] == 1 and st["finish_length"] == 1
+    assert st["tokens_reasoning"] == 5
+    assert st["cost_reported_usd"] == pytest.approx(0.002)
+    assert st["cost_computed_usd"] == pytest.approx(0.0031)
+    assert st["image_tokens_per_image"] == 1100
+    assert st["cap_hit"] is True
+    assert score.call_stats(tmp_path / "missing") == {}
+
+
+def test_call_stats_json_mode_error_is_not_ok(tmp_path):
+    line = {"doc": "d", "variant": "v", "model_requested": "m/a", "json_mode_sent": True,
+            "status": "LLMError", "detail": "bad_request"}  # fmt: skip
+    (tmp_path / "calls.jsonl").write_text(json.dumps(line) + "\n", encoding="utf-8")
+    st = score.call_stats(tmp_path)[("d", "v")]
+    assert st["json_mode_ok"] is False and st["errors"] == {"LLMError": 1}
