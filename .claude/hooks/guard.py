@@ -81,7 +81,7 @@ def git_block(command: str) -> str | None:
                 continue
             sub, rest = toks[j].lower(), [t.lower() for t in toks[j + 1 :]]
             if sub in GIT_BLOCKED:
-                return f"git {sub} is reserved for Shyam"
+                return f"git {sub} is reserved for Hariom"
             if sub == "reset" and "--hard" in rest:
                 return "git reset --hard is not allowed"
     return None

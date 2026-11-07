@@ -10,7 +10,7 @@ Plan: `claude/ROADMAP.md`. Decisions: `decisions/DECISION_LOG.md`. Rules: `resea
 2. Never read anything under `sample/sample-data-output-validated/` (answers) or the held-out
    documents `lease_003` and `budget_001`. Never read `cache/`.
 3. Never edit `contract/`, `tools/validate.py`, `ASSIGNMENT.md`, `sample/`.
-4. Never run `git commit`, `git push`, `git reset --hard`, `git rebase`. Shyam commits.
+4. Never run `git commit`, `git push`, `git reset --hard`, `git rebase`. Hariom commits.
 5. Never put a value from a sample document or answer file in code, tests, fixtures, logs,
    reports or messages. Doc ids, field names, counts and scores only (D04, R31).
 6. All LLM calls go through `LLM_BASE_URL` / `LLM_API_KEY` only; listed models only (brief §3).
@@ -25,7 +25,7 @@ These are enforced, not just written: `.claude/settings.json` (deny/ask/allow),
 ## Commands
 ```
 uv sync                                   # create .venv from uv.lock (Python 3.12)
-uv run pre-commit install                 # once per clone (Shyam)
+uv run pre-commit install                 # once per clone (Hariom)
 uv run pre-commit run --all-files         # all guards: gitleaks, paths, binaries, size, keys,
                                           #   sample values, frozen-file hashes
 uv run ruff check . && uv run ruff format --check .
@@ -62,7 +62,7 @@ uv run python tools/validate.py outputs/ --schema-dir sample/schemas   # exit 0 
 
 ## Conventions
 - Python 3.12, stdlib-first; ruff config in `pyproject.toml`.
-- Commits (Shyam): `test:` → `feat:`/`fix:` → `docs:` → `chore(process):`; subject ≤ 72 chars.
+- Commits (Hariom): `test:` → `feat:`/`fix:` → `docs:` → `chore(process):`; subject ≤ 72 chars.
   Drafted messages carry NO `Assisted-by:` or `Co-Authored-By:` trailer (P1-19).
 - No broad `except` that hides errors; surface errors with context.
 - Windows host, Linux containers: LF line endings (`.gitattributes`); compose never sets `platform:`.

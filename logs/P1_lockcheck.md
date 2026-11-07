@@ -17,8 +17,8 @@ rejected by pre-commit. Only after this may the real key be placed in the env fi
 | 2 | Agent: shell `type .env` | BLOCKED | `.claude/hooks/guard.py` (PreToolUse) | "touches a .env file (only .env.example is allowed)" |
 | 3 | Agent: Read tool on a file in `sample/sample-data-output-validated/` (`lease_002.json`) | BLOCKED | deny rule | "File is in a directory that is denied by your permission settings." |
 | 4 | Agent: Read tool on held-out document `budget_001.pdf` | BLOCKED | deny rule | "File is in a directory that is denied by your permission settings." |
-| 5 | Agent: shell `git commit -m test` | BLOCKED | guard.py | "git commit is reserved for Shyam" |
-| 6 | Shyam: commit staging a fake key | BLOCKED | pre-commit `key-strings` hook (`scripts/guards/key_strings.py`) | — |
+| 5 | Agent: shell `git commit -m test` | BLOCKED | guard.py | "git commit is reserved for Hariom" |
+| 6 | Hariom: commit staging a fake key | BLOCKED | pre-commit `key-strings` hook (`scripts/guards/key_strings.py`) | — |
 
 **6/6 blocked → PASS.**
 
@@ -29,6 +29,6 @@ rejected by pre-commit. Only after this may the real key be placed in the env fi
   hook caught it. Both stay enabled: gitleaks for real high-entropy secrets, `key-strings`
   for the provider's key format regardless of entropy.
 - Guard regression tests: `uv run python -m unittest discover -s tests -v` → 2 tests, OK
-  (run by Shyam).
+  (run by Hariom).
 - During the session before the check, guard.py also blocked a shell command that named a
   `.claude/` path (memory index outside the repo). Expected behaviour (P1-17).
