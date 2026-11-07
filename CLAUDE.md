@@ -63,6 +63,7 @@ uv run python tools/validate.py outputs/ --schema-dir sample/schemas   # exit 0 
 ## Conventions
 - Python 3.12, stdlib-first; ruff config in `pyproject.toml`.
 - Commits (Shyam): `test:` → `feat:`/`fix:` → `docs:` → `chore(process):`; subject ≤ 72 chars.
+  Drafted messages carry NO `Assisted-by:` or `Co-Authored-By:` trailer (P1-19).
 - No broad `except` that hides errors; surface errors with context.
 - Windows host, Linux containers: LF line endings (`.gitattributes`); compose never sets `platform:`.
 
