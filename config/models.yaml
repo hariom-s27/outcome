@@ -1,0 +1,92 @@
+# The only models the service may call (ASSIGNMENT §3; P2-02). Ids are sent byte-for-byte (R28).
+# Code refuses any id not listed here. Prices are USD per million tokens.
+# price_source: "card" = research §8 card (7 Nov); "snapshot" = config/models_snapshot.json.
+# reasoning: "omit" = send no reasoning parameter, measure reasoning_tokens (P2-04).
+# response_format: true only when the /models snapshot lists it (P2-05 ladder).
+# price_cliff: whole request billed at multiplier x when prompt tokens >= threshold (R22).
+baseline: anthropic/claude-haiku-5.5
+fallback_order:
+  - anthropic/claude-haiku-5.5
+  - z-ai/glm-5.3-flash
+  - google/gemini-3.8-flash
+  - qwen/qwen3-vl-235b-a22b-instruct
+  - openai/gpt-6-luna
+  - deepseek/deepseek-v3.2
+  - google/gemini-3.1-pro-preview
+  - anthropic/claude-sonnet-5.5
+  - openai/gpt-6.1-sol
+models:
+  anthropic/claude-haiku-5.5:
+    vision: true
+    price_in: 0.1
+    price_out: 0.5
+    price_source: snapshot
+    price_cliff: {prompt_tokens: 100000, multiplier: 5.0}
+    reasoning: omit
+    response_format: true
+    max_tokens: 4096
+  openai/gpt-6-luna:
+    vision: true
+    price_in: 0.1
+    price_out: 0.5
+    price_source: snapshot
+    reasoning: omit
+    response_format: true
+    max_tokens: 4096
+  z-ai/glm-5.3-flash:
+    vision: true
+    price_in: 0.15
+    price_out: 0.5
+    price_source: snapshot
+    reasoning: omit
+    response_format: true
+    max_tokens: 4096
+  qwen/qwen3-vl-235b-a22b-instruct:
+    vision: true
+    price_in: 0.21
+    price_out: 1.9
+    price_source: snapshot
+    reasoning: omit
+    response_format: true
+    max_tokens: 4096
+  deepseek/deepseek-v3.2:
+    vision: false
+    price_in: 0.26
+    price_out: 0.38
+    price_source: snapshot
+    reasoning: omit
+    response_format: true
+    max_tokens: 4096
+  google/gemini-3.8-flash:
+    vision: true
+    price_in: 0.75
+    price_out: 3.75
+    price_source: snapshot
+    reasoning: omit
+    response_format: true
+    max_tokens: 4096
+  google/gemini-3.1-pro-preview:
+    vision: true
+    price_in: 2
+    price_out: 12
+    price_source: snapshot
+    price_cliff: {prompt_tokens: 200000, multiplier: 2.0}
+    reasoning: omit
+    response_format: true
+    max_tokens: 4096
+  anthropic/claude-sonnet-5.5:
+    vision: true
+    price_in: 2
+    price_out: 10
+    price_source: snapshot
+    reasoning: omit
+    response_format: true
+    max_tokens: 4096
+  openai/gpt-6.1-sol:
+    vision: true
+    price_in: 2
+    price_out: 10
+    price_source: snapshot
+    reasoning: omit
+    response_format: true
+    max_tokens: 4096

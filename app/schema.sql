@@ -68,3 +68,45 @@ CREATE INDEX IF NOT EXISTS job_events_job_idx ON job_events (job_id);
 -- at most one terminal event per job, enforced by the DB
 CREATE UNIQUE INDEX IF NOT EXISTS job_events_one_terminal
     ON job_events (job_id) WHERE event IN ('SUCCESS', 'PARTIAL', 'FAILED');
+
+-- P2-09 / R21: LLM cost ledger, one row per attempt (and per dev-cache hit). Metadata only:
+-- never prompt or response text. No FK to jobs: dev scripts may call without a job row.
+CREATE TABLE IF NOT EXISTS llm_calls (
+    id               bigserial PRIMARY KEY,
+    at               timestamptz NOT NULL DEFAULT now(),
+    job_id           uuid,
+    purpose          text,
+    attempt          integer NOT NULL,
+    model_requested  text NOT NULL,
+    model_returned   text,
+    model_mismatch   boolean NOT NULL DEFAULT false,
+    status           text NOT NULL,
+    http_status      integer,
+    finish_reason    text,
+    tokens_in        integer NOT NULL DEFAULT 0,
+    tokens_out       integer NOT NULL DEFAULT 0,
+    tokens_reasoning integer,
+    tokens_cached    integer,
+    cost_reported    double precision,
+    cost_computed    double precision NOT NULL DEFAULT 0,
+    latency_ms       integer NOT NULL DEFAULT 0,
+    cache_hit        boolean NOT NULL DEFAULT false
+);
+CREATE INDEX IF NOT EXISTS llm_calls_job_idx ON llm_calls (job_id);
+
+-- P2-07: global in-flight cap. A slot is free when its lease has run out, so a crashed
+-- holder's slot frees itself. Rows 0..cap-1 are inserted by the client at start-up.
+CREATE TABLE IF NOT EXISTS llm_slots (
+    slot        integer PRIMARY KEY,
+    holder      text,
+    lease_until timestamptz
+);
+
+-- P2-07 shared 429 cool-down; P2-29 circuit breaker. Exactly one row.
+CREATE TABLE IF NOT EXISTS llm_state (
+    id                   integer PRIMARY KEY CHECK (id = 1),
+    cooldown_until       timestamptz,
+    consecutive_failures integer NOT NULL DEFAULT 0,
+    breaker_open_until   timestamptz
+);
+INSERT INTO llm_state (id) VALUES (1) ON CONFLICT DO NOTHING;

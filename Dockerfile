@@ -17,6 +17,7 @@ COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-dev --no-install-project --no-cache
 
 COPY app ./app
+COPY config ./config
 
 RUN useradd --system --uid 10001 --no-create-home appuser
 USER appuser

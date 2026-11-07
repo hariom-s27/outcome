@@ -1,0 +1,10 @@
+# Dev overlay (P2-10, P2-11). Never used by graders. Run with:
+#   docker compose -f compose.yaml -f compose.dev.yaml up -d --build
+# Adds the dev spend stop and the on-disk LLM response cache (git-ignored folder ./cache).
+services:
+  worker:
+    environment:
+      DEV_BUDGET_USD: ${DEV_BUDGET_USD:-8}
+      LLM_CACHE_DIR: /cache/llm
+    volumes:
+      - ./cache:/cache
