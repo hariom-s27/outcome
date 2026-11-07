@@ -59,10 +59,12 @@ uv run python scripts/chaos_kill_worker.py            # kill/freeze a worker mid
 |---|---|---|
 | M1 skeleton | 8/8 VALID | not scored: every value is null by design |
 | M2 baseline (one Haiku 5.5 call per document) | 8/8 VALID | **0.599** on DEV, n = 6 · ≈ $0.0055 per document (uncached) |
+| P3 proper readers, same one-call baseline | 8/8 VALID (P2 outputs kept) | 0.579 on DEV, n = 6 · ≈ $0.0049 per document (uncached) · lower than P2, so the P2 outputs stay |
 
 Mean score = mean over documents of each document's mean of per-field means, as computed by
 `tools/validate.py` `score()` (strict exact match after normalisation). Per-document numbers
-and error counts: `logs/P2_eval.md`; every run is appended to `eval/history.jsonl`.
+and error counts: `logs/P2_eval.md`, `logs/P3_eval.md`; every run is appended to
+`eval/history.jsonl`.
 $/document is the uncached cost: a document answered from the dev cache is priced at the ledger
 cost of the call that filled the cache, since a grader's run has no cache.
 

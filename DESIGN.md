@@ -29,6 +29,8 @@ terminal, so there is no shared volume between api and worker. Workers scale wit
 | Base images pinned tag@digest, multi-arch, no `platform:` | same build on the grader's machine (amd64 or arm64) | fresh clone: cold build 18 s, `up` → `/health` 200 in 5.6 s |
 | Baseline: rough readers (text with page/cell addresses; scanned pages as JPEG) + one Haiku 5.5 call with all fields, code checks the JSON, null over guess | a cheap, honest floor to measure every later change against | DEV mean 0.599 (n = 6): single-value docs 0.70–1.00, big tables 0.05–0.11 (the model returns 6 of 119 and 36 of 325 rows); ≈ $0.0055/doc uncached (`logs/P2_eval.md`) |
 | Per-document $ fuse, predicted before every call (P2-36) | the old cap only looked at money already spent, so one call could overshoot it 1.3× | input estimated high (1.5 chars/token, 2,600 tokens per image, +15%), whole call priced at the cliff rate when the estimate reaches it; trim the input, else skip → PARTIAL `doc_llm_cap`. Rent-roll re-run: estimate 79,469 vs real 57,118 tokens (1.39× high), $0.0097, fuse not needed |
+| Proper readers, one document map (P3): XLSX/CSV rows with cell refs, merged/hidden/formula flags; DOCX XML walker (numbering, accepted tracked changes, text boxes, tables); PDF word → line → block model with callouts, header/footer tags and scan triage | the extractor should see the document's structure and exact addresses, not a flat dump | DEV mean 0.579 vs 0.599 (n = 6): om_001 0.948 vs 0.966, rentroll 0.006 vs 0.110 (P2's two rent-roll runs already ranged 0.009–0.110), others unchanged; P2 outputs kept (`logs/P3_eval.md`) |
+| DOCX page numbers: pluggable method, default `none` (P3-27) | DOCX has no pages; a wrong page is worse than none | the `estimate` method placed 0/20 locatable lease_002 citations on the exact page (13/20 within ±1); a slim LibreOffice image gave 23 pages and 0/20 (the earlier, fuller-font build: 20/20, +474 MB), so it is decided at P8 |
 | Haiku with `reasoning: {effort: none}` | its default is medium effort, billed as output | same score (1.000) on the pilot doc, 0 vs 3,964 reasoning tokens, $0.0095 vs $0.0108 |
 
 ## Evaluation honesty
@@ -51,7 +53,8 @@ strictly, an unseen-data score.
 | P1 skeleton | $0 (no model calls) |
 | P2 baseline (pilot ×2 + DEV eval) | $0.098 (9 paid calls; one call crossed Haiku's 100k price cliff: $0.064) |
 | P2 rent-roll re-run (P2-35) | $0.0097 (1 paid call; plus 1 boxscore re-submit answered from the dev cache, $0) |
-| **Running total** | **$0.108** (10 paid calls, ledger) |
+| P3 readers (DEV re-run, om_001 debug call, om_001 re-run) | $0.0198 (6 paid calls) |
+| **Running total** | **$0.128** (16 paid calls) |
 
 ## What broke and how it was handled
 
