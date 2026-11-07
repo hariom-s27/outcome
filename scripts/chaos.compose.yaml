@@ -1,0 +1,6 @@
+# Overlay for scripts/chaos_kill_worker.py only. Never used by `docker compose up`.
+# Each job "works" for 20 s so a worker can be killed or frozen while it holds the lease.
+services:
+  worker:
+    environment:
+      WORKER_FAKE_WORK_S: "20"

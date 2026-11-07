@@ -1,0 +1,35 @@
+P1 chaos run 2026-11-07T07:46:00Z
+settings: lease 60 s, heartbeat 15 s, 2 workers, simulated work 20 s per job
+
+== Scenario A: SIGKILL the worker holding a lease
+killed worker d21068efa420 while it held job a67a46b0-d10b-42d8-a52f-86aa17c6e54c
+all 3 jobs terminal 83s after the kill
+  job a67a46b0-d10b-42d8-a52f-86aa17c6e54c: status=PARTIAL fence=2 attempts=2
+    CREATED   fence=-  worker=-
+    CLAIMED   fence=1  worker=d21068efa420
+    REQUEUED  fence=1  worker=4cbe5f70ab33 reason=lease_expired
+    CLAIMED   fence=2  worker=4cbe5f70ab33
+    PARTIAL   fence=2  worker=4cbe5f70ab33
+  job 55846518-cecc-4d5b-9471-b9f8fac8f1f8: status=PARTIAL fence=1 attempts=1
+    CREATED   fence=-  worker=-
+    CLAIMED   fence=1  worker=4cbe5f70ab33
+    PARTIAL   fence=1  worker=4cbe5f70ab33
+  job 97073695-c973-4ebd-89a5-4a9b2c676b13: status=PARTIAL fence=1 attempts=1
+    CREATED   fence=-  worker=-
+    CLAIMED   fence=1  worker=4cbe5f70ab33
+    PARTIAL   fence=1  worker=4cbe5f70ab33
+Scenario A: PASS (each job terminal once; killed job re-claimed with fence 2)
+
+== Scenario B: freeze (docker pause) the lease holder, let the lease expire, unpause
+paused worker d21068efa420 while it held job 2683ace1-3828-4e69-a782-ae07e81a1de1
+job finished by the other worker; unpaused the frozen worker, waiting 25 s
+  job 2683ace1-3828-4e69-a782-ae07e81a1de1: status=PARTIAL fence=2 attempts=2
+    CREATED   fence=-  worker=-
+    CLAIMED   fence=1  worker=d21068efa420
+    REQUEUED  fence=1  worker=4cbe5f70ab33 reason=lease_expired
+    CLAIMED   fence=2  worker=4cbe5f70ab33
+    PARTIAL   fence=2  worker=4cbe5f70ab33
+job row unchanged after unpause: True; frozen worker logged lease lost: True
+Scenario B: PASS
+
+OVERALL: PASS
