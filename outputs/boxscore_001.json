@@ -1,0 +1,115 @@
+{
+  "schema": "boxscore",
+  "document": "boxscore_001",
+  "entries": [
+    {
+      "code": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "date": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "down": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "name": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "admin": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "avail": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "model": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "units": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "p_trend": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "avg_rent": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "avg_sq_ft": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "notice_rented": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "occ_no_notice": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "property_name": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "vacant_rented": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "percent_leased": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "notice_unrented": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "p_occ_wornonrev": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "vacant_unrented": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "percent_occupied": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      }
+    }
+  ],
+  "metadata": {
+    "cost_usd": 0.0,
+    "tokens_in": 0,
+    "latency_ms": 954,
+    "tokens_out": 0,
+    "model_calls": 0
+  }
+}

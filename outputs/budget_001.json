@@ -1,0 +1,85 @@
+{
+  "schema": "budget_variance",
+  "document": "budget_001",
+  "entries": [
+    {
+      "budget": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "gl_code": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "section": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "line_item": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "budget_year": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "property_rsf": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "property_name": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "prior_year_budget": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "prior_year_reforecast": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "explanation_of_variance": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "budget_vs_reforecast_pct": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "budget_vs_reforecast_variance": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "reforecast_vs_prior_budget_pct": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "reforecast_vs_prior_budget_variance": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      }
+    }
+  ],
+  "metadata": {
+    "cost_usd": 0.0,
+    "tokens_in": 0,
+    "latency_ms": 228,
+    "tokens_out": 0,
+    "model_calls": 0
+  }
+}

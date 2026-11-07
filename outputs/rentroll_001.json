@@ -1,0 +1,100 @@
+{
+  "schema": "rent_roll_units",
+  "document": "rentroll_001",
+  "entries": [
+    {
+      "balance": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "market_rent": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "unit_number": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "unit_status": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "deposit_held": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "monthly_rent": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "move_in_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "property_name": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "report_period": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "resident_name": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "lease_end_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "unit_type_code": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "lease_start_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "unit_square_feet": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "monthly_other_charges": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "monthly_total_charges": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      }
+    }
+  ],
+  "metadata": {
+    "cost_usd": 0.0,
+    "tokens_in": 0,
+    "latency_ms": 575,
+    "tokens_out": 0,
+    "model_calls": 0
+  }
+}

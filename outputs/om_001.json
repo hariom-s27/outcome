@@ -1,0 +1,160 @@
+{
+  "schema": "offering_memorandum",
+  "document": "om_001",
+  "entries": [
+    {
+      "city": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "state": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "units": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "county": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "address": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "noi_t12": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "stories": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "zip_code": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "submarket": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "site_acres": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "unit_types": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "year_built": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "broker_name": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "market_rent": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "rentable_sf": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "asking_price": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "noi_proforma": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "building_type": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "occupancy_pct": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "parking_ratio": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "property_name": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "parking_spaces": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "price_per_unit": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "year_renovated": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "asking_cap_rate": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "average_unit_sf": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "market_rent_psf": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "number_of_buildings": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "average_in_place_rent": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      }
+    }
+  ],
+  "metadata": {
+    "cost_usd": 0.0,
+    "tokens_in": 0,
+    "latency_ms": 656,
+    "tokens_out": 0,
+    "model_calls": 0
+  }
+}

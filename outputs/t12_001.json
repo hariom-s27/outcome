@@ -1,0 +1,70 @@
+{
+  "schema": "operating_statement_lines",
+  "document": "t12_001",
+  "entries": [
+    {
+      "gl_code": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "section": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "category": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "line_item": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "period_end": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "amount_total": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "period_start": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "property_name": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "amount_last_month": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "amount_first_month": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "months_with_activity": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      }
+    }
+  ],
+  "metadata": {
+    "cost_usd": 0.0,
+    "tokens_in": 0,
+    "latency_ms": 497,
+    "tokens_out": 0,
+    "model_calls": 0
+  }
+}

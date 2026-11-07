@@ -1,0 +1,215 @@
+{
+  "schema": "lease_abstraction",
+  "document": "lease_003",
+  "entries": [
+    {
+      "late_fee": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "premises": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "tenant_name": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "broker_names": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "holdover_rent": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "permitted_use": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "property_name": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "guarantor_name": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "parking_spaces": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "pro_rata_share": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "base_year_taxes": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "right_to_sublet": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "total_base_rent": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "building_address": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "free_rent_months": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "expense_structure": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "lease_term_months": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "base_year_expenses": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "ti_allowance_total": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "landlord_legal_name": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "renewal_term_months": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "base_rent_escalation": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "lease_execution_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "electricity_provision": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "lease_expiration_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "renewal_notice_months": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "renewal_option_exists": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "renewal_options_count": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "parking_monthly_charge": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "rent_commencement_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "early_termination_right": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "lease_commencement_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "rent_schedule_end_dates": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "rentable_square_footage": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "security_deposit_amount": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "letter_of_credit_required": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "rent_schedule_start_dates": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "rent_schedule_monthly_rent": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "termination_fee_description": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      },
+      "rent_schedule_annual_rent_per_rsf": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.0
+      }
+    }
+  ],
+  "metadata": {
+    "cost_usd": 0.0,
+    "tokens_in": 0,
+    "latency_ms": 657,
+    "tokens_out": 0,
+    "model_calls": 0
+  }
+}
