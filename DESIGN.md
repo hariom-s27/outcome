@@ -27,6 +27,9 @@ terminal, so there is no shared volume between api and worker. Workers scale wit
 | Field list validated loosely (non-empty `fields` object) | unfamiliar field lists must work | |
 | Logs carry job id, status, timings only | documents may be confidential | |
 | Base images pinned tag@digest, multi-arch, no `platform:` | same build on the grader's machine (amd64 or arm64) | fresh clone: cold build 18 s, `up` → `/health` 200 in 5.6 s |
+| Baseline: rough readers (text with page/cell addresses; scanned pages as JPEG) + one Haiku 5.5 call with all fields, code checks the JSON, null over guess | a cheap, honest floor to measure every later change against | DEV mean 0.599 (n = 6): single-value docs 0.70–1.00, big tables 0.05–0.11 (the model returns 6 of 119 and 36 of 325 rows); ≈ $0.0055/doc uncached (`logs/P2_eval.md`) |
+| Per-document $ fuse, predicted before every call (P2-36) | the old cap only looked at money already spent, so one call could overshoot it 1.3× | input estimated high (1.5 chars/token, 2,600 tokens per image, +15%), whole call priced at the cliff rate when the estimate reaches it; trim the input, else skip → PARTIAL `doc_llm_cap`. Rent-roll re-run: estimate 79,469 vs real 57,118 tokens (1.39× high), $0.0097, fuse not needed |
+| Haiku with `reasoning: {effort: none}` | its default is medium effort, billed as output | same score (1.000) on the pilot doc, 0 vs 3,964 reasoning tokens, $0.0095 vs $0.0108 |
 
 ## Evaluation honesty
 
@@ -46,12 +49,20 @@ strictly, an unseen-data score.
 | Phase | Spend |
 |---|---|
 | P1 skeleton | $0 (no model calls) |
+| P2 baseline (pilot ×2 + DEV eval) | $0.098 (9 paid calls; one call crossed Haiku's 100k price cliff: $0.064) |
+| P2 rent-roll re-run (P2-35) | $0.0097 (1 paid call; plus 1 boxscore re-submit answered from the dev cache, $0) |
+| **Running total** | **$0.108** (10 paid calls, ledger) |
 
 ## What broke and how it was handled
 
 - Schemathesis' "valid data must be accepted" check cannot pass against this contract (any
   string is a valid `schema` part, but invalid JSON must get 400), so that one check is off;
   the others run.
+- The baseline's input-size estimate (chars/3.5) undercounted spreadsheet rows by ~1.9×, so
+  one rent-roll request sent 114k tokens and paid Haiku's 5× long-prompt price. The estimate
+  is now calibrated per block type (rows 1.75, prose 2.6 chars/token) and tested; the re-run
+  estimated 59,965 and sent 57,118. A second, high-side estimate now guards the per-document
+  $ cap before every call (P2-36).
 
 ## With another week
 
