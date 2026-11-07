@@ -13,7 +13,9 @@ Blocks when a tool path or shell command:
     ASSIGNMENT.md (Edit/Write tools; shell redirects, rm/mv/cp-to, Set-Content, sed -i,
     git checkout/restore ...). Reading or running them is allowed (PR-08).
   - (shell only) mentions .claude/ at all, so edits there always go through the ask step
-Secret paths (.env*, answers, held-out docs, cache/) stay blocked on any mention.
+Secret paths (.env*, answers, held-out docs) stay blocked on any mention. cache/ is blocked
+in any tool path field, and in shell commands when it is a real path token (PR-70), so a
+regex fragment like cache\\|def is not a false stop.
 """
 
 from __future__ import annotations
@@ -25,8 +27,21 @@ import shlex
 import sys
 
 ENV_FILE = re.compile(r"(?<!\w)\.env(?!\.example)(?!\w)")
+# Tool path fields are always paths: any cache/ segment or a path ending in cache is blocked.
 CACHE_DIR = re.compile(r"(?<![\w.-])cache[/\\]")
 CACHE_PATH_END = re.compile(r"(?<![\w.-])cache$")
+# PR-70, shell commands: cache/ counts only as a real path token, checked on the raw text
+# (backslashes kept): the folder + / or \ + a path char (letter, digit, _ . - or a glob *),
+# or the bare folder name as a whole argument (optionally with one trailing separator).
+# A regex fragment such as cache\|def is not a path and stays allowed.
+CACHE_TOKEN = re.compile(
+    r"(?<![\w.-])cache(?:"
+    r"(?:/|\\{1,2})[\w.*-]"  # cache/llm/x.json, cache\debug\y, .\cache\z
+    r"|[/\\]?(?=$|[\s\"'`;&),])"  # bare argument: ls cache, ls cache/, "cache"
+    r"|(?=\|)"  # bare argument piped: ls cache|x (not cache\|x)
+    r")",
+    re.IGNORECASE,
+)
 SEALED = ("sample-data-output-validated", "lease_003", "budget_001")
 
 PATH_KEYS = ("file_path", "path", "notebook_path", "glob")
@@ -120,7 +135,10 @@ def sealed_block(text: str, is_path: bool) -> str | None:
     for s in SEALED:
         if s in t:
             return f"touches a sealed path ({s})"
-    if CACHE_DIR.search(t) or (is_path and CACHE_PATH_END.search(t.rstrip("/"))):
+    if is_path:
+        if CACHE_DIR.search(t) or CACHE_PATH_END.search(t.rstrip("/")):
+            return "touches cache/"
+    elif CACHE_TOKEN.search(text):
         return "touches cache/"
     return None
 
