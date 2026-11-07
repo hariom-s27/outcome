@@ -39,7 +39,7 @@ from app.contract_check import validator
 TRUTH = ROOT / "sample" / "sample-data-output-validated"
 RUNS = ROOT / "cache" / "eval_runs"
 HISTORY = ROOT / "eval" / "history.jsonl"
-REPORT = ROOT / "logs" / "P2_eval.md"
+REPORT = ROOT / "logs" / "eval_latest.md"  # --report: never overwrite an older phase's report
 HELD_OUT = frozenset({"lease_003", "budget_001"})  # D03: sealed until the P8 run
 LLM_FAILURE_REASONS = frozenset(
     {"llm_failed", "circuit_open", "llm_not_configured", "dev_budget_reached", "deadline"}
@@ -220,9 +220,9 @@ def summarise(records: list[dict], rid: str, label: str, aborted: str | None) ->
     }
 
 
-def write_report(records: list[dict], summary: dict) -> None:
+def write_report(records: list[dict], summary: dict, report: Path = REPORT) -> None:
     lines = [
-        "# P2 DEV eval (baseline)",
+        "# DEV eval (baseline)",
         "",
         f"Run `{summary['run_id']}` · {summary['date']} · pipeline `{summary['pipeline']}` · "
         f"model `{summary['model']}` · {summary['label']}",
@@ -285,8 +285,8 @@ def write_report(records: list[dict], summary: dict) -> None:
                 f"{c.get('hallucinated', 0)} |"
             )
         lines.append("")
-    REPORT.parent.mkdir(exist_ok=True)
-    REPORT.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
+    report.parent.mkdir(parents=True, exist_ok=True)
+    report.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
 
 
 def main() -> int:
@@ -299,7 +299,21 @@ def main() -> int:
     ap.add_argument("--write-outputs", action="store_true", help="refresh outputs/<doc>.json")
     ap.add_argument("--reuse", metavar="RUN_ID", help="re-score a saved run, no HTTP")
     ap.add_argument("--final-sealed", action="store_true", help="P8 sealed run only")
+    ap.add_argument(
+        "--report",
+        type=Path,
+        default=REPORT,
+        help="markdown report path (default logs/eval_latest.md)",
+    )
+    ap.add_argument(
+        "--reuse-from",
+        metavar="RUN_ID",
+        help="run only --docs live; re-score every other DEV doc from this saved run",
+    )
     args = ap.parse_args()
+    if args.reuse_from and (args.reuse or not args.docs):
+        ap.error("--reuse-from needs --docs and cannot be combined with --reuse")
+    report = args.report if args.report.is_absolute() else ROOT / args.report
 
     rows = manifest()
     docs = args.docs or [d for d in rows if d not in HELD_OUT]
@@ -323,13 +337,20 @@ def main() -> int:
     spent = 0.0
     fail_streak = 0
     aborted = None
+    live = set(docs)
+    if args.reuse_from:  # docs in --docs run live; every other DEV doc is re-scored from it
+        docs = [d for d in rows if d not in HELD_OUT]
     for doc_id in docs:
-        if not args.reuse and spent >= args.max_usd:
+        if not args.reuse and doc_id in live and spent >= args.max_usd:
             aborted = f"max_usd {args.max_usd} reached before {doc_id}"
             break
         raw_path = run_dir / f"{doc_id}.json"
         if args.reuse:
             job = json.loads(raw_path.read_text(encoding="utf-8"))
+        elif doc_id not in live:
+            src = RUNS / args.reuse_from / f"{doc_id}.json"
+            job = json.loads(src.read_text(encoding="utf-8"))
+            raw_path.write_text(json.dumps(job, indent=1), encoding="utf-8", newline="\n")
         else:
             job = submit_and_wait(args.base_url, doc_id, rows[doc_id])
             raw_path.write_text(json.dumps(job, indent=1), encoding="utf-8", newline="\n")
@@ -364,8 +385,8 @@ def main() -> int:
         HISTORY.parent.mkdir(exist_ok=True)
         with HISTORY.open("a", encoding="utf-8", newline="\n") as fh:
             fh.write(json.dumps(summary) + "\n")
-        write_report(records, summary)
-        print(f"recorded: {HISTORY.relative_to(ROOT)}, {REPORT.relative_to(ROOT)}")
+        write_report(records, summary, report)
+        print(f"recorded: {HISTORY.relative_to(ROOT)}, {report}")
     return 1 if aborted else 0
 
 
