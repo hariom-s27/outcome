@@ -841,3 +841,115 @@ def test_fuse_counts_what_the_doc_already_spent(make_client, ctx, store):
     client = make_client(FakeLLM(j(ok_body())))
     proj = client.projection(ctx, HAIKU, MSGS)
     assert proj.spent_usd == pytest.approx(0.0499) and not proj.fits
+
+
+# --- P5-18: wrapper fixes (PR-74 counted cost, PR-75 truncation retry, max_tokens sizing) ------
+
+
+def test_pr74_reported_zero_counts_the_computed_cost(make_client, ctx, store, database_url):
+    fake = FakeLLM(j(ok_body(cost=0.0)))  # the gateway says $0 for a paid model
+    assert make_client(fake).complete_json(ctx, HAIKU, MSGS).status == "ok"
+    computed = (1000 * 0.10 + 100 * 0.50) / 1e6
+    with psycopg.connect(database_url) as conn:
+        raw = conn.execute("SELECT cost_reported, cost_computed FROM llm_calls").fetchone()
+    assert raw == (0.0, pytest.approx(computed))  # both raw numbers kept
+    meta = store.job_metadata(JOB, 0)
+    assert meta["cost_usd"] == pytest.approx(computed)  # counted = max(0, computed)
+    assert meta["cost_reported_usd"] == 0.0
+    assert meta["cost_computed_usd"] == pytest.approx(computed)
+    assert store.doc_usage(JOB).cost_counted == pytest.approx(computed)  # the fuse
+    assert store.total_spend() == pytest.approx(computed)  # the dev budget
+
+
+def test_pr74_reported_above_computed_wins(make_client, ctx, store):
+    fake = FakeLLM(j(ok_body(cost=0.001)))
+    make_client(fake).complete_json(ctx, HAIKU, MSGS)
+    assert store.job_metadata(JOB, 0)["cost_usd"] == pytest.approx(0.001)
+    assert store.doc_usage(JOB).cost_counted == pytest.approx(0.001)
+
+
+def test_pr74_fuse_trips_on_the_computed_cost_when_reported_is_zero(make_client, ctx, store):
+    store.record(
+        LedgerRow(
+            job_id=JOB,
+            purpose="extract",
+            attempt=1,
+            model_requested=HAIKU,
+            status="ok",
+            cost_reported=0.0,
+            cost_computed=0.06,
+        )
+    )
+    fake = FakeLLM(j(ok_body()))
+    out = make_client(fake).complete_json(ctx, HAIKU, MSGS)
+    assert out.status == "stopped" and out.reason == "doc_llm_cap" and fake.requests == []
+
+
+def test_pr74_counted_cost_helper():
+    from app.llm.store import counted_cost
+
+    assert counted_cost(0.0, 0.002) == 0.002
+    assert counted_cost(None, 0.002) == 0.002
+    assert counted_cost(0.003, 0.002) == 0.003
+
+
+def test_pr75_truncated_empty_retries_once_with_double(make_client, ctx, database_url):
+    fake = FakeLLM(j(ok_body("", finish="length")), j(ok_body()))
+    out = make_client(fake).complete_json(ctx, HAIKU, MSGS, max_tokens=700)
+    assert out.status == "ok" and out.data == {"widget_count": 3}
+    assert [r["max_tokens"] for r in fake.requests] == [700, 1400]
+    assert [r[5] for r in ledger(database_url)] == ["extract", "truncation_retry"]  # counted
+
+
+@pytest.mark.parametrize("finish", ["max_tokens", "MAX_TOKENS", "max_output_tokens"])
+def test_pr75_equivalent_finish_reasons(make_client, ctx, finish):
+    fake = FakeLLM(j(ok_body(None, finish=finish)), j(ok_body()))  # type: ignore[arg-type]
+    assert make_client(fake).complete_json(ctx, HAIKU, MSGS, max_tokens=300).status == "ok"
+    assert [r["max_tokens"] for r in fake.requests] == [300, 600]
+
+
+def test_pr75_truncated_but_parseable_is_kept_without_retry(make_client, ctx):
+    fake = FakeLLM(j(ok_body('{"widget_count": 3}', finish="length")))
+    out = make_client(fake).complete_json(ctx, HAIKU, MSGS)
+    assert out.status == "ok" and len(fake.requests) == 1
+
+
+def test_pr75_retry_is_capped_by_config(make_client, ctx, catalog):
+    cap = catalog.output.cap
+    fake = FakeLLM(j(ok_body("", finish="length")), j(ok_body()))
+    make_client(fake).complete_json(ctx, HAIKU, MSGS, max_tokens=cap - 10)
+    assert [r["max_tokens"] for r in fake.requests] == [cap - 10, cap]
+
+
+def test_pr75_never_more_than_one_retry(make_client, ctx):
+    fake = FakeLLM(j(ok_body("", finish="length")), repeat_last=True)
+    out = make_client(fake).complete_json(ctx, HAIKU, MSGS, max_tokens=200)
+    assert out.status == "unusable" and out.reason == "llm_truncated"
+    assert len(fake.requests) == 2
+
+
+def test_max_tokens_sizing_from_config(catalog):
+    out = catalog.output
+    assert out.max_tokens(0) == out.base
+    assert out.max_tokens(10) == out.base + 10 * out.per_field
+    assert out.max_tokens(10_000) == out.cap
+    assert out.retry_max_tokens(100) == 200 and out.retry_max_tokens(out.cap) == out.cap
+
+
+def test_max_tokens_sizing_reads_yaml():
+    raw = {
+        "baseline": HAIKU,
+        "output_tokens": {"base": 100, "per_field": 10, "cap": 150},
+        "models": {
+            HAIKU: {
+                "vision": True,
+                "price_in": 0.1,
+                "price_out": 0.5,
+                "reasoning": "none",
+                "response_format": True,
+                "max_tokens": 64,
+            }
+        },
+    }
+    out = ModelCatalog.from_dict(raw).output
+    assert (out.max_tokens(3), out.max_tokens(9)) == (130, 150)
