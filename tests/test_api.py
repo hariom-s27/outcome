@@ -129,6 +129,21 @@ def test_max_pending_from_env(monkeypatch):
     assert Settings.from_env().max_pending == 7
 
 
+def test_lease_heartbeat_sweep_from_env(monkeypatch):
+    for var in ("LEASE_S", "HEARTBEAT_S", "SWEEP_EVERY_S"):
+        monkeypatch.delenv(var, raising=False)
+    s = Settings.from_env()
+    assert (s.lease_s, s.heartbeat_s, s.sweep_every_s) == (60, 15.0, 5.0)  # P1-06 defaults
+    monkeypatch.setenv("LEASE_S", "30")
+    monkeypatch.setenv("HEARTBEAT_S", "7.5")
+    monkeypatch.setenv("SWEEP_EVERY_S", "2")
+    s = Settings.from_env()
+    assert (s.lease_s, s.heartbeat_s, s.sweep_every_s) == (30, 7.5, 2.0)
+    monkeypatch.setenv("HEARTBEAT_S", "30")  # heartbeat must be shorter than the lease
+    with pytest.raises(ValueError):
+        Settings.from_env()
+
+
 # --- GET /jobs/{id} and tenants (P1-13) ----------------------------------------------------------
 
 
