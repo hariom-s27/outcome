@@ -54,6 +54,63 @@ def score_file(path: Path, rows: dict[str, dict[str, str]]) -> dict[str, Any]:
             **{k: meta[k] for k in META_KEYS if k in meta}}  # fmt: skip
 
 
+def call_stats(run_dir: Path) -> dict[tuple[str, str], dict[str, Any]]:
+    """Per (doc, variant) byproducts from calls.jsonl (P4-12): metadata only, no content.
+    json_mode_ok = JSON mode was sent and no call of the variant failed with an error."""
+    path = run_dir / "calls.jsonl"
+    if not path.exists():
+        return {}
+    groups: dict[tuple[str, str], list[dict[str, Any]]] = {}
+    for raw in path.read_text(encoding="utf-8").splitlines():
+        if raw.strip():
+            x = json.loads(raw)
+            groups.setdefault((x.get("doc", ""), x.get("variant", "")), []).append(x)
+    out: dict[tuple[str, str], dict[str, Any]] = {}
+    for key, ls in groups.items():
+        ok = [x for x in ls if x.get("status") == "ok"]
+        errors: dict[str, int] = {}
+        for x in ls:
+            st = x.get("status") or ""
+            if st != "ok" and not st.startswith("skipped"):
+                errors[st] = errors.get(st, 0) + 1
+        per_img = [x["image_tokens_per_image_est"] for x in ok
+                   if isinstance(x.get("image_tokens_per_image_est"), int | float)]  # fmt: skip
+        reported = [x["cost_reported_usd"] for x in ok
+                    if isinstance(x.get("cost_reported_usd"), int | float)]  # fmt: skip
+        sent = any(x.get("json_mode_sent") for x in ls)
+        out[key] = {
+            "calls_ok": len(ok),
+            "calls_logged": len(ls),
+            "models_requested": sorted(
+                {x["model_requested"] for x in ls if x.get("model_requested")}
+            ),  # fmt: skip
+            "models_returned": sorted(
+                {x["model_returned"] for x in ok if x.get("model_returned")}
+            ),  # fmt: skip
+            "json_mode_sent": sent,
+            "json_mode_ok": sent and not errors,
+            "repair_calls": sum(1 for x in ok if x.get("purpose") == "repair"),
+            "finish_length": sum(1 for x in ok if x.get("finish_reason") == "length"),
+            "tokens_reasoning": sum(x.get("tokens_reasoning") or 0 for x in ok),
+            "cost_reported_usd": round(sum(reported), 6) if reported else None,
+            "cost_computed_usd": round(sum(x.get("cost_computed_usd") or 0.0 for x in ok), 6),
+            "image_tokens_per_image": round(statistics.fmean(per_img)) if per_img else None,
+            "cap_hit": any(str(x.get("status", "")).startswith("skipped_max") for x in ls),
+            "errors": errors,
+        }
+    return out
+
+
+def fmt_calls(doc: str, variant: str, c: dict[str, Any]) -> str:
+    return (
+        f"  calls {doc} {variant}: ok={c['calls_ok']}/{c['calls_logged']} "
+        f"returned={','.join(c['models_returned']) or '-'} json_ok={c['json_mode_ok']} "
+        f"repair={c['repair_calls']} reasoning={c['tokens_reasoning']} "
+        f"img_tok/page={c['image_tokens_per_image']} $rep={c['cost_reported_usd']} "
+        f"$comp={c['cost_computed_usd']} cap_hit={c['cap_hit']} errors={c['errors'] or '-'}"
+    )
+
+
 def spread(recs: list[dict[str, Any]]) -> list[str]:
     groups: dict[tuple[str, str], list[float]] = {}
     for r in recs:
@@ -90,6 +147,7 @@ def main(argv: list[str] | None = None) -> int:
         launch_path = run_dir / "launch.json"
         launch = json.loads(launch_path.read_text("utf-8")) if launch_path.exists() else {}
         recs = [score_file(p, rows) for p in sorted(run_dir.glob("*__*.json"))]
+        stats = call_stats(run_dir)
         print(
             f"run {run_id}: predictions={len(recs)} spent=${summary.get('spent_usd', 0):.4f} "
             f"stop={summary.get('stop')} dry_run_gate={launch.get('dry_run')} "
@@ -97,11 +155,16 @@ def main(argv: list[str] | None = None) -> int:
         )
         for r in recs:
             print(fmt(r))
+            if (r["doc"], r["variant"]) in stats:
+                print(fmt_calls(r["doc"], r["variant"], stats[(r["doc"], r["variant"])]))
         for line in spread(recs):
             print(line)
         for r in recs:
             out.append({"run_id": run_id, "spike": summary.get("spike"),
+                        "git_sha": run_id.split("-", 1)[0],
+                        "tree_clean": launch.get("allow_dirty_used") is False,
                         "gates": {k: launch.get(k) for k in ("dry_run", "allow_dirty_used")},
+                        "calls": stats.get((r["doc"], r["variant"]), {}),
                         **r})  # fmt: skip
     if not args.no_record and out:
         LEDGER.parent.mkdir(exist_ok=True)
