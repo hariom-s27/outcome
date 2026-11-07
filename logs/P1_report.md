@@ -64,7 +64,7 @@ Scores: none yet (every value is null by design; `--truth-dir` not used). Spend:
 - pre-commit `sample_values` on Part D files: FAILED for `outputs/lease_001.json` and
   `outputs/lease_002.json` (line 176 each). The flagged line is a **field key** from the
   lease field list (every value in those files is null); the key string equals an answer value
-  of another document's `line_item` field. False positive. **FIXED** by the guard-fix commit
+  of another document's `line_item` field. False positive. **FIXED** by the guard-fix commit 443d3a4
   (`fix: skip outputs/ and exact schema field keys in sample-values guard`), approved by
   Hariom: `outputs/` is no longer scanned (a required deliverable), and a match that exactly
   equals a field key from `sample/schemas/*.json` is ignored; all other keys and values are
