@@ -1,0 +1,65 @@
+# `docker compose up` from the repo root starts everything (contract runtime rule 1).
+# No env_file (R17): LLM_* come from the shell / a local .env via ${VAR:-}. No `platform:` (R41).
+name: docextract
+
+x-app-env: &app-env
+  DATABASE_URL: postgresql://docextract:docextract@db:5432/docextract
+  JOB_DEADLINE_S: ${JOB_DEADLINE_S:-1500}
+  MAX_PENDING: ${MAX_PENDING:-500}
+  APP_VERSION: ${APP_VERSION:-dev}
+
+services:
+  db:
+    # pinned tag@digest (P1-03, P1-28); index covers linux/amd64 and linux/arm64
+    image: postgres:17-alpine@sha256:3540c0362c809df084ffac0ae69fe794515f9de92692f02178bcdce0ef0302ac
+    environment:
+      POSTGRES_USER: docextract
+      POSTGRES_PASSWORD: docextract  # internal network only; db publishes no port
+      POSTGRES_DB: docextract
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U docextract -d docextract"]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+    restart: unless-stopped
+
+  api:
+    build: .
+    image: docextract:local
+    command: ["python", "-m", "app.api"]
+    ports:
+      - "8080:8080"
+    environment:
+      <<: *app-env
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/health', timeout=2)"
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    restart: unless-stopped
+
+  worker:
+    build: .
+    image: docextract:local
+    command: ["python", "-m", "app.worker"]
+    environment:
+      <<: *app-env
+      LLM_BASE_URL: ${LLM_BASE_URL:-}
+      LLM_API_KEY: ${LLM_API_KEY:-}
+    depends_on:
+      db:
+        condition: service_healthy
+    stop_grace_period: 30s
+    restart: unless-stopped
+
+volumes:
+  pgdata:

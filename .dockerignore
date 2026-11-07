@@ -1,0 +1,6 @@
+# Build context: only what the image needs. Secrets, data and process files never enter it.
+*
+!pyproject.toml
+!uv.lock
+!app/
+app/**/__pycache__
