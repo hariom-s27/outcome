@@ -32,12 +32,27 @@ from app.llm.diskcache import DiskCache, request_key
 from app.llm.jsonparse import JSONParseError, parse_json_object
 from app.llm.models import ModelCatalog, ModelSpec
 from app.llm.settings import LLMSettings
-from app.llm.store import LedgerRow, LLMStore
+from app.llm.store import LedgerRow, LLMStore, counted_cost
 
 log = logging.getLogger(__name__)
 
 JPEG_DATA_URI = "data:image/jpeg;base64,"
 REPAIR_INPUT_MAX_CHARS = 60_000
+# PR-75: finish reasons that mean "stopped at max_tokens" across gateways / providers
+TRUNCATED_FINISH = frozenset({"length", "max_tokens", "max_output_tokens"})
+
+
+def is_truncated(finish_reason: str | None) -> bool:
+    return (finish_reason or "").lower() in TRUNCATED_FINISH
+
+
+def _parse_or_none(text: str | None) -> dict[str, Any] | None:
+    if not text or not text.strip():
+        return None
+    try:
+        return parse_json_object(text)
+    except JSONParseError:
+        return None
 
 
 class ForbiddenContentError(ValueError):
@@ -221,11 +236,20 @@ class LLMClient:
         try:
             res = self.chat(ctx, model, messages, max_tokens=max_tokens, kind_chars=kind_chars)
             mismatch |= res.model_mismatch
-            if res.finish_reason == "length":
-                bigger = 2 * (max_tokens or spec.max_tokens)
-                res = self.chat(ctx, model, messages, max_tokens=bigger, kind_chars=kind_chars)
+            # PR-75: cut off at max_tokens AND nothing usable (empty, e.g. a reasoning model
+            # that spent the budget thinking, or broken JSON) -> exactly one retry with
+            # max_tokens x 2, capped by config; its own ledger row (purpose truncation_retry).
+            if is_truncated(res.finish_reason) and _parse_or_none(res.text) is None:
+                bigger = self.catalog.output.retry_max_tokens(max_tokens or spec.max_tokens)
+                res = self.chat(
+                    replace(ctx, purpose="truncation_retry"),
+                    model,
+                    messages,
+                    max_tokens=bigger,
+                    kind_chars=kind_chars,
+                )
                 mismatch |= res.model_mismatch
-                if res.finish_reason == "length":
+                if is_truncated(res.finish_reason) and _parse_or_none(res.text) is None:
                     return JSONOutcome("unusable", reason="llm_truncated", model_mismatch=mismatch)
             try:
                 return JSONOutcome("ok", data=parse_json_object(res.text), model_mismatch=mismatch)
@@ -364,7 +388,7 @@ class LLMClient:
         cost = spec.cost(est, max_out)  # cliff: whole call at the multiplier (R22)
         if ctx.job_id is None:
             return Projection(est, cost)
-        spent = self.store.doc_usage(ctx.job_id).cost_computed
+        spent = self.store.doc_usage(ctx.job_id).cost_counted
         return Projection(est, cost, spent, self.settings.max_usd_per_doc)
 
     def _time_left(self, ctx: CallContext) -> float:
@@ -376,7 +400,7 @@ class LLMClient:
             raise LLMStopped("dev_budget_reached")
         if ctx.job_id is not None:
             used = self.store.doc_usage(ctx.job_id)
-            if used.calls >= s.max_calls_per_doc or used.cost_computed >= s.max_usd_per_doc:
+            if used.calls >= s.max_calls_per_doc or used.cost_counted >= s.max_usd_per_doc:
                 raise LLMStopped("doc_llm_cap")
         if self._time_left(ctx) <= 0:
             raise LLMStopped("deadline")
@@ -535,9 +559,10 @@ class LLMClient:
         self, ctx: CallContext, spec: ModelSpec, data: dict[str, Any], est: int | None = None
     ) -> ChatResult:
         nums = _usage_numbers(data)
-        original = nums["cost_reported"]  # the same body the paid call returned
-        if original is None:
-            original = spec.cost(nums["tokens_in"], nums["tokens_out"])
+        # the same body the paid call returned; PR-74: max(reported, computed)
+        original = counted_cost(
+            nums["cost_reported"], spec.cost(nums["tokens_in"], nums["tokens_out"])
+        )
         nums["cost_reported"] = None
         self.store.record(
             LedgerRow(

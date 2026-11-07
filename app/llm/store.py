@@ -40,6 +40,16 @@ class LedgerRow:
 
 _COLUMNS = list(LedgerRow.__dataclass_fields__)
 
+# PR-74: the cost every fuse, total and job metadata counts is max(reported, computed). The
+# gateway once reported $0 for a paid model; the computed figure then still counts. Both raw
+# numbers stay in their own ledger columns.
+COUNTED_COST_SQL = "greatest(coalesce(cost_reported, 0), cost_computed)"
+
+
+def counted_cost(reported: float | None, computed: float) -> float:
+    """PR-74 in Python (same rule as COUNTED_COST_SQL)."""
+    return max(reported or 0.0, computed)
+
 
 @dataclass(frozen=True)
 class SharedState:
@@ -54,7 +64,7 @@ class SharedState:
 @dataclass
 class DocUsage:
     calls: int = 0  # paid attempts (cache hits excluded)
-    cost_computed: float = 0.0
+    cost_counted: float = 0.0  # PR-74: sum of max(reported, computed)
     extra: dict[str, Any] = field(default_factory=dict)
 
 
@@ -86,20 +96,18 @@ class LLMStore:
         calls, cost = (
             self._c()
             .execute(
-                "SELECT count(*), coalesce(sum(cost_computed), 0) FROM llm_calls "
+                f"SELECT count(*), coalesce(sum({COUNTED_COST_SQL}), 0) FROM llm_calls "
                 "WHERE job_id = %s AND NOT cache_hit",
                 (job_id,),
             )
             .fetchone()
         )
-        return DocUsage(calls=int(calls), cost_computed=float(cost))
+        return DocUsage(calls=int(calls), cost_counted=float(cost))
 
     def total_spend(self) -> float:
         (total,) = (
             self._c()
-            .execute(
-                "SELECT coalesce(sum(coalesce(cost_reported, cost_computed)), 0) FROM llm_calls"
-            )
+            .execute(f"SELECT coalesce(sum({COUNTED_COST_SQL}), 0) FROM llm_calls")
             .fetchone()
         )
         return float(total)
@@ -110,9 +118,10 @@ class LLMStore:
             self._c()
             .execute(
                 "SELECT model_requested, count(*), sum(tokens_in), sum(tokens_out), "
-                "sum(coalesce(cost_reported, cost_computed)), sum(cost_computed), "
+                f"sum({COUNTED_COST_SQL}), sum(cost_computed), "
                 "bool_or(model_mismatch), coalesce(sum(tokens_reasoning), 0), "
-                "bool_or(reasoning_param_dropped), max(reasoning_effort) "
+                "bool_or(reasoning_param_dropped), max(reasoning_effort), "
+                "coalesce(sum(cost_reported), 0) "
                 "FROM llm_calls WHERE job_id = %s AND NOT cache_hit GROUP BY model_requested "
                 "ORDER BY model_requested",
                 (job_id,),
@@ -136,11 +145,11 @@ class LLMStore:
             "cost_usd": 0.0,
             "latency_ms": max(0, int(latency_ms)),
         }
-        computed = 0.0
+        computed = reported = 0.0
         reasoning = 0
         mismatch = dropped = False
         efforts: set[str] = set()
-        for model, calls, t_in, t_out, cost, cost_c, mm, r_tok, r_drop, r_eff in rows:
+        for model, calls, t_in, t_out, cost, cost_c, mm, r_tok, r_drop, r_eff, cost_r in rows:
             models[model] = {
                 "calls": int(calls),
                 "tokens_in": int(t_in or 0),
@@ -152,6 +161,7 @@ class LLMStore:
             meta["tokens_out"] += int(t_out or 0)
             meta["cost_usd"] += float(cost or 0.0)
             computed += float(cost_c or 0.0)
+            reported += float(cost_r or 0.0)
             reasoning += int(r_tok)
             mismatch = mismatch or bool(mm)
             dropped = dropped or bool(r_drop)
@@ -161,6 +171,7 @@ class LLMStore:
         if models:
             meta["models"] = models
             meta["cost_computed_usd"] = round(computed, 6)
+            meta["cost_reported_usd"] = round(reported, 6)
             meta["tokens_reasoning"] = reasoning
         returned = [
             r[0]

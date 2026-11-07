@@ -17,6 +17,13 @@ estimate:
   chars_per_token_by_kind: {row: 1.6, prose: 2.66}
   image_tokens: 2600
   margin: 0.15
+# output_tokens (P5-18): max_tokens for one extraction call = base + per_field x fields,
+#   never above cap. cap also bounds the single PR-75 retry (x2) after a truncated, unusable
+#   answer. per_field sized for the evidence-first answer {q, loc, v, conf} per field.
+output_tokens:
+  base: 512
+  per_field: 96
+  cap: 16384
 baseline: anthropic/claude-haiku-5.5
 fallback_order:
   - anthropic/claude-haiku-5.5

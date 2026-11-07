@@ -104,8 +104,26 @@ class Estimate:
         return math.ceil(raw * (1 + self.margin))
 
 
+@dataclass(frozen=True)
+class OutputBudget:
+    """P5-18: max_tokens sizing (config `output_tokens:`). base + per_field x n, capped."""
+
+    base: int = 512
+    per_field: int = 96
+    cap: int = 16384  # also caps the PR-75 truncation retry
+
+    def max_tokens(self, n_fields: int) -> int:
+        return min(self.cap, self.base + self.per_field * max(0, int(n_fields)))
+
+    def retry_max_tokens(self, current: int) -> int:
+        """PR-75: the one retry after a truncated, unusable answer: x2, never above the cap
+        (and never below the current value, if a caller already asked for more)."""
+        return max(int(current), min(self.cap, 2 * int(current)))
+
+
 class ModelCatalog:
     estimate: Estimate = Estimate()
+    output: OutputBudget = OutputBudget()
 
     def __init__(self, specs: dict[str, ModelSpec], baseline: str, fallback_order: list[str]):
         for mid in [*specs, baseline, *fallback_order]:
@@ -157,6 +175,12 @@ class ModelCatalog:
                     est.get("chars_per_token_by_kind") or dict(Estimate.kind_ratios)
                 ).items()
             ),
+        )
+        out = raw.get("output_tokens") or {}
+        catalog.output = OutputBudget(
+            base=int(out.get("base", OutputBudget.base)),
+            per_field=int(out.get("per_field", OutputBudget.per_field)),
+            cap=int(out.get("cap", OutputBudget.cap)),
         )
         return catalog
 
