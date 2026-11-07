@@ -5,4 +5,5 @@
 !app/
 !config/models.yaml
 !config/models_snapshot.json
+!tools/validate.py
 app/**/__pycache__

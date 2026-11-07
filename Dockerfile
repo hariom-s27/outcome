@@ -18,6 +18,8 @@ RUN uv sync --frozen --no-dev --no-install-project --no-cache
 
 COPY app ./app
 COPY config ./config
+# the frozen validator, unchanged: results are contract-checked with the graders' code
+COPY tools/validate.py ./tools/validate.py
 
 RUN useradd --system --uid 10001 --no-create-home appuser
 USER appuser

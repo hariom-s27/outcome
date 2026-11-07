@@ -91,6 +91,16 @@ def set_stage(conn: psycopg.Connection, job_id, fence: int, stage: str) -> bool:
     return row is not None
 
 
+def load_file(conn: psycopg.Connection, job_id) -> tuple[str, bytes] | None:
+    """(file_type, bytes) of a job's upload; None once the job is terminal (file deleted)."""
+    row = conn.execute(
+        """SELECT j.file_type, f.content FROM jobs j JOIN job_files f ON f.job_id = j.id
+           WHERE j.id = %s""",
+        (job_id,),
+    ).fetchone()
+    return None if row is None else (row[0], bytes(row[1]))
+
+
 def finish(
     conn: psycopg.Connection,
     job_id,

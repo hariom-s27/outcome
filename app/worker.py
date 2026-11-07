@@ -21,6 +21,9 @@ import psycopg
 
 from app import db, queue
 from app.config import Settings
+from app.llm import CallContext, LLMClient, LLMSettings
+from app.pipeline import baseline
+from app.readers import ReaderError, read_document
 from app.results import stub_result
 
 log = logging.getLogger("app.worker")
@@ -73,18 +76,51 @@ class Heartbeat:
             raise LeaseLost(str(self.job_id))
 
 
-def process(job: queue.Claim, settings: Settings, hb: Heartbeat) -> dict[str, Any]:
-    """Produce the result. Part C: the P1-09 skeleton (real extraction arrives in P2+)."""
+def process(
+    job: queue.Claim, settings: Settings, hb: Heartbeat, llm: LLMClient | None = None
+) -> tuple[str, dict[str, Any]]:
+    """Produce (terminal status, result).
+
+    No LLM key -> the P1-09 skeleton (R17: the service still runs, every job ends PARTIAL).
+    With a key -> read the file into blocks, one baseline call (P2-17): a checked, valid
+    answer is SUCCESS; anything unusable is the skeleton, PARTIAL, with terminal_reason.
+    """
     if settings.fake_work_s > 0:  # dev/chaos only
         end = time.monotonic() + settings.fake_work_s
         while time.monotonic() < end:
             hb.check()
             time.sleep(min(0.5, end - time.monotonic()))
     hb.check()
-    return stub_result(job.field_list, queue.latency_ms(job.created_at))
+    if llm is None:
+        return "PARTIAL", stub_result(job.field_list, queue.latency_ms(job.created_at))
+
+    with db.connect(settings.database_url) as conn:
+        loaded = queue.load_file(conn, job.id)
+    if loaded is None:  # finished by someone else meanwhile; the finish CAS will refuse us
+        raise LeaseLost(str(job.id))
+    file_type, content = loaded
+    try:
+        blocks = read_document(file_type, content)
+    except ReaderError as exc:
+        log.warning("job %s read failed: %s", job.id, exc)
+        return "PARTIAL", stub_result(
+            job.field_list, queue.latency_ms(job.created_at), "read_failed"
+        )
+    del content
+    hb.check()
+    ctx = CallContext(job_id=str(job.id), deadline=job.deadline_at.timestamp())
+    out = baseline.extract(llm, ctx, job.field_list, blocks, file_type)
+    hb.check()
+    meta = llm.store.job_metadata(str(job.id), queue.latency_ms(job.created_at))
+    meta.update(out.notes)
+    if out.entries is not None:
+        return "SUCCESS", {"entries": out.entries, "metadata": meta}
+    result = stub_result(job.field_list, meta["latency_ms"], out.reason or "llm_unusable")
+    result["metadata"] = {**meta, "terminal_reason": out.reason or "llm_unusable"}
+    return "PARTIAL", result
 
 
-def process_one(settings: Settings, wid: str | None = None) -> bool:
+def process_one(settings: Settings, wid: str | None = None, llm: LLMClient | None = None) -> bool:
     """Claim and process at most one job. Returns False when the queue was empty."""
     wid = wid or worker_id()
     with db.connect(settings.database_url) as conn:
@@ -112,7 +148,7 @@ def process_one(settings: Settings, wid: str | None = None) -> bool:
         try:
             with Heartbeat(settings, job.id, job.fence) as hb:
                 queue.set_stage(conn, job.id, job.fence, "EXTRACTING")
-                result = process(job, settings, hb)
+                status, result = process(job, settings, hb, llm)
         except LeaseLost:
             log.warning("job %s abandoned: lease lost", job.id)
             return True
@@ -127,9 +163,16 @@ def process_one(settings: Settings, wid: str | None = None) -> bool:
             queue.release(conn, job.id, job.fence, wid, reason=type(exc).__name__)
             return True
 
-        if queue.finish(conn, job.id, "PARTIAL", fence=job.fence, result=result, worker=wid):
+        reason = result["metadata"].get("terminal_reason")
+        if queue.finish(
+            conn, job.id, status, fence=job.fence, result=result, worker=wid, reason=reason
+        ):
             log.info(
-                "job %s status=PARTIAL took_ms=%d", job.id, (time.monotonic() - started) * 1000
+                "job %s status=%s reason=%s took_ms=%d",
+                job.id,
+                status,
+                reason,
+                (time.monotonic() - started) * 1000,
             )
         else:
             log.warning("job %s finish rejected: fence %d is stale", job.id, job.fence)
@@ -164,12 +207,17 @@ def main() -> None:  # pragma: no cover - container entry point
     signal.signal(signal.SIGINT, _request_stop)
     db.migrate_with_retry(settings.database_url)
     wid = worker_id()
-    log.info("worker %s started", wid)
+    llm: LLMClient | None = None
+    if LLMSettings.from_env().api_key:
+        llm = LLMClient.from_env(settings.database_url)
+    else:
+        log.warning("LLM_API_KEY not set: jobs get the P1 skeleton (PARTIAL), R17")
+    log.info("worker %s started (pipeline=%s)", wid, baseline.PIPELINE if llm else "stub")
     threading.Thread(target=_sweep_loop, args=(settings, wid), name="sweeper", daemon=True).start()
     backoff = settings.worker_poll_s
     while not _stop.is_set():
         try:
-            if not process_one(settings, wid):
+            if not process_one(settings, wid, llm):
                 _stop.wait(settings.worker_poll_s)
             backoff = settings.worker_poll_s
         except psycopg.OperationalError as exc:
