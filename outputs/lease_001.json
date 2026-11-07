@@ -4,212 +4,252 @@
   "entries": [
     {
       "late_fee": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": "greater of $75.00 or 6% of the unpaid rent or other payment",
+        "citation": "[Page 3] the greater of: (a) $75.00, or (b) a sum equal to 6% of the unpaid rent or other payment",
+        "confidence": 0.9
       },
       "premises": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": "Suite 214W",
+        "citation": "[Page 2] PREMISES: Second Floor, West Section, Suite 214W",
+        "confidence": 0.95
       },
       "tenant_name": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": "M.J. Delacroix & Associates, P.C.",
+        "citation": "[Page 2] TENANT: M.J. Delacroix & Associates, P.C. an Illinois corporation",
+        "confidence": 0.95
       },
       "broker_names": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": [
+          "Meridian Commercial Realty Group, Inc."
+        ],
+        "citation": "[Page 2] REAL ESTATE BROKER DUE COMMISSION: Meridian Commercial Realty Group, Inc.",
+        "confidence": 0.9
       },
       "holdover_rent": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": "150% of the Annual Rent for the last period prior to termination, plus Rent Adjustments",
+        "citation": "[Page 8] Tenant shall pay Landlord ... 150% of the amount of the Annual Rent for the last period prior to the date of such termination",
+        "confidence": 0.93
       },
       "permitted_use": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": "General Office: Architecture",
+        "citation": "[Page 2] USE: General Office: Architecture",
+        "confidence": 0.93
       },
       "property_name": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": "Hollis Office Plaza",
+        "citation": "[Page 2] BUILDING: Hollis Office Plaza",
+        "confidence": 0.9
       },
       "guarantor_name": {
         "value": null,
         "citation": "",
-        "confidence": 0.0
+        "confidence": 0.7
       },
       "parking_spaces": {
         "value": null,
         "citation": "",
-        "confidence": 0.0
+        "confidence": 0.8
       },
       "pro_rata_share": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": 0.91,
+        "citation": "[Page 2] TENANT'S PROPORTIONATE SHARE: 0.91 %",
+        "confidence": 0.95
       },
       "base_year_taxes": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": 1993,
+        "citation": "[Page 2] BASE YEAR (TAXES): 19 93",
+        "confidence": 0.93
       },
       "right_to_sublet": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": "with prior written consent of Landlord, not to be unreasonably withheld",
+        "citation": "[Page 6] without the prior written consent of Landlord, and such restrictions shall be binding",
+        "confidence": 0.6
       },
       "total_base_rent": {
         "value": null,
         "citation": "",
-        "confidence": 0.0
+        "confidence": 0.2
       },
       "building_address": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": "1850 Hollis Road, Fairmont Hills, Illinois 60517",
+        "citation": "[Page 2] 1850 Hollis Road Fairmont Hills, Illinois 60517",
+        "confidence": 0.9
       },
       "free_rent_months": {
-        "value": null,
+        "value": 0,
         "citation": "",
-        "confidence": 0.0
+        "confidence": 0.3
       },
       "expense_structure": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": "base year 1993",
+        "citation": "[Page 2] BASE YEAR (DIRECT EXPENSES): 19 93",
+        "confidence": 0.9
       },
       "lease_term_months": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": 60,
+        "citation": "[Page 2] TERM OF LEASE: Five years and no months",
+        "confidence": 0.95
       },
       "base_year_expenses": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": 1993,
+        "citation": "[Page 2] BASE YEAR (DIRECT EXPENSES): 19 93",
+        "confidence": 0.93
       },
       "ti_allowance_total": {
         "value": null,
         "citation": "",
-        "confidence": 0.0
+        "confidence": 0.8
       },
       "landlord_legal_name": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": "TRENT MA-II HOLLIS OFFICE PLAZA, INC.",
+        "citation": "[Page 2] LANDLORD: TRENT MA-II HOLLIS OFFICE PLAZA, INC. a Delaware corporation",
+        "confidence": 0.95
       },
       "renewal_term_months": {
         "value": null,
         "citation": "",
-        "confidence": 0.0
+        "confidence": 0.8
       },
       "base_rent_escalation": {
-        "value": null,
+        "value": "none",
         "citation": "",
-        "confidence": 0.0
+        "confidence": 0.3
       },
       "lease_execution_date": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": "1993-03-05",
+        "citation": "[Page 2] LEASE REFERENCE DATE: March 5, 19 93",
+        "confidence": 0.8
       },
       "electricity_provision": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": "for lighting, convenience outlets and other direct uses included in services; excess usage metered and billed to Tenant",
+        "citation": "[Page 7] (f) electricity for lighting, convenience outlets and other direct uses",
+        "confidence": 0.6
       },
       "lease_expiration_date": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": "1998-04-30",
+        "citation": "[Page 2] TERMINATION DATE: April 30, 19 98",
+        "confidence": 0.95
       },
       "renewal_notice_months": {
         "value": null,
         "citation": "",
-        "confidence": 0.0
+        "confidence": 0.8
       },
       "renewal_option_exists": {
-        "value": null,
+        "value": false,
         "citation": "",
-        "confidence": 0.0
+        "confidence": 0.8
       },
       "renewal_options_count": {
-        "value": null,
+        "value": 0,
         "citation": "",
-        "confidence": 0.0
+        "confidence": 0.8
       },
       "parking_monthly_charge": {
         "value": null,
         "citation": "",
-        "confidence": 0.0
+        "confidence": 0.8
       },
       "rent_commencement_date": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": "1993-05-01",
+        "citation": "[Page 2] COMMENCEMENT DATE: May 1, 19 93",
+        "confidence": 0.8
       },
       "early_termination_right": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": true,
+        "citation": "[Page 2] option to terminate this Lease unless said delay ... (Article 2 delayed possession)",
+        "confidence": 0.5
       },
       "lease_commencement_date": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": "1993-05-01",
+        "citation": "[Page 2] COMMENCEMENT DATE: May 1, 19 93",
+        "confidence": 0.95
       },
       "rent_schedule_end_dates": {
         "value": null,
         "citation": "",
-        "confidence": 0.0
+        "confidence": 0.2
       },
       "rentable_square_footage": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": 1892,
+        "citation": "[Page 2] PREMISES RENTABLE AREA: approximately 1,892 square feet",
+        "confidence": 0.95
       },
       "security_deposit_amount": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": 2150,
+        "citation": "[Page 2] SECURITY DEPOSIT: $2,400 (struck) 2150 handwritten, initialed",
+        "confidence": 0.7
       },
       "letter_of_credit_required": {
-        "value": null,
+        "value": false,
         "citation": "",
-        "confidence": 0.0
+        "confidence": 0.6
       },
       "rent_schedule_start_dates": {
         "value": null,
         "citation": "",
-        "confidence": 0.0
+        "confidence": 0.2
       },
       "rent_schedule_monthly_rent": {
         "value": null,
         "citation": "",
-        "confidence": 0.0
+        "confidence": 0.2
       },
       "termination_fee_description": {
         "value": null,
         "citation": "",
-        "confidence": 0.0
+        "confidence": 0.6
       },
       "rent_schedule_annual_rent_per_rsf": {
         "value": null,
         "citation": "",
-        "confidence": 0.0
+        "confidence": 0.2
       }
     }
   ],
   "metadata": {
-    "cost_usd": 0.0,
-    "tokens_in": 0,
-    "latency_ms": 889,
-    "tokens_out": 0,
-    "model_calls": 0
+    "models": {
+      "anthropic/claude-haiku-5.5": {
+        "calls": 1,
+        "cost_usd": 0.00306,
+        "tokens_in": 19106,
+        "tokens_out": 2299
+      }
+    },
+    "cost_usd": 0.00306,
+    "pipeline": "baseline-v1",
+    "tokens_in": 19106,
+    "truncated": true,
+    "latency_ms": 15414,
+    "tokens_out": 2299,
+    "images_sent": 8,
+    "model_calls": 1,
+    "pages_dropped": [
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25
+    ],
+    "blocks_dropped": 17,
+    "models_returned": [
+      "anthropic/claude-haiku-5.5"
+    ],
+    "input_tokens_est": 19926,
+    "reasoning_effort": "none",
+    "tokens_reasoning": 0,
+    "cost_computed_usd": 0.00306
   }
 }

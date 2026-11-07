@@ -4,67 +4,370 @@
   "entries": [
     {
       "gl_code": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": "510-500",
+        "citation": "[Report1!A13] A13=510-500",
+        "confidence": 0.99
       },
       "section": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": "RENTAL Income",
+        "citation": "[Report1!A11:B11] B11=RENTAL Income",
+        "confidence": 0.9
       },
       "category": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": "Revenue",
+        "citation": "[Report1!A50:B50] B50=TOTAL REVENUE",
+        "confidence": 0.9
       },
       "line_item": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": "Gross Potential Rent",
+        "citation": "[Report1!B13] B13=Gross Potential Rent",
+        "confidence": 0.99
       },
       "period_end": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": "2025-10-31",
+        "citation": "[Report1!A3] A3=Period = Nov 2024-Oct 2025",
+        "confidence": 0.98
       },
       "amount_total": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": 8481771.2,
+        "citation": "[Report1!O13] O13=8481771.2",
+        "confidence": 0.99
       },
       "period_start": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": "2024-11-01",
+        "citation": "[Report1!A3] A3=Period = Nov 2024-Oct 2025",
+        "confidence": 0.98
       },
       "property_name": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": "417",
+        "citation": "[Report1!A1] A1=Property = 417 .417",
+        "confidence": 0.9
       },
       "amount_last_month": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": 707564.91,
+        "citation": "[Report1!N13] N13=707564.91",
+        "confidence": 0.99
       },
       "amount_first_month": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": 703733.07,
+        "citation": "[Report1!C13] C13=703733.07",
+        "confidence": 0.99
       },
       "months_with_activity": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": 12,
+        "citation": "[Report1!C13:N13] C13=703733.07 ... N13=707564.91",
+        "confidence": 0.99
+      }
+    },
+    {
+      "gl_code": {
+        "value": "510-520",
+        "citation": "[Report1!A14] A14=510-520",
+        "confidence": 0.99
+      },
+      "section": {
+        "value": "RENTAL Income",
+        "citation": "[Report1!A11:B11] B11=RENTAL Income",
+        "confidence": 0.9
+      },
+      "category": {
+        "value": "Revenue",
+        "citation": "[Report1!A50:B50] B50=TOTAL REVENUE",
+        "confidence": 0.9
+      },
+      "line_item": {
+        "value": "Rental Income - Pet",
+        "citation": "[Report1!B14] B14=Rental Income - Pet",
+        "confidence": 0.99
+      },
+      "period_end": {
+        "value": "2025-10-31",
+        "citation": "[Report1!A3] A3=Period = Nov 2024-Oct 2025",
+        "confidence": 0.98
+      },
+      "amount_total": {
+        "value": 2042.64,
+        "citation": "[Report1!O14] O14=2042.64",
+        "confidence": 0.99
+      },
+      "period_start": {
+        "value": "2024-11-01",
+        "citation": "[Report1!A3] A3=Period = Nov 2024-Oct 2025",
+        "confidence": 0.98
+      },
+      "property_name": {
+        "value": "417",
+        "citation": "[Report1!A1] A1=Property = 417 .417",
+        "confidence": 0.9
+      },
+      "amount_last_month": {
+        "value": 177.19,
+        "citation": "[Report1!N14] N14=177.19",
+        "confidence": 0.99
+      },
+      "amount_first_month": {
+        "value": 118.76,
+        "citation": "[Report1!C14] C14=118.76",
+        "confidence": 0.99
+      },
+      "months_with_activity": {
+        "value": 12,
+        "citation": "[Report1!C14:N14] C14=118.76 ... N14=177.19",
+        "confidence": 0.99
+      }
+    },
+    {
+      "gl_code": {
+        "value": "510-800",
+        "citation": "[Report1!A15] A15=510-800",
+        "confidence": 0.99
+      },
+      "section": {
+        "value": "RENTAL Income",
+        "citation": "[Report1!A11:B11] B11=RENTAL Income",
+        "confidence": 0.9
+      },
+      "category": {
+        "value": "Revenue",
+        "citation": "[Report1!A50:B50] B50=TOTAL REVENUE",
+        "confidence": 0.9
+      },
+      "line_item": {
+        "value": "Loss To Lease",
+        "citation": "[Report1!B15] B15=Loss To Lease",
+        "confidence": 0.99
+      },
+      "period_end": {
+        "value": "2025-10-31",
+        "citation": "[Report1!A3] A3=Period = Nov 2024-Oct 2025",
+        "confidence": 0.98
+      },
+      "amount_total": {
+        "value": -63585,
+        "citation": "[Report1!O15] O15=-63585",
+        "confidence": 0.99
+      },
+      "period_start": {
+        "value": "2024-11-01",
+        "citation": "[Report1!A3] A3=Period = Nov 2024-Oct 2025",
+        "confidence": 0.98
+      },
+      "property_name": {
+        "value": "417",
+        "citation": "[Report1!A1] A1=Property = 417 .417",
+        "confidence": 0.9
+      },
+      "amount_last_month": {
+        "value": 14641,
+        "citation": "[Report1!N15] N15=14641",
+        "confidence": 0.99
+      },
+      "amount_first_month": {
+        "value": -6390,
+        "citation": "[Report1!C15] C15=-6390",
+        "confidence": 0.99
+      },
+      "months_with_activity": {
+        "value": 12,
+        "citation": "[Report1!C15:N15] C15=-6390 ... N15=14641",
+        "confidence": 0.99
+      }
+    },
+    {
+      "gl_code": {
+        "value": "511-500",
+        "citation": "[Report1!A16] A16=511-500",
+        "confidence": 0.99
+      },
+      "section": {
+        "value": "RENTAL Income",
+        "citation": "[Report1!A11:B11] B11=RENTAL Income",
+        "confidence": 0.9
+      },
+      "category": {
+        "value": "Revenue",
+        "citation": "[Report1!A50:B50] B50=TOTAL REVENUE",
+        "confidence": 0.9
+      },
+      "line_item": {
+        "value": "Rental Income - Retail",
+        "citation": "[Report1!B16] B16=Rental Income - Retail",
+        "confidence": 0.99
+      },
+      "period_end": {
+        "value": "2025-10-31",
+        "citation": "[Report1!A3] A3=Period = Nov 2024-Oct 2025",
+        "confidence": 0.98
+      },
+      "amount_total": {
+        "value": 61767,
+        "citation": "[Report1!O16] O16=61767",
+        "confidence": 0.99
+      },
+      "period_start": {
+        "value": "2024-11-01",
+        "citation": "[Report1!A3] A3=Period = Nov 2024-Oct 2025",
+        "confidence": 0.98
+      },
+      "property_name": {
+        "value": "417",
+        "citation": "[Report1!A1] A1=Property = 417 .417",
+        "confidence": 0.9
+      },
+      "amount_last_month": {
+        "value": 5921,
+        "citation": "[Report1!N16] N16=5921",
+        "confidence": 0.99
+      },
+      "amount_first_month": {
+        "value": 64,
+        "citation": "[Report1!C16] C16=64",
+        "confidence": 0.99
+      },
+      "months_with_activity": {
+        "value": 12,
+        "citation": "[Report1!C16:N16] C16=64 ... N16=5921",
+        "confidence": 0.99
+      }
+    },
+    {
+      "gl_code": {
+        "value": "517-500",
+        "citation": "[Report1!A17] A17=517-500",
+        "confidence": 0.99
+      },
+      "section": {
+        "value": "RENTAL Income",
+        "citation": "[Report1!A11:B11] B11=RENTAL Income",
+        "confidence": 0.9
+      },
+      "category": {
+        "value": "Revenue",
+        "citation": "[Report1!A50:B50] B50=TOTAL REVENUE",
+        "confidence": 0.9
+      },
+      "line_item": {
+        "value": "Concessions",
+        "citation": "[Report1!B17] B17=Concessions",
+        "confidence": 0.99
+      },
+      "period_end": {
+        "value": "2025-10-31",
+        "citation": "[Report1!A3] A3=Period = Nov 2024-Oct 2025",
+        "confidence": 0.98
+      },
+      "amount_total": {
+        "value": -79554,
+        "citation": "[Report1!O17] O17=-79554",
+        "confidence": 0.99
+      },
+      "period_start": {
+        "value": "2024-11-01",
+        "citation": "[Report1!A3] A3=Period = Nov 2024-Oct 2025",
+        "confidence": 0.98
+      },
+      "property_name": {
+        "value": "417",
+        "citation": "[Report1!A1] A1=Property = 417 .417",
+        "confidence": 0.9
+      },
+      "amount_last_month": {
+        "value": -8833,
+        "citation": "[Report1!N17] N17=-8833",
+        "confidence": 0.99
+      },
+      "amount_first_month": {
+        "value": -28683,
+        "citation": "[Report1!C17] C17=-28683",
+        "confidence": 0.99
+      },
+      "months_with_activity": {
+        "value": 9,
+        "citation": "[Report1!C17:N17] C17=-28683 ... N17=-8833 (G17, I17, J17 are 0)",
+        "confidence": 0.95
+      }
+    },
+    {
+      "gl_code": {
+        "value": "521-000",
+        "citation": "[Report1!A18] A18=521-000",
+        "confidence": 0.99
+      },
+      "section": {
+        "value": "RENTAL Income",
+        "citation": "[Report1!A11:B11] B11=RENTAL Income",
+        "confidence": 0.9
+      },
+      "category": {
+        "value": "Revenue",
+        "citation": "[Report1!A50:B50] B50=TOTAL REVENUE",
+        "confidence": 0.9
+      },
+      "line_item": {
+        "value": "Renters Insurance Income",
+        "citation": "[Report1!B18] B18=Renters Insurance Income",
+        "confidence": 0.99
+      },
+      "period_end": {
+        "value": "2025-10-31",
+        "citation": "[Report1!A3] A3=Period = Nov 2024-Oct 2025",
+        "confidence": 0.98
+      },
+      "amount_total": {
+        "value": 1847.16,
+        "citation": "[Report1!O18] O18=1847.16",
+        "confidence": 0.99
+      },
+      "period_start": {
+        "value": "2024-11-01",
+        "citation": "[Report1!A3] A3=Period = Nov 2024-Oct 2025",
+        "confidence": 0.98
+      },
+      "property_name": {
+        "value": "417",
+        "citation": "[Report1!A1] A1=Property = 417 .417",
+        "confidence": 0.9
+      },
+      "amount_last_month": {
+        "value": 81.82,
+        "citation": "[Report1!N18] N18=81.82",
+        "confidence": 0.99
+      },
+      "amount_first_month": {
+        "value": 48.29,
+        "citation": "[Report1!C18] C18=48.29",
+        "confidence": 0.99
+      },
+      "months_with_activity": {
+        "value": 12,
+        "citation": "[Report1!C18:N18] C18=48.29 ... N18=81.82",
+        "confidence": 0.99
       }
     }
   ],
   "metadata": {
-    "cost_usd": 0.0,
-    "tokens_in": 0,
-    "latency_ms": 497,
-    "tokens_out": 0,
-    "model_calls": 0
+    "models": {
+      "anthropic/claude-haiku-5.5": {
+        "calls": 1,
+        "cost_usd": 0.003935,
+        "tokens_in": 21834,
+        "tokens_out": 3503
+      }
+    },
+    "cost_usd": 0.003935,
+    "pipeline": "baseline-v1",
+    "tokens_in": 21834,
+    "truncated": false,
+    "latency_ms": 12326,
+    "tokens_out": 3503,
+    "images_sent": 0,
+    "model_calls": 1,
+    "models_returned": [
+      "anthropic/claude-haiku-5.5"
+    ],
+    "input_tokens_est": 11757,
+    "reasoning_effort": "none",
+    "tokens_reasoning": 0,
+    "cost_computed_usd": 0.003935
   }
 }

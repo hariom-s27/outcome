@@ -4,97 +4,3164 @@
   "entries": [
     {
       "balance": {
-        "value": null,
+        "value": 0,
         "citation": "",
-        "confidence": 0.0
+        "confidence": 0.5
       },
       "market_rent": {
-        "value": null,
+        "value": 3197,
         "citation": "",
-        "confidence": 0.0
+        "confidence": 0.5
       },
       "unit_number": {
-        "value": null,
+        "value": "100-101",
         "citation": "",
-        "confidence": 0.0
+        "confidence": 0.5
       },
       "unit_status": {
-        "value": null,
+        "value": "Occupied No Notice",
         "citation": "",
-        "confidence": 0.0
+        "confidence": 0.5
       },
       "deposit_held": {
-        "value": null,
+        "value": 0,
         "citation": "",
-        "confidence": 0.0
+        "confidence": 0.5
       },
       "monthly_rent": {
-        "value": null,
+        "value": 2842,
         "citation": "",
-        "confidence": 0.0
+        "confidence": 0.5
       },
       "move_in_date": {
-        "value": null,
+        "value": "2022-12-03",
         "citation": "",
-        "confidence": 0.0
+        "confidence": 0.5
       },
       "property_name": {
-        "value": null,
+        "value": "Willow Creek Commons",
         "citation": "",
-        "confidence": 0.0
+        "confidence": 0.5
       },
       "report_period": {
-        "value": null,
+        "value": "2023-02",
         "citation": "",
-        "confidence": 0.0
+        "confidence": 0.5
       },
       "resident_name": {
-        "value": null,
+        "value": "Rainey, Brenda",
         "citation": "",
-        "confidence": 0.0
+        "confidence": 0.5
       },
       "lease_end_date": {
-        "value": null,
+        "value": "2024-01-01",
         "citation": "",
-        "confidence": 0.0
+        "confidence": 0.5
       },
       "unit_type_code": {
-        "value": null,
+        "value": "C5",
         "citation": "",
-        "confidence": 0.0
+        "confidence": 0.5
       },
       "lease_start_date": {
-        "value": null,
+        "value": "2022-12-03",
         "citation": "",
-        "confidence": 0.0
+        "confidence": 0.5
       },
       "unit_square_feet": {
-        "value": null,
+        "value": 1205,
         "citation": "",
-        "confidence": 0.0
+        "confidence": 0.5
       },
       "monthly_other_charges": {
-        "value": null,
+        "value": 100,
         "citation": "",
-        "confidence": 0.0
+        "confidence": 0.5
       },
       "monthly_total_charges": {
-        "value": null,
+        "value": 2942,
         "citation": "",
-        "confidence": 0.0
+        "confidence": 0.5
       },
       "expected_move_out_date": {
         "value": null,
         "citation": "",
-        "confidence": 0.0
+        "confidence": 0.5
+      }
+    },
+    {
+      "balance": {
+        "value": 0,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "market_rent": {
+        "value": 2258,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_number": {
+        "value": "100-102",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_status": {
+        "value": "Occupied No Notice",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "deposit_held": {
+        "value": 101,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_rent": {
+        "value": 2142,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "move_in_date": {
+        "value": "2020-09-18",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "property_name": {
+        "value": "Willow Creek Commons",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "report_period": {
+        "value": "2023-02",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "resident_name": {
+        "value": "Delgado, Dean",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_end_date": {
+        "value": "2023-12-10",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_type_code": {
+        "value": "A3",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_start_date": {
+        "value": "2022-11-14",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_square_feet": {
+        "value": 767,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_other_charges": {
+        "value": 50,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_total_charges": {
+        "value": 2192,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "expected_move_out_date": {
+        "value": "2023-04-15",
+        "citation": "",
+        "confidence": 0.5
+      }
+    },
+    {
+      "balance": {
+        "value": 0,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "market_rent": {
+        "value": 2478,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_number": {
+        "value": "100-103",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_status": {
+        "value": "Vacant Unrented Ready",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "deposit_held": {
+        "value": 0,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_rent": {
+        "value": 0,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "move_in_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "property_name": {
+        "value": "Willow Creek Commons",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "report_period": {
+        "value": "2023-02",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "resident_name": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_end_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_type_code": {
+        "value": "A3",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_start_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_square_feet": {
+        "value": 767,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_other_charges": {
+        "value": 0,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_total_charges": {
+        "value": 0,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.5
+      }
+    },
+    {
+      "balance": {
+        "value": 2809.43,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "market_rent": {
+        "value": 3261,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_number": {
+        "value": "100-108",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_status": {
+        "value": "Occupied No Notice",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "deposit_held": {
+        "value": 2530,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_rent": {
+        "value": 3003,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "move_in_date": {
+        "value": "2019-01-15",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "property_name": {
+        "value": "Willow Creek Commons",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "report_period": {
+        "value": "2023-02",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "resident_name": {
+        "value": "Emerson, Selena",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_end_date": {
+        "value": "2024-02-17",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_type_code": {
+        "value": "C5",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_start_date": {
+        "value": "2023-01-23",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_square_feet": {
+        "value": 1205,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_other_charges": {
+        "value": 130,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_total_charges": {
+        "value": 3133,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.5
+      }
+    },
+    {
+      "balance": {
+        "value": 25,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "market_rent": {
+        "value": 3196,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_number": {
+        "value": "100-109",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_status": {
+        "value": "Occupied No Notice",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "deposit_held": {
+        "value": 120,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_rent": {
+        "value": 2793,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "move_in_date": {
+        "value": "2021-03-14",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "property_name": {
+        "value": "Willow Creek Commons",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "report_period": {
+        "value": "2023-02",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "resident_name": {
+        "value": "Gillespie, Zane",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_end_date": {
+        "value": "2023-05-04",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_type_code": {
+        "value": "C5",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_start_date": {
+        "value": "2022-04-08",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_square_feet": {
+        "value": 1205,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_other_charges": {
+        "value": 170,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_total_charges": {
+        "value": 2963,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.5
+      }
+    },
+    {
+      "balance": {
+        "value": 0,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "market_rent": {
+        "value": 3153,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_number": {
+        "value": "100-110",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_status": {
+        "value": "Occupied No Notice",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "deposit_held": {
+        "value": 242,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_rent": {
+        "value": 2931,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "move_in_date": {
+        "value": "2019-02-26",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "property_name": {
+        "value": "Willow Creek Commons",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "report_period": {
+        "value": "2023-02",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "resident_name": {
+        "value": "Tucker, Jerome",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_end_date": {
+        "value": "2023-07-17",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_type_code": {
+        "value": "C6c",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_start_date": {
+        "value": "2022-07-19",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_square_feet": {
+        "value": 1292,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_other_charges": {
+        "value": 225,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_total_charges": {
+        "value": 3156,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.5
+      }
+    },
+    {
+      "balance": {
+        "value": 0,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "market_rent": {
+        "value": 3107,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_number": {
+        "value": "100-111",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_status": {
+        "value": "Occupied No Notice",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "deposit_held": {
+        "value": 1055,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_rent": {
+        "value": 2894,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "move_in_date": {
+        "value": "2022-05-15",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "property_name": {
+        "value": "Willow Creek Commons",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "report_period": {
+        "value": "2023-02",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "resident_name": {
+        "value": "Morrow, Benjamin",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_end_date": {
+        "value": "2023-11-10",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_type_code": {
+        "value": "C5",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_start_date": {
+        "value": "2023-01-14",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_square_feet": {
+        "value": 1205,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_other_charges": {
+        "value": 292,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_total_charges": {
+        "value": 3186,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.5
+      }
+    },
+    {
+      "balance": {
+        "value": 0,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "market_rent": {
+        "value": 2827,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_number": {
+        "value": "100-112",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_status": {
+        "value": "Occupied No Notice",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "deposit_held": {
+        "value": 950,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_rent": {
+        "value": 2516,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "move_in_date": {
+        "value": "2022-08-02",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "property_name": {
+        "value": "Willow Creek Commons",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "report_period": {
+        "value": "2023-02",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "resident_name": {
+        "value": "Yates, Emery",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_end_date": {
+        "value": "2023-08-26",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_type_code": {
+        "value": "C4",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_start_date": {
+        "value": "2022-08-02",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_square_feet": {
+        "value": 1058,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_other_charges": {
+        "value": 222,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_total_charges": {
+        "value": 2738,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.5
+      }
+    },
+    {
+      "balance": {
+        "value": 0,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "market_rent": {
+        "value": 2347,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_number": {
+        "value": "100-113",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_status": {
+        "value": "Occupied No Notice",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "deposit_held": {
+        "value": 0,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_rent": {
+        "value": 2178,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "move_in_date": {
+        "value": "2021-11-04",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "property_name": {
+        "value": "Willow Creek Commons",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "report_period": {
+        "value": "2023-02",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "resident_name": {
+        "value": "Winters, Nathan",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_end_date": {
+        "value": "2023-12-27",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_type_code": {
+        "value": "A4",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_start_date": {
+        "value": "2022-12-01",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_square_feet": {
+        "value": 817,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_other_charges": {
+        "value": 130,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_total_charges": {
+        "value": 2308,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.5
+      }
+    },
+    {
+      "balance": {
+        "value": 0,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "market_rent": {
+        "value": 2237,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_number": {
+        "value": "100-114",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_status": {
+        "value": "Occupied No Notice",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "deposit_held": {
+        "value": 102,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_rent": {
+        "value": 2131,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "move_in_date": {
+        "value": "2018-01-17",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "property_name": {
+        "value": "Willow Creek Commons",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "report_period": {
+        "value": "2023-02",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "resident_name": {
+        "value": "Finch, Ramona",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_end_date": {
+        "value": "2023-07-24",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_type_code": {
+        "value": "A4",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_start_date": {
+        "value": "2022-06-28",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_square_feet": {
+        "value": 817,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_other_charges": {
+        "value": 120,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_total_charges": {
+        "value": 2251,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.5
+      }
+    },
+    {
+      "balance": {
+        "value": 0,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "market_rent": {
+        "value": 3183,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_number": {
+        "value": "100-115",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_status": {
+        "value": "Occupied No Notice",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "deposit_held": {
+        "value": 860,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_rent": {
+        "value": 2851,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "move_in_date": {
+        "value": "2022-05-24",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "property_name": {
+        "value": "Willow Creek Commons",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "report_period": {
+        "value": "2023-02",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "resident_name": {
+        "value": "Woodard, Eva",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_end_date": {
+        "value": "2023-06-23",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_type_code": {
+        "value": "C6b",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_start_date": {
+        "value": "2022-05-24",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_square_feet": {
+        "value": 1291,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_other_charges": {
+        "value": 295,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_total_charges": {
+        "value": 3146,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.5
+      }
+    },
+    {
+      "balance": {
+        "value": 0,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "market_rent": {
+        "value": 2390,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_number": {
+        "value": "100-116",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_status": {
+        "value": "Occupied No Notice",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "deposit_held": {
+        "value": 0,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_rent": {
+        "value": 2141,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "move_in_date": {
+        "value": "2022-10-04",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "property_name": {
+        "value": "Willow Creek Commons",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "report_period": {
+        "value": "2023-02",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "resident_name": {
+        "value": "Hawkins, Lionel",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_end_date": {
+        "value": "2023-09-28",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_type_code": {
+        "value": "A4",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_start_date": {
+        "value": "2022-10-04",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_square_feet": {
+        "value": 817,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_other_charges": {
+        "value": 180,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_total_charges": {
+        "value": 2321,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.5
+      }
+    },
+    {
+      "balance": {
+        "value": 0,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "market_rent": {
+        "value": 2449,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_number": {
+        "value": "100-117",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_status": {
+        "value": "Occupied No Notice",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "deposit_held": {
+        "value": 0,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_rent": {
+        "value": 2311,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "move_in_date": {
+        "value": "2020-06-28",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "property_name": {
+        "value": "Willow Creek Commons",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "report_period": {
+        "value": "2023-02",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "resident_name": {
+        "value": "Hanson, Arjun",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_end_date": {
+        "value": "2023-08-18",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_type_code": {
+        "value": "A3",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_start_date": {
+        "value": "2022-07-23",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_square_feet": {
+        "value": 767,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_other_charges": {
+        "value": 150,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_total_charges": {
+        "value": 2461,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.5
+      }
+    },
+    {
+      "balance": {
+        "value": 0,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "market_rent": {
+        "value": 2506,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_number": {
+        "value": "100-118",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_status": {
+        "value": "Occupied No Notice",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "deposit_held": {
+        "value": 295,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_rent": {
+        "value": 2238,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "move_in_date": {
+        "value": "2022-09-01",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "property_name": {
+        "value": "Willow Creek Commons",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "report_period": {
+        "value": "2023-02",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "resident_name": {
+        "value": "Meadows, Monica",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_end_date": {
+        "value": "2023-03-26",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_type_code": {
+        "value": "A3",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_start_date": {
+        "value": "2022-09-01",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_square_feet": {
+        "value": 767,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_other_charges": {
+        "value": -985,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_total_charges": {
+        "value": 1253,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.5
+      }
+    },
+    {
+      "balance": {
+        "value": 0,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "market_rent": {
+        "value": 2511,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_number": {
+        "value": "100-119",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_status": {
+        "value": "Occupied No Notice",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "deposit_held": {
+        "value": 121,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_rent": {
+        "value": 2322,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "move_in_date": {
+        "value": "2019-09-09",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "property_name": {
+        "value": "Willow Creek Commons",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "report_period": {
+        "value": "2023-02",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "resident_name": {
+        "value": "Briggs, Anita",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_end_date": {
+        "value": "2023-11-04",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_type_code": {
+        "value": "A3",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_start_date": {
+        "value": "2022-11-06",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_square_feet": {
+        "value": 767,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_other_charges": {
+        "value": 150,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_total_charges": {
+        "value": 2472,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.5
+      }
+    },
+    {
+      "balance": {
+        "value": 0,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "market_rent": {
+        "value": 3057,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_number": {
+        "value": "100-120",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_status": {
+        "value": "Vacant Unrented Not Ready",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "deposit_held": {
+        "value": 0,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_rent": {
+        "value": 0,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "move_in_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "property_name": {
+        "value": "Willow Creek Commons",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "report_period": {
+        "value": "2023-02",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "resident_name": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_end_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_type_code": {
+        "value": "C6",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_start_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_square_feet": {
+        "value": 1300,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_other_charges": {
+        "value": 0,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_total_charges": {
+        "value": 0,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.5
+      }
+    },
+    {
+      "balance": {
+        "value": 0,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "market_rent": {
+        "value": 3100,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_number": {
+        "value": "100-121",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_status": {
+        "value": "Vacant Unrented Ready",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "deposit_held": {
+        "value": 0,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_rent": {
+        "value": 0,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "move_in_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "property_name": {
+        "value": "Willow Creek Commons",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "report_period": {
+        "value": "2023-02",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "resident_name": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_end_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_type_code": {
+        "value": "C6a",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_start_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_square_feet": {
+        "value": 1363,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_other_charges": {
+        "value": 0,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_total_charges": {
+        "value": 0,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.5
+      }
+    },
+    {
+      "balance": {
+        "value": 0,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "market_rent": {
+        "value": 2311,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_number": {
+        "value": "100-122",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_status": {
+        "value": "Occupied No Notice",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "deposit_held": {
+        "value": 1445,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_rent": {
+        "value": 2119,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "move_in_date": {
+        "value": "2022-07-30",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "property_name": {
+        "value": "Willow Creek Commons",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "report_period": {
+        "value": "2023-02",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "resident_name": {
+        "value": "Ochoa, Teresa",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_end_date": {
+        "value": "2023-08-26",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_type_code": {
+        "value": "A3",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_start_date": {
+        "value": "2022-07-30",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_square_feet": {
+        "value": 767,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_other_charges": {
+        "value": 40,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_total_charges": {
+        "value": 2159,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.5
+      }
+    },
+    {
+      "balance": {
+        "value": 0,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "market_rent": {
+        "value": 2239,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_number": {
+        "value": "100-123",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_status": {
+        "value": "Occupied No Notice",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "deposit_held": {
+        "value": 1125,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_rent": {
+        "value": 2131,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "move_in_date": {
+        "value": "2022-06-04",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "property_name": {
+        "value": "Willow Creek Commons",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "report_period": {
+        "value": "2023-02",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "resident_name": {
+        "value": "Fowler, Wade",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_end_date": {
+        "value": "2023-06-02",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_type_code": {
+        "value": "A4",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_start_date": {
+        "value": "2022-06-04",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_square_feet": {
+        "value": 817,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_other_charges": {
+        "value": 45,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_total_charges": {
+        "value": 2176,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.5
+      }
+    },
+    {
+      "balance": {
+        "value": 0,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "market_rent": {
+        "value": 3021,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_number": {
+        "value": "100-124",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_status": {
+        "value": "Occupied No Notice",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "deposit_held": {
+        "value": 581,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_rent": {
+        "value": 2779,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "move_in_date": {
+        "value": "2020-11-02",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "property_name": {
+        "value": "Willow Creek Commons",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "report_period": {
+        "value": "2023-02",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "resident_name": {
+        "value": "Nash, Jasmine",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_end_date": {
+        "value": "2024-01-19",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_type_code": {
+        "value": "C5",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_start_date": {
+        "value": "2022-12-30",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_square_feet": {
+        "value": 1205,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_other_charges": {
+        "value": 115,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_total_charges": {
+        "value": 2894,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.5
+      }
+    },
+    {
+      "balance": {
+        "value": 0,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "market_rent": {
+        "value": 2239,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_number": {
+        "value": "100-125",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_status": {
+        "value": "Occupied No Notice",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "deposit_held": {
+        "value": 1190,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_rent": {
+        "value": 2038,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "move_in_date": {
+        "value": "2022-09-06",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "property_name": {
+        "value": "Willow Creek Commons",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "report_period": {
+        "value": "2023-02",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "resident_name": {
+        "value": "Ochoa, Grant",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_end_date": {
+        "value": "2023-09-04",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_type_code": {
+        "value": "A4",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_start_date": {
+        "value": "2022-09-06",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_square_feet": {
+        "value": 817,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_other_charges": {
+        "value": 45,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_total_charges": {
+        "value": 2083,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.5
+      }
+    },
+    {
+      "balance": {
+        "value": 0,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "market_rent": {
+        "value": 2341,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_number": {
+        "value": "100-126",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_status": {
+        "value": "Occupied No Notice",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "deposit_held": {
+        "value": 1425,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_rent": {
+        "value": 2292,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "move_in_date": {
+        "value": "2021-11-08",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "property_name": {
+        "value": "Willow Creek Commons",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "report_period": {
+        "value": "2023-02",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "resident_name": {
+        "value": "Walters, Clara",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_end_date": {
+        "value": "2023-12-29",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_type_code": {
+        "value": "A3",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_start_date": {
+        "value": "2022-12-03",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_square_feet": {
+        "value": 767,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_other_charges": {
+        "value": 35,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_total_charges": {
+        "value": 2327,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.5
+      }
+    },
+    {
+      "balance": {
+        "value": 0,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "market_rent": {
+        "value": 3230,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_number": {
+        "value": "100-127",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_status": {
+        "value": "Occupied No Notice",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "deposit_held": {
+        "value": 1295,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_rent": {
+        "value": 2687,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "move_in_date": {
+        "value": "2022-05-02",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "property_name": {
+        "value": "Willow Creek Commons",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "report_period": {
+        "value": "2023-02",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "resident_name": {
+        "value": "Sampson, Brandon",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_end_date": {
+        "value": "2023-05-27",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_type_code": {
+        "value": "C8",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_start_date": {
+        "value": "2022-05-02",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_square_feet": {
+        "value": 1382,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_other_charges": {
+        "value": 265,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_total_charges": {
+        "value": 2952,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.5
+      }
+    },
+    {
+      "balance": {
+        "value": 0,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "market_rent": {
+        "value": 2276,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_number": {
+        "value": "100-128",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_status": {
+        "value": "Notice Rented",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "deposit_held": {
+        "value": 0,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_rent": {
+        "value": 2166,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "move_in_date": {
+        "value": "2022-05-04",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "property_name": {
+        "value": "Willow Creek Commons",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "report_period": {
+        "value": "2023-02",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "resident_name": {
+        "value": "Orr, Ricardo",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_end_date": {
+        "value": "2023-04-28",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_type_code": {
+        "value": "A3",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_start_date": {
+        "value": "2022-05-04",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_square_feet": {
+        "value": 767,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_other_charges": {
+        "value": 80,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_total_charges": {
+        "value": 2246,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "expected_move_out_date": {
+        "value": "2023-04-28",
+        "citation": "",
+        "confidence": 0.5
+      }
+    },
+    {
+      "balance": {
+        "value": 0,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "market_rent": {
+        "value": 2185,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_number": {
+        "value": "100-129",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_status": {
+        "value": "Occupied No Notice",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "deposit_held": {
+        "value": 305,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_rent": {
+        "value": 2139,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "move_in_date": {
+        "value": "2021-10-08",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "property_name": {
+        "value": "Willow Creek Commons",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "report_period": {
+        "value": "2023-02",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "resident_name": {
+        "value": "Olsen, Bianca",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_end_date": {
+        "value": "2023-10-10",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_type_code": {
+        "value": "A4",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_start_date": {
+        "value": "2022-10-12",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_square_feet": {
+        "value": 817,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_other_charges": {
+        "value": 60,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_total_charges": {
+        "value": 2199,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.5
+      }
+    },
+    {
+      "balance": {
+        "value": 0,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "market_rent": {
+        "value": 3090,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_number": {
+        "value": "100-130",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_status": {
+        "value": "Occupied No Notice",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "deposit_held": {
+        "value": 215,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_rent": {
+        "value": 2739,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "move_in_date": {
+        "value": "2023-02-02",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "property_name": {
+        "value": "Willow Creek Commons",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "report_period": {
+        "value": "2023-02",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "resident_name": {
+        "value": "Lamb, Camila",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_end_date": {
+        "value": "2024-02-02",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_type_code": {
+        "value": "C5",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_start_date": {
+        "value": "2023-02-02",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_square_feet": {
+        "value": 1205,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_other_charges": {
+        "value": 165,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_total_charges": {
+        "value": 2904,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.5
+      }
+    },
+    {
+      "balance": {
+        "value": 0,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "market_rent": {
+        "value": 3161,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_number": {
+        "value": "100-131",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_status": {
+        "value": "Vacant Unrented Ready",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "deposit_held": {
+        "value": 0,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_rent": {
+        "value": 0,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "move_in_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "property_name": {
+        "value": "Willow Creek Commons",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "report_period": {
+        "value": "2023-02",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "resident_name": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_end_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_type_code": {
+        "value": "C5",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_start_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_square_feet": {
+        "value": 1205,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_other_charges": {
+        "value": 0,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_total_charges": {
+        "value": 0,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.5
+      }
+    },
+    {
+      "balance": {
+        "value": 0,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "market_rent": {
+        "value": 2235,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_number": {
+        "value": "100-132",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_status": {
+        "value": "Occupied No Notice",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "deposit_held": {
+        "value": 285,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_rent": {
+        "value": 2210,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "move_in_date": {
+        "value": "2021-06-28",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "property_name": {
+        "value": "Willow Creek Commons",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "report_period": {
+        "value": "2023-02",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "resident_name": {
+        "value": "Tran, Rita",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_end_date": {
+        "value": "2023-07-01",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_type_code": {
+        "value": "A4",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_start_date": {
+        "value": "2022-07-03",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_square_feet": {
+        "value": 817,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_other_charges": {
+        "value": 0,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_total_charges": {
+        "value": 2210,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.5
+      }
+    },
+    {
+      "balance": {
+        "value": 0,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "market_rent": {
+        "value": 2198,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_number": {
+        "value": "100-133",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_status": {
+        "value": "Occupied No Notice",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "deposit_held": {
+        "value": 225,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_rent": {
+        "value": 2108,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "move_in_date": {
+        "value": "2019-01-23",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "property_name": {
+        "value": "Willow Creek Commons",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "report_period": {
+        "value": "2023-02",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "resident_name": {
+        "value": "Montoya, Dana",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_end_date": {
+        "value": "2023-07-09",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_type_code": {
+        "value": "A4",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_start_date": {
+        "value": "2022-06-13",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_square_feet": {
+        "value": 817,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_other_charges": {
+        "value": 25,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_total_charges": {
+        "value": 2133,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.5
+      }
+    },
+    {
+      "balance": {
+        "value": 0,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "market_rent": {
+        "value": 2285,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_number": {
+        "value": "100-134",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_status": {
+        "value": "Occupied No Notice",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "deposit_held": {
+        "value": 113,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_rent": {
+        "value": 2312,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "move_in_date": {
+        "value": "2019-08-03",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "property_name": {
+        "value": "Willow Creek Commons",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "report_period": {
+        "value": "2023-02",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "resident_name": {
+        "value": "Avery, Aaron",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_end_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_type_code": {
+        "value": "A3",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_start_date": {
+        "value": "2021-09-06",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_square_feet": {
+        "value": 767,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_other_charges": {
+        "value": 574,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_total_charges": {
+        "value": 2886,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.5
+      }
+    },
+    {
+      "balance": {
+        "value": 0,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "market_rent": {
+        "value": 3096,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_number": {
+        "value": "100-201",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_status": {
+        "value": "Occupied No Notice",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "deposit_held": {
+        "value": 880,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_rent": {
+        "value": 2890,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "move_in_date": {
+        "value": "2022-04-07",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "property_name": {
+        "value": "Willow Creek Commons",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "report_period": {
+        "value": "2023-02",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "resident_name": {
+        "value": "Maldonado, Victor",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_end_date": {
+        "value": "2023-04-05",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_type_code": {
+        "value": "C5",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_start_date": {
+        "value": "2022-04-07",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_square_feet": {
+        "value": 1205,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_other_charges": {
+        "value": 230,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_total_charges": {
+        "value": 3120,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.5
+      }
+    },
+    {
+      "balance": {
+        "value": 0,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "market_rent": {
+        "value": 2349,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_number": {
+        "value": "100-202",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_status": {
+        "value": "Occupied No Notice",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "deposit_held": {
+        "value": 0,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_rent": {
+        "value": 2175,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "move_in_date": {
+        "value": "2022-04-06",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "property_name": {
+        "value": "Willow Creek Commons",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "report_period": {
+        "value": "2023-02",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "resident_name": {
+        "value": "Warner, Delia",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_end_date": {
+        "value": "2023-03-31",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_type_code": {
+        "value": "A3",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_start_date": {
+        "value": "2022-04-06",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_square_feet": {
+        "value": 767,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_other_charges": {
+        "value": 100,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_total_charges": {
+        "value": 2275,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.5
+      }
+    },
+    {
+      "balance": {
+        "value": 0,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "market_rent": {
+        "value": 2351,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_number": {
+        "value": "100-203",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_status": {
+        "value": "Occupied No Notice",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "deposit_held": {
+        "value": 495,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_rent": {
+        "value": 2186,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "move_in_date": {
+        "value": "2020-07-17",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "property_name": {
+        "value": "Willow Creek Commons",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "report_period": {
+        "value": "2023-02",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "resident_name": {
+        "value": "Lowery, Gabriel",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_end_date": {
+        "value": "2023-09-10",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_type_code": {
+        "value": "A3",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_start_date": {
+        "value": "2022-09-12",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_square_feet": {
+        "value": 767,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_other_charges": {
+        "value": 160,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_total_charges": {
+        "value": 2346,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.5
+      }
+    },
+    {
+      "balance": {
+        "value": 0,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "market_rent": {
+        "value": 2974,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_number": {
+        "value": "100-204",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_status": {
+        "value": "Occupied No Notice",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "deposit_held": {
+        "value": 731,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_rent": {
+        "value": 2534,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "move_in_date": {
+        "value": "2023-01-23",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "property_name": {
+        "value": "Willow Creek Commons",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "report_period": {
+        "value": "2023-02",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "resident_name": {
+        "value": "Hale, Abigail",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_end_date": {
+        "value": "2024-02-20",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_type_code": {
+        "value": "C6",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_start_date": {
+        "value": "2023-01-23",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_square_feet": {
+        "value": 1300,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_other_charges": {
+        "value": 195,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_total_charges": {
+        "value": 2729,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.5
+      }
+    },
+    {
+      "balance": {
+        "value": 0,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "market_rent": {
+        "value": 3187,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_number": {
+        "value": "100-206",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_status": {
+        "value": "Occupied No Notice",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "deposit_held": {
+        "value": 225,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_rent": {
+        "value": 2872,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "move_in_date": {
+        "value": "2021-07-16",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "property_name": {
+        "value": "Willow Creek Commons",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "report_period": {
+        "value": "2023-02",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "resident_name": {
+        "value": "Zimmer, Vera",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_end_date": {
+        "value": "2023-09-05",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_type_code": {
+        "value": "C5",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_start_date": {
+        "value": "2022-08-10",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_square_feet": {
+        "value": 1205,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_other_charges": {
+        "value": 115,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_total_charges": {
+        "value": 2987,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.5
+      }
+    },
+    {
+      "balance": {
+        "value": 0,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "market_rent": {
+        "value": 3144,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_number": {
+        "value": "100-308",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_status": {
+        "value": "Occupied No Notice",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "deposit_held": {
+        "value": 840,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_rent": {
+        "value": 2874,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "move_in_date": {
+        "value": "2022-09-23",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "property_name": {
+        "value": "Willow Creek Commons",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "report_period": {
+        "value": "2023-02",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "resident_name": {
+        "value": "Weber, Clara",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_end_date": {
+        "value": "2023-10-18",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_type_code": {
+        "value": "C5",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "lease_start_date": {
+        "value": "2022-09-23",
+        "citation": "",
+        "confidence": 0.5
+      },
+      "unit_square_feet": {
+        "value": 1205,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_other_charges": {
+        "value": 215,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "monthly_total_charges": {
+        "value": 3089,
+        "citation": "",
+        "confidence": 0.5
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 0.5
       }
     }
   ],
   "metadata": {
-    "cost_usd": 0.0,
-    "tokens_in": 0,
-    "latency_ms": 575,
-    "tokens_out": 0,
-    "model_calls": 0
+    "models": {
+      "anthropic/claude-haiku-5.5": {
+        "calls": 1,
+        "cost_usd": 0.009705,
+        "tokens_in": 57118,
+        "tokens_out": 7986
+      }
+    },
+    "cost_usd": 0.009705,
+    "pipeline": "baseline-v1",
+    "tokens_in": 57118,
+    "truncated": true,
+    "latency_ms": 26834,
+    "tokens_out": 7986,
+    "blocks_sent": 890,
+    "images_sent": 0,
+    "model_calls": 1,
+    "rows_dropped": 2183,
+    "blocks_dropped": 2183,
+    "models_returned": [
+      "anthropic/claude-haiku-5.5"
+    ],
+    "input_tokens_est": 59965,
+    "reasoning_effort": "none",
+    "tokens_estimated": 79469,
+    "tokens_reasoning": 0,
+    "cost_computed_usd": 0.009705
   }
 }
