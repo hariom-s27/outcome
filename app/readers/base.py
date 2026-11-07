@@ -48,8 +48,12 @@ class Block:
     height: int = 0
 
     def render(self) -> str:
-        """Text as the model sees it: '[address] text' ('text' alone without an address)."""
-        return f"[{self.address}] {self.text}" if self.address else self.text
+        """Text as the model sees it: '[address] text' ('text' alone without an address), on
+        ONE line: inner line breaks become ' / ' and tabs spaces. The model copies citations
+        verbatim; a raw newline copied into a JSON string makes the answer unparseable."""
+        lines = (" ".join(ln.split()) for ln in self.text.splitlines())
+        text = " / ".join(ln for ln in lines if ln)
+        return f"[{self.address}] {text}" if self.address else text
 
     @property
     def token_class(self) -> str:
