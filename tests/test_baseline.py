@@ -41,8 +41,8 @@ TABLE_FIELDS = {
     },
 }
 TEXT_BLOCKS = [
-    Block("text", "Page 1", "Widget supply agreement. Supplier: Acme Sprockets.", page=1),
-    Block("text", "Page 2", "Monthly fee $1,250.00 from 2031-04-01. Discount 4.5%.", page=2),
+    Block("paragraph", "Page 1", "Widget supply agreement. Supplier: Acme Sprockets.", page=1),
+    Block("paragraph", "Page 2", "Monthly fee $1,250.00 from 2031-04-01. Discount 4.5%.", page=2),
 ]
 
 
@@ -50,18 +50,20 @@ class FakeLLM:
     def __init__(self, outcome: JSONOutcome):
         self.outcome = outcome
         self.calls: list[tuple] = []
-        self.catalog = SimpleNamespace(baseline=HAIKU)
+        self.catalog = SimpleNamespace(baseline=HAIKU, estimate=Estimate())
         self.fits_up_to: int | None = None  # P2-36: estimated tokens a call may carry
         self.estimates: list[int] = []
+        self.kind_chars: list[dict | None] = []
 
-    def projection(self, ctx, model, messages, *, max_tokens=None):
-        est = Estimate().tokens(messages)
+    def projection(self, ctx, model, messages, *, max_tokens=None, kind_chars=None):
+        est = Estimate().tokens(messages, kind_chars)
         self.estimates.append(est)
         cap = None if self.fits_up_to is None else 0.05
         return Projection(est, 0.01 if (cap is None or est <= self.fits_up_to) else 0.06, 0.0, cap)
 
-    def complete_json(self, ctx, model, messages, *, max_tokens=None):
+    def complete_json(self, ctx, model, messages, *, max_tokens=None, kind_chars=None):
         self.calls.append((model, messages, max_tokens))
+        self.kind_chars.append(kind_chars)
         return self.outcome
 
 
@@ -99,7 +101,7 @@ def test_table_schema_asks_for_one_entry_per_row():
 
 
 def test_caps_cut_text_and_images_and_record_it():
-    many_rows = [Block("text", f"Sheet1!A{i}:C{i}", "x" * 700) for i in range(1, 400)]
+    many_rows = [Block("row", f"Sheet1!A{i}:C{i}", "x" * 700) for i in range(1, 400)]
     msgs, notes = baseline.build_messages(TABLE_FIELDS, many_rows, "xlsx")
     assert notes["truncated"] and notes["rows_dropped"] > 0
     assert notes["input_tokens_est"] <= baseline.INPUT_TOKEN_CAP
@@ -107,7 +109,7 @@ def test_caps_cut_text_and_images_and_record_it():
 
     jpeg = b"\xff\xd8\xff\xe0fakejpeg"
     pages = [
-        Block("image", f"Page {i}", page=i, jpeg=jpeg, width=1236, height=1600, unit="page")
+        Block("image", f"Page {i}", page=i, jpeg=jpeg, width=1236, height=1600)
         for i in range(1, 11)
     ]
     msgs, notes = baseline.build_messages(DOC_FIELDS, pages, "pdf")
@@ -119,18 +121,40 @@ def test_caps_cut_text_and_images_and_record_it():
 
 
 def test_sheet_rows_are_estimated_denser_than_prose():
-    # P2 DEV calibration: sheet rows were ~1.9x under-estimated at chars/3.5, which let one
-    # request pass Haiku's 100k price cliff. Rows now count >= 1 token per 1.75 chars.
-    row = Block("text", "Sheet1!A7:H7", " | ".join(f"{c}7=1234.56" for c in "ABCDEFGH"))
-    prose = Block(
-        "text", "Page 1", "The widget supplier delivers sprockets monthly. " * 4, unit="page"
-    )
-    assert baseline._estimate_tokens(row) >= len(row.text) / 1.75
-    assert baseline._estimate_tokens(prose) >= len(prose.text) / 2.6
-    big = [Block("text", f"Sheet1!A{i}:H{i}", row.text) for i in range(1, 5000)]
-    _, notes = baseline.build_messages(TABLE_FIELDS, big, "xlsx")
+    # P3-18: per-kind ratios = A9 measurement - 10% (rows 1.78 -> 1.6, prose 2.96 -> 2.66),
+    # read from config/models.yaml; table rows count like sheet rows, callouts like prose.
+    est = ModelCatalog.load().estimate
+    assert est.ratio("row") == 1.6 and est.ratio("prose") == 2.66 and est.ratio("x") == 1.5
+    row = Block("row", "Sheet1!A7:H7", " | ".join(f"{c}7=1234.56" for c in "ABCDEFGH"))
+    trow = Block("table_row", "Page 2", row.text)
+    prose = Block("paragraph", "Page 1", "The widget supplier delivers sprockets monthly. " * 4)
+    callout = Block("callout", "Page 1", prose.text)
+    assert baseline._estimate_tokens(row, est) >= len(row.render()) / 1.6
+    assert baseline._estimate_tokens(trow, est) >= len(trow.render()) / 1.6
+    assert baseline._estimate_tokens(prose, est) >= len(prose.render()) / 2.66
+    assert baseline._estimate_tokens(callout, est) == baseline._estimate_tokens(prose, est)
+    big = [Block("row", f"Sheet1!A{i}:H{i}", row.text) for i in range(1, 5000)]
+    _, notes = baseline.build_messages(TABLE_FIELDS, big, "xlsx", est=est)
     sent_chars = sum(len(b.text) for b in big[: 4999 - notes["rows_dropped"]])
-    assert sent_chars / 1.75 <= baseline.INPUT_TOKEN_CAP  # even at the measured density
+    assert sent_chars / 1.78 <= baseline.INPUT_TOKEN_CAP  # even at the measured density
+    assert notes[baseline.KIND_CHARS]["row"] > sent_chars  # text + address per row
+
+
+def test_fuse_estimate_uses_kind_ratios():
+    est = Estimate()
+    rows_text = "A1=1 | B1=2 " * 100
+    msgs = [{"role": "user", "content": "rules " * 50 + rows_text}]
+    plain = est.tokens(msgs)  # everything at chars_per_token 1.5
+    typed = est.tokens(msgs, {"row": len(rows_text)})
+    assert typed < plain  # rows at 1.6 chars/token
+    assert est.tokens(msgs, {"prose": 10**9}) > 0  # over-count is clamped to the message size
+
+
+def test_extract_passes_block_chars_to_the_call():
+    fake = FakeLLM(JSONOutcome("ok", data={"entries": [{}]}))
+    baseline.extract(fake, CTX, DOC_FIELDS, TEXT_BLOCKS, "pdf")
+    assert set(fake.kind_chars[0]) == {"prose"}
+    assert fake.kind_chars[0]["prose"] == sum(len(b.render()) + 1 for b in TEXT_BLOCKS)
 
 
 # --- answer checks ----------------------------------------------------------------------------
@@ -339,7 +363,7 @@ def test_worker_without_key_keeps_the_stub(client, settings):
 # --- P2-36: per-document cost fuse in the baseline ---------------------------------------------
 
 MANY_ROWS = [
-    Block("text", f"Sheet1!A{i}:B{i}", f"A{i}=widget-{i:04d} | B{i}={i * 7}", page=None)
+    Block("row", f"Sheet1!A{i}:B{i}", f"A{i}=widget-{i:04d} | B{i}={i * 7}", page=None)
     for i in range(2, 202)
 ]
 
