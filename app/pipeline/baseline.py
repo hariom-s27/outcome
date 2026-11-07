@@ -17,18 +17,17 @@ from typing import Any
 
 from app.contract_check import contract_errors, validator
 from app.llm import CallContext, LLMClient
+from app.llm.models import Estimate
 from app.readers import Block
 
 PIPELINE = "baseline-v1"
 MAX_TOKENS = 8192  # output; the wrapper retries once with 2x on finish_reason=length
 INPUT_TOKEN_CAP = 60_000  # P2-16: stays well below Haiku's 100k price cliff (R22)
 MAX_IMAGES = 8  # R13
-# chars per token, calibrated on the P2 DEV run (estimate vs usage.prompt_tokens): sheet rows
-# ("A12=…| B12=…") tokenise ~1.9x denser than chars/3.5 predicted, prose ~1.1-1.4x. Erring
-# low keeps every request under the cap, and so under Haiku's 100k price cliff (R22).
-CHARS_PER_TOKEN_ROW = 1.75
-CHARS_PER_TOKEN_TEXT = 2.6
+# chars per token per block token class come from config/models.yaml (P3-18: A9 - 10%);
+# erring low keeps every request under the cap, and so under Haiku's 100k price cliff (R22).
 PROMPT_OVERHEAD_TOKENS = 1_500
+KIND_CHARS = "_kind_chars"  # private note: block chars per token class, for the fuse
 
 CURRENCY_RE = re.compile(r"^[$€£₹]\s*[+-]?[\d,]+(\.\d+)?$|^[+-]?\d{1,3}(,\d{3})+(\.\d+)?$")
 
@@ -89,74 +88,81 @@ def _field_lines(fields: dict[str, Any], primary: str | None) -> str:
     return "\n".join(lines)
 
 
-def _estimate_tokens(block: Block) -> int:
+def _estimate_tokens(block: Block, est: Estimate | None = None) -> int:
     if block.kind == "image":
         return max(1, block.width * block.height // 750)  # Anthropic's image token rule
-    per_token = CHARS_PER_TOKEN_ROW if block.unit == "row" else CHARS_PER_TOKEN_TEXT
-    return math.ceil((len(block.text) + len(block.address) + 4) / per_token)
+    est = est or Estimate()
+    return math.ceil((len(block.render()) + 1) / est.ratio(block.token_class))
 
 
 def select_blocks(
-    blocks: list[Block], field_text: str, limit: int | None = None
+    blocks: list[Block], field_text: str, limit: int | None = None, est: Estimate | None = None
 ) -> tuple[list[Block], dict[str, Any]]:
     """Keep blocks in order within the caps; record what was cut (counts and page numbers).
     `limit` (P2-36 cost fuse) keeps at most that many blocks."""
-    budget = (
-        INPUT_TOKEN_CAP - PROMPT_OVERHEAD_TOKENS - math.ceil(len(field_text) / CHARS_PER_TOKEN_TEXT)
-    )
+    est = est or Estimate()
+    field_tokens = math.ceil(len(field_text) / est.chars_per_token)
+    budget = INPUT_TOKEN_CAP - PROMPT_OVERHEAD_TOKENS - field_tokens
     kept: list[Block] = []
     dropped: list[Block] = []
     used = images = 0
     full = False
     for b in blocks:
-        cost = _estimate_tokens(b)
+        cost = _estimate_tokens(b, est)
         if b.kind == "image" and images >= MAX_IMAGES:
             dropped.append(b)
             continue
         if limit is not None and len(kept) >= limit:
             full = True
         if full or used + cost > budget:
-            full = full or b.kind == "text"
+            full = full or b.kind != "image"
             dropped.append(b)
             continue
         kept.append(b)
         used += cost
         images += b.kind == "image"
+    kind_chars: dict[str, int] = {}
+    for b in kept:
+        if b.kind != "image":
+            kind_chars[b.token_class] = kind_chars.get(b.token_class, 0) + len(b.render()) + 1
     notes: dict[str, Any] = {
-        "input_tokens_est": used
-        + PROMPT_OVERHEAD_TOKENS
-        + math.ceil(len(field_text) / CHARS_PER_TOKEN_TEXT),
+        "input_tokens_est": used + PROMPT_OVERHEAD_TOKENS + field_tokens,
         "images_sent": images,
         "blocks_sent": len(kept),
         "truncated": bool(dropped),
+        KIND_CHARS: kind_chars,
     }
     if dropped:
         notes["blocks_dropped"] = len(dropped)
         pages = sorted({b.page for b in dropped if b.page is not None})
         if pages:
             notes["pages_dropped"] = pages
-        rows = sum(1 for b in dropped if b.unit == "row")
+        rows = sum(1 for b in dropped if b.token_class == "row")
         if rows:
             notes["rows_dropped"] = rows
-        paras = sum(1 for b in dropped if b.unit == "paragraph")
+        paras = sum(1 for b in dropped if b.token_class == "prose")
         if paras:
             notes["paragraphs_dropped"] = paras
     return kept, notes
 
 
 def build_messages(
-    field_list: dict[str, Any], blocks: list[Block], file_type: str, limit: int | None = None
+    field_list: dict[str, Any],
+    blocks: list[Block],
+    file_type: str,
+    limit: int | None = None,
+    est: Estimate | None = None,
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     fields = field_list["fields"]
     primary = _primary(fields)
     field_text = _field_lines(fields, primary)
-    kept, notes = select_blocks(blocks, field_text, limit)
+    kept, notes = select_blocks(blocks, field_text, limit, est)
     system = RULES + (TABLE_ENTRIES.format(primary=primary) if primary else ONE_ENTRY)
     head = f"FIELDS:\n{field_text}\n\nDOCUMENT ({file_type}; blocks in reading order):\n"
     parts: list[dict[str, Any]] = []
     buf = [head]
     for b in kept:
-        if b.kind == "text":
+        if b.kind != "image":
             buf.append(b.render())
             continue
         buf.append(f"[{b.address}] (no text layer; page image follows)")
@@ -285,15 +291,18 @@ def extract(
     if not blocks:
         notes["blocks_read"] = 0
         return BaselineOutcome(None, "no_content", notes)
-    messages, cut = build_messages(field_list, blocks, file_type)
+    est = llm.catalog.estimate
+    messages, cut = build_messages(field_list, blocks, file_type, est=est)
     fitted = fit_to_doc_budget(llm, ctx, model, field_list, blocks, file_type, messages, cut)
     if fitted is None:
+        cut.pop(KIND_CHARS, None)
         notes.update(cut)
         notes["cost_fuse"] = "skipped"
         return BaselineOutcome(None, "doc_llm_cap", notes)
     messages, cut = fitted
+    kind_chars = cut.pop(KIND_CHARS, None)
     notes.update(cut)
-    out = llm.complete_json(ctx, model, messages, max_tokens=MAX_TOKENS)
+    out = llm.complete_json(ctx, model, messages, max_tokens=MAX_TOKENS, kind_chars=kind_chars)
     if out.repaired:
         notes["json_repaired"] = True
     if out.status != "ok":
@@ -322,7 +331,10 @@ def fit_to_doc_budget(
 ) -> tuple[list[dict[str, Any]], dict[str, Any]] | None:
     """P2-36: if the predicted cost would pass LLM_MAX_USD_PER_DOC, keep the longest block
     prefix that fits (recorded as truncated); None when not even one block fits (skip)."""
-    proj = llm.projection(ctx, model, messages, max_tokens=MAX_TOKENS)
+    est = llm.catalog.estimate
+    proj = llm.projection(
+        ctx, model, messages, max_tokens=MAX_TOKENS, kind_chars=cut.get(KIND_CHARS)
+    )
     if proj.fits:
         cut["tokens_estimated"] = proj.tokens_estimated
         return messages, cut
@@ -330,8 +342,10 @@ def fit_to_doc_budget(
     lo, hi = 1, cut["blocks_sent"] - 1  # largest k in [lo, hi] whose call fits
     while lo <= hi:
         k = (lo + hi) // 2
-        trial = build_messages(field_list, blocks, file_type, limit=k)
-        p = llm.projection(ctx, model, trial[0], max_tokens=MAX_TOKENS)
+        trial = build_messages(field_list, blocks, file_type, limit=k, est=est)
+        p = llm.projection(
+            ctx, model, trial[0], max_tokens=MAX_TOKENS, kind_chars=trial[1].get(KIND_CHARS)
+        )
         if p.fits:
             best, lo = (trial, p), k + 1
         else:

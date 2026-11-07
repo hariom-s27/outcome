@@ -7,9 +7,16 @@
 # response_format: true only when the /models snapshot lists it (P2-05 ladder).
 # price_cliff: whole request billed at multiplier x when prompt tokens >= threshold (R22).
 # estimate (P2-36): high-side input-token estimate before every call, for the per-doc $ fuse.
-#   chars_per_token 1.5: P2 DEV calls measured sheet rows at ~1.75 and prose at ~2.6 chars per
-#   real token, so 3 would undercount; image_tokens: per page image; margin added on top.
-estimate: {chars_per_token: 1.5, image_tokens: 2600, margin: 0.15}
+#   chars_per_token 1.5: everything that is not a document block (instructions, field list);
+#   image_tokens: per page image; margin added on top.
+#   chars_per_token_by_kind (P3-18): document blocks by token class = A9 measurement - 10%
+#   (sheet/table rows 1.78 -> 1.6, prose 2.96 -> 2.66). Used by the prompt cap and the fuse;
+#   the after-call check against usage.prompt_tokens stays.
+estimate:
+  chars_per_token: 1.5
+  chars_per_token_by_kind: {row: 1.6, prose: 2.66}
+  image_tokens: 2600
+  margin: 0.15
 baseline: anthropic/claude-haiku-5.5
 fallback_order:
   - anthropic/claude-haiku-5.5

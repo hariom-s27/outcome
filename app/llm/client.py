@@ -212,17 +212,18 @@ class LLMClient:
         messages: list[dict[str, Any]],
         *,
         max_tokens: int | None = None,
+        kind_chars: dict[str, int] | None = None,
     ) -> JSONOutcome:
         """The JSON ladder. Never raises for LLM trouble; the caller maps the outcome."""
         spec = self.catalog.get(model)
         check_messages(messages, spec)
         mismatch = False
         try:
-            res = self.chat(ctx, model, messages, max_tokens=max_tokens)
+            res = self.chat(ctx, model, messages, max_tokens=max_tokens, kind_chars=kind_chars)
             mismatch |= res.model_mismatch
             if res.finish_reason == "length":
                 bigger = 2 * (max_tokens or spec.max_tokens)
-                res = self.chat(ctx, model, messages, max_tokens=bigger)
+                res = self.chat(ctx, model, messages, max_tokens=bigger, kind_chars=kind_chars)
                 mismatch |= res.model_mismatch
                 if res.finish_reason == "length":
                     return JSONOutcome("unusable", reason="llm_truncated", model_mismatch=mismatch)
@@ -260,6 +261,7 @@ class LLMClient:
         *,
         max_tokens: int | None = None,
         json_mode: bool | None = None,
+        kind_chars: dict[str, int] | None = None,
     ) -> ChatResult:
         """One logical call with retries. Raises LLMStopped / LLMCallFailed."""
         spec = self.catalog.get(model)
@@ -275,7 +277,7 @@ class LLMClient:
         if reasoning is not None:
             body["reasoning"] = reasoning  # P2-31
 
-        est = self.catalog.estimate.tokens(messages)  # P2-36
+        est = self.catalog.estimate.tokens(messages, kind_chars)  # P2-36, P3-18
         key = request_key(body) if self._cache else None
         if self._cache and key:
             hit = self._cache.get(key)
@@ -351,10 +353,11 @@ class LLMClient:
         messages: list[dict[str, Any]],
         *,
         max_tokens: int | None = None,
+        kind_chars: dict[str, int] | None = None,
     ) -> Projection:
         """P2-36: high-side cost of one call with these messages, and the doc's spend so far."""
         spec = self.catalog.get(model)
-        est = self.catalog.estimate.tokens(messages)
+        est = self.catalog.estimate.tokens(messages, kind_chars)
         return self._project(ctx, spec, est, int(max_tokens or spec.max_tokens))
 
     def _project(self, ctx: CallContext, spec: ModelSpec, est: int, max_out: int) -> Projection:

@@ -64,12 +64,21 @@ class ModelSpec:
 class Estimate:
     """P2-36: high-side input-token estimate made before every call (config `estimate:`)."""
 
-    chars_per_token: float = 1.5
+    chars_per_token: float = 1.5  # "other": instructions, field list, unknown text
     image_tokens: int = 2600
     margin: float = 0.15
     message_overhead: int = 8  # role and framing tokens per message
+    # P3-18: chars per token by block token class (A9 measurement minus 10%)
+    kind_ratios: tuple[tuple[str, float], ...] = (("row", 1.6), ("prose", 2.66))
 
-    def tokens(self, messages: list[dict[str, Any]]) -> int:
+    def ratio(self, token_class: str) -> float:
+        return dict(self.kind_ratios).get(token_class, self.chars_per_token)
+
+    def tokens(
+        self, messages: list[dict[str, Any]], kind_chars: dict[str, int] | None = None
+    ) -> int:
+        """kind_chars: characters of the messages that are document blocks of a token class
+        (from the prompt builder); they use that class's ratio, the rest chars_per_token."""
         chars = images = 0
         for msg in messages:
             content = msg.get("content")
@@ -81,8 +90,14 @@ class Estimate:
                     images += 1
                 else:
                     chars += len(part.get("text") or "")
+        typed = 0.0
+        for cls, n in (kind_chars or {}).items():
+            n = max(0, min(n, chars))
+            chars -= n
+            typed += n / self.ratio(cls)
         raw = (
-            chars / self.chars_per_token
+            typed
+            + chars / self.chars_per_token
             + images * self.image_tokens
             + len(messages) * self.message_overhead
         )
@@ -136,6 +151,12 @@ class ModelCatalog:
             chars_per_token=float(est.get("chars_per_token", Estimate.chars_per_token)),
             image_tokens=int(est.get("image_tokens", Estimate.image_tokens)),
             margin=float(est.get("margin", Estimate.margin)),
+            kind_ratios=tuple(
+                (str(k), float(v))
+                for k, v in (
+                    est.get("chars_per_token_by_kind") or dict(Estimate.kind_ratios)
+                ).items()
+            ),
         )
         return catalog
 

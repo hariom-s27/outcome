@@ -100,7 +100,7 @@ def process(
         raise LeaseLost(str(job.id))
     file_type, content = loaded
     try:
-        blocks = read_document(file_type, content)
+        docmap = read_document(file_type, content)
     except ReaderError as exc:
         log.warning("job %s read failed: %s", job.id, exc)
         return "PARTIAL", stub_result(
@@ -109,9 +109,10 @@ def process(
     del content
     hb.check()
     ctx = CallContext(job_id=str(job.id), deadline=job.deadline_at.timestamp())
-    out = baseline.extract(llm, ctx, job.field_list, blocks, file_type)
+    out = baseline.extract(llm, ctx, job.field_list, docmap.blocks, file_type)
     hb.check()
     meta = llm.store.job_metadata(str(job.id), queue.latency_ms(job.created_at))
+    meta.update(docmap.result_metadata())
     meta.update(out.notes)
     if out.entries is not None:
         return "SUCCESS", {"entries": out.entries, "metadata": meta}
