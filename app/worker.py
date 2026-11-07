@@ -1,91 +1,159 @@
-"""Worker role. Part B: claim one PENDING job (SKIP LOCKED), write the P1-09 stub, delete the file.
+"""Worker role: claim -> heartbeat -> process -> compare-and-set finish; sweep on a timer.
 
-Part C adds the lease, heartbeat, fence token, sweeper, terminal trigger and deadline.
+Crash safety (P1-06/07/08): a worker that dies stops heart-beating, its lease expires, the
+sweeper requeues the job and the next claim gets a new fence, so a late write from the old
+worker matches nothing. A job claimed more than max_attempts times is a poison job and gets
+the P1-09 skeleton instead of another try.
 """
 
 from __future__ import annotations
 
 import logging
+import os
 import signal
+import socket
+import threading
 import time
-from datetime import UTC, datetime
+import uuid
 from typing import Any
 
 import psycopg
-from psycopg.rows import dict_row
-from psycopg.types.json import Jsonb
 
-from app import db
+from app import db, queue
 from app.config import Settings
 from app.results import stub_result
 
 log = logging.getLogger("app.worker")
 
-_stop = False
+_stop = threading.Event()
 
 
-def _claim(conn: psycopg.Connection) -> dict[str, Any] | None:
-    with conn.transaction():
-        row = conn.execute(
-            """SELECT id, field_list, created_at FROM jobs
-               WHERE status = 'PENDING' ORDER BY created_at
-               FOR UPDATE SKIP LOCKED LIMIT 1"""
-        ).fetchone()
-        if row is None:
-            return None
-        conn.execute(
-            "UPDATE jobs SET status = 'RUNNING', stage = 'EXTRACTING', updated_at = now() "
-            "WHERE id = %s",
-            (row["id"],),
-        )
-        conn.execute("INSERT INTO job_events (job_id, event) VALUES (%s, 'CLAIMED')", (row["id"],))
-    return row
+class LeaseLost(Exception):
+    """The job was taken from us (lease expired + re-claimed, or deadline sweep)."""
 
 
-def _finish(conn: psycopg.Connection, job_id, status: str, result=None, error=None) -> None:
-    with conn.transaction():
-        conn.execute(
-            """UPDATE jobs SET status = %s, stage = NULL, result = %s, error = %s,
-                              updated_at = now()
-               WHERE id = %s AND status = 'RUNNING'""",
-            (
-                status,
-                Jsonb(result) if result is not None else None,
-                Jsonb(error) if error is not None else None,
-                job_id,
-            ),
-        )
-        conn.execute("DELETE FROM job_files WHERE job_id = %s", (job_id,))  # P1-05
-        conn.execute("INSERT INTO job_events (job_id, event) VALUES (%s, %s)", (job_id, status))
+def worker_id() -> str:
+    # host:pid:random -- in a container pid is always 1, so a restarted worker needs the suffix
+    return f"{socket.gethostname()}:{os.getpid()}:{uuid.uuid4().hex[:6]}"
 
 
-def process_one(settings: Settings) -> bool:
-    """Process at most one job. Returns False when the queue was empty."""
-    with db.connect(settings.database_url, row_factory=dict_row) as conn:
-        job = _claim(conn)
+class Heartbeat:
+    """Background thread extending the lease every heartbeat_s on its own connection."""
+
+    def __init__(self, settings: Settings, job_id, fence: int):
+        self.settings, self.job_id, self.fence = settings, job_id, fence
+        self.lost = threading.Event()
+        self._done = threading.Event()
+        self._thread = threading.Thread(target=self._run, name="heartbeat", daemon=True)
+
+    def __enter__(self) -> Heartbeat:
+        self._thread.start()
+        return self
+
+    def __exit__(self, *_exc) -> None:
+        self._done.set()
+        self._thread.join(timeout=self.settings.heartbeat_s + 5)
+
+    def _run(self) -> None:
+        while not self._done.wait(self.settings.heartbeat_s):
+            try:
+                with db.connect(self.settings.database_url) as conn:
+                    ok = queue.heartbeat(conn, self.job_id, self.fence, self.settings.lease_s)
+            except psycopg.OperationalError as exc:
+                # keep trying; if the DB stays away the lease lapses and the job is requeued
+                log.warning("job %s heartbeat failed (%s)", self.job_id, type(exc).__name__)
+                continue
+            if not ok:
+                log.warning("job %s lease lost (fence=%d)", self.job_id, self.fence)
+                self.lost.set()
+                return
+
+    def check(self) -> None:
+        if self.lost.is_set():
+            raise LeaseLost(str(self.job_id))
+
+
+def process(job: queue.Claim, settings: Settings, hb: Heartbeat) -> dict[str, Any]:
+    """Produce the result. Part C: the P1-09 skeleton (real extraction arrives in P2+)."""
+    if settings.fake_work_s > 0:  # dev/chaos only
+        end = time.monotonic() + settings.fake_work_s
+        while time.monotonic() < end:
+            hb.check()
+            time.sleep(min(0.5, end - time.monotonic()))
+    hb.check()
+    return stub_result(job.field_list, queue.latency_ms(job.created_at))
+
+
+def process_one(settings: Settings, wid: str | None = None) -> bool:
+    """Claim and process at most one job. Returns False when the queue was empty."""
+    wid = wid or worker_id()
+    with db.connect(settings.database_url) as conn:
+        job = queue.claim(conn, wid, settings.lease_s)
         if job is None:
             return False
-        started = time.monotonic()
-        latency_ms = (datetime.now(UTC) - job["created_at"]).total_seconds() * 1000
-        try:
-            result = stub_result(job["field_list"], latency_ms)
-        except (KeyError, TypeError, AttributeError) as exc:
-            _finish(
+        log.info("job %s claimed fence=%d attempt=%d", job.id, job.fence, job.attempts)
+
+        if job.attempts > settings.max_attempts:
+            queue.finish(
                 conn,
-                job["id"],
-                "FAILED",
-                error={"code": "internal_error", "message": f"stub failed: {type(exc).__name__}"},
+                job.id,
+                "PARTIAL",
+                fence=job.fence,
+                result=stub_result(
+                    job.field_list, queue.latency_ms(job.created_at), "too_many_attempts"
+                ),
+                worker=wid,
+                reason="poison",
             )
-            log.error("job %s status=FAILED (%s)", job["id"], type(exc).__name__)
+            log.error("job %s status=PARTIAL reason=poison attempts=%d", job.id, job.attempts)
             return True
-        _finish(conn, job["id"], "PARTIAL", result=result)
-        log.info("job %s status=PARTIAL took_ms=%d", job["id"], (time.monotonic() - started) * 1000)
+
+        started = time.monotonic()
+        try:
+            with Heartbeat(settings, job.id, job.fence) as hb:
+                queue.set_stage(conn, job.id, job.fence, "EXTRACTING")
+                result = process(job, settings, hb)
+        except LeaseLost:
+            log.warning("job %s abandoned: lease lost", job.id)
+            return True
+        except Exception as exc:
+            # surface (type + code location only: messages may quote document text, R23),
+            # then hand the job back; attempts+1 on the next claim caps retries
+            tb = exc.__traceback__
+            while tb and tb.tb_next:
+                tb = tb.tb_next
+            where = f"{tb.tb_frame.f_code.co_filename}:{tb.tb_lineno}" if tb else "?"
+            log.error("job %s processing error %s at %s", job.id, type(exc).__name__, where)
+            queue.release(conn, job.id, job.fence, wid, reason=type(exc).__name__)
+            return True
+
+        if queue.finish(conn, job.id, "PARTIAL", fence=job.fence, result=result, worker=wid):
+            log.info(
+                "job %s status=PARTIAL took_ms=%d", job.id, (time.monotonic() - started) * 1000
+            )
+        else:
+            log.warning("job %s finish rejected: fence %d is stale", job.id, job.fence)
         return True
 
 
+def sweep_once(settings: Settings, wid: str | None = None) -> dict[str, int]:
+    with db.connect(settings.database_url) as conn:
+        return queue.sweep(conn, wid or worker_id())
+
+
+def _sweep_loop(settings: Settings, wid: str) -> None:
+    """Runs beside job processing so deadlines and dead leases are handled during long jobs."""
+    while not _stop.wait(settings.sweep_every_s):
+        try:
+            sweep_once(settings, wid)
+        except psycopg.OperationalError as exc:
+            log.warning(
+                "sweep failed (%s); next try in %.0fs", type(exc).__name__, settings.sweep_every_s
+            )
+
+
 def _request_stop(signum, _frame) -> None:
-    global _stop
-    _stop = True
+    _stop.set()
     log.info("signal %s: stopping after the current job", signum)
 
 
@@ -95,18 +163,20 @@ def main() -> None:  # pragma: no cover - container entry point
     signal.signal(signal.SIGTERM, _request_stop)
     signal.signal(signal.SIGINT, _request_stop)
     db.migrate_with_retry(settings.database_url)
-    log.info("worker started")
+    wid = worker_id()
+    log.info("worker %s started", wid)
+    threading.Thread(target=_sweep_loop, args=(settings, wid), name="sweeper", daemon=True).start()
     backoff = settings.worker_poll_s
-    while not _stop:
+    while not _stop.is_set():
         try:
-            if not process_one(settings):
-                time.sleep(settings.worker_poll_s)
+            if not process_one(settings, wid):
+                _stop.wait(settings.worker_poll_s)
             backoff = settings.worker_poll_s
         except psycopg.OperationalError as exc:
             log.warning("db error (%s); retrying in %.1fs", type(exc).__name__, backoff)
-            time.sleep(backoff)
+            _stop.wait(backoff)
             backoff = min(backoff * 2, 30.0)
-    log.info("worker stopped")
+    log.info("worker %s stopped", wid)
 
 
 if __name__ == "__main__":  # pragma: no cover

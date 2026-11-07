@@ -223,9 +223,19 @@ def _insert_job(settings, org, field_list, file_type, content, webhook_url) -> d
                 headers={"Retry-After": str(RETRY_AFTER_S)},
             )
         row = conn.execute(
-            f"""INSERT INTO jobs (id, org_id, status, field_list, file_type, file_size, webhook_url)
-                VALUES (%s, %s, 'PENDING', %s, %s, %s, %s) RETURNING {_JOB_COLUMNS}""",
-            (job_id, org, Jsonb(field_list), file_type, len(content), webhook_url),
+            f"""INSERT INTO jobs (id, org_id, status, field_list, file_type, file_size,
+                                 webhook_url, deadline_at)
+                VALUES (%s, %s, 'PENDING', %s, %s, %s, %s, now() + make_interval(secs => %s))
+                RETURNING {_JOB_COLUMNS}""",
+            (
+                job_id,
+                org,
+                Jsonb(field_list),
+                file_type,
+                len(content),
+                webhook_url,
+                settings.job_deadline_s,
+            ),
         ).fetchone()
         conn.execute("INSERT INTO job_files (job_id, content) VALUES (%s, %s)", (job_id, content))
         conn.execute("INSERT INTO job_events (job_id, event) VALUES (%s, 'CREATED')", (job_id,))

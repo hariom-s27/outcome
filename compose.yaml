@@ -5,6 +5,9 @@ name: docextract
 x-app-env: &app-env
   DATABASE_URL: postgresql://docextract:docextract@db:5432/docextract
   JOB_DEADLINE_S: ${JOB_DEADLINE_S:-1500}
+  LEASE_S: ${LEASE_S:-60}
+  HEARTBEAT_S: ${HEARTBEAT_S:-15}
+  SWEEP_EVERY_S: ${SWEEP_EVERY_S:-5}
   MAX_PENDING: ${MAX_PENDING:-500}
   APP_VERSION: ${APP_VERSION:-dev}
 
