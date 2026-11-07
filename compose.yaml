@@ -58,6 +58,7 @@ services:
       <<: *app-env
       LLM_BASE_URL: ${LLM_BASE_URL:-}
       LLM_API_KEY: ${LLM_API_KEY:-}
+      DOCX_PAGE_METHOD: ${DOCX_PAGE_METHOD:-none}
     depends_on:
       db:
         condition: service_healthy
