@@ -7,6 +7,12 @@ folder is absent (fresh clone, grader machine).
 Flagged:
   - answer strings of 8+ characters (case-insensitive, whole-token match)
   - answer numbers with 5+ digits, in common written forms (12345, 12,345, 12345.00)
+
+Not flagged:
+  - anything under outputs/: a required deliverable that holds extracted values by design
+  - a string match that EXACTLY equals a field key from sample/schemas/*.json (field names
+    are schema text, not answers). Every other key and value is still checked. No allowlist
+    file; the exemption is simply empty when sample/schemas is absent.
 """
 
 from __future__ import annotations
@@ -16,10 +22,12 @@ import re
 import sys
 from pathlib import Path
 
-from _common import files_from_argv, finish, is_given, read_text
+from _common import files_from_argv, finish, is_given, norm, read_text
 
 ANSWER_DIR = Path("sample") / "sample-data-output-validated"
 SKIP = {"uv.lock"}  # generated; hashes and sizes only
+SCHEMA_DIR = Path("sample") / "schemas"
+OUTPUTS_DIR = "outputs/"
 MIN_STR = 8
 MIN_DIGITS = 5
 
@@ -72,16 +80,33 @@ def load_answers() -> tuple[dict[str, str], dict[str, str]] | None:
     return strings, numbers
 
 
+def load_field_keys(schema_dir: Path = SCHEMA_DIR) -> set[str]:
+    """Field keys from every schema's `fields` object; empty set if the folder is absent."""
+    keys: set[str] = set()
+    if not schema_dir.is_dir():
+        return keys
+    for f in sorted(schema_dir.glob("*.json")):
+        try:
+            data = json.loads(f.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+        fields = data.get("fields") if isinstance(data, dict) else None
+        if isinstance(fields, dict):
+            keys.update(k for k in fields if isinstance(k, str))
+    return keys
+
+
 def _alternation(keys) -> str:
     return "|".join(re.escape(k) for k in sorted(keys, key=len, reverse=True))
 
 
-def main() -> int:
-    answers = load_answers()
-    if answers is None:
-        print("sample-value scan skipped: answer folder absent")
-        return 0
-    strings, numbers = answers
+def scan(
+    paths: list[str],
+    strings: dict[str, str],
+    numbers: dict[str, str],
+    field_keys: set[str],
+) -> list[str]:
+    """-> problem lines (file:line + field name); matched values are never included."""
     str_re = (
         re.compile(rf"(?<![0-9A-Za-z])({_alternation(strings)})(?![0-9A-Za-z])", re.IGNORECASE)
         if strings
@@ -90,8 +115,9 @@ def main() -> int:
     num_re = re.compile(rf"(?<![\w.,])({_alternation(numbers)})(?!\w|[.,]\d)") if numbers else None
 
     problems = []
-    for p in files_from_argv():
-        if p in SKIP or is_given(p):
+    for raw in paths:
+        p = norm(raw)
+        if p in SKIP or is_given(p) or p.startswith(OUTPUTS_DIR):
             continue
         text = read_text(p)
         if text is None:
@@ -99,11 +125,25 @@ def main() -> int:
         for n, line in enumerate(text.splitlines(), 1):
             fields = set()
             if str_re:
-                fields |= {strings[m.group(1).lower()] for m in str_re.finditer(line)}
+                fields |= {
+                    strings[m.group(1).lower()]
+                    for m in str_re.finditer(line)
+                    if m.group(1) not in field_keys
+                }
             if num_re:
                 fields |= {numbers[m.group(1)] for m in num_re.finditer(line)}
             for field in sorted(fields):
                 problems.append(f"{p}:{n}: matches an answer value for field '{field}'")
+    return problems
+
+
+def main() -> int:
+    answers = load_answers()
+    if answers is None:
+        print("sample-value scan skipped: answer folder absent")
+        return 0
+    strings, numbers = answers
+    problems = scan(files_from_argv(), strings, numbers, load_field_keys())
     return finish(problems, "sample answer values found in staged text")
 
 
