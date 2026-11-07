@@ -1,11 +1,13 @@
 """The one LLM wrapper (P2-01 … P2-12, P2-28, P2-29). Every model call in the service goes here.
 
 - plain httpx, no SDK auto-retries (R3); POST {LLM_BASE_URL}/chat/completions, Bearer key
-- always max_tokens; no reasoning or temperature parameter (R4/R7 generic profile, P2-04)
+- always max_tokens; no temperature; reasoning {"effort": "none"} only per model (P2-31)
 - never a file part; images only as JPEG data URIs, only to vision models (R1, R13)
 - up to 4 attempts on 429 / 5xx / timeout / connection error / error-inside-200, backoff
-  1-2-4-8 s + jitter, Retry-After honoured, never waiting past the job's time left (P2-06)
-- global in-flight cap + shared 429 cool-down + circuit breaker, all in Postgres (P2-07, P2-29)
+  1-2-4-8 s + jitter, Retry-After honoured, never waiting past the job's time left (P2-06);
+  one wait = max(backoff, Retry-After, cool-down left), never their sum (P2-33)
+- global in-flight cap + shared 429 cool-down + circuit breaker with one half-open probe,
+  all in Postgres (P2-07, P2-29, P2-33)
 - one ledger row per attempt (P2-09); per-doc call/$ caps (P2-28); dev budget (P2-10)
 - JSON ladder: json_object if the snapshot lists it, local parse, one text-only repair (P2-05/08)
 Logs carry metadata only (R23): job id, model, status, timings. Never prompt or output text.
@@ -84,6 +86,20 @@ class JSONOutcome:
     detail: str | None = None
     repaired: bool = False
     model_mismatch: bool = False
+
+
+@dataclass(frozen=True)
+class Projection:
+    """P2-36: what the next call may cost, against what the document has spent."""
+
+    tokens_estimated: int
+    cost_usd: float  # whole call priced at the cliff rate when the estimate reaches the cliff
+    spent_usd: float = 0.0
+    cap_usd: float | None = None  # None: no per-doc cap (dev scripts without a job id)
+
+    @property
+    def fits(self) -> bool:
+        return self.cap_usd is None or self.spent_usd + self.cost_usd <= self.cap_usd
 
 
 @dataclass
@@ -255,24 +271,35 @@ class LLMClient:
         }
         if spec.response_format if json_mode is None else json_mode:
             body["response_format"] = {"type": "json_object"}
+        reasoning = spec.reasoning_param(self.settings.reasoning_override)
+        if reasoning is not None:
+            body["reasoning"] = reasoning  # P2-31
 
+        est = self.catalog.estimate.tokens(messages)  # P2-36
         key = request_key(body) if self._cache else None
         if self._cache and key:
             hit = self._cache.get(key)
             if hit is not None:
-                return self._from_cache(ctx, spec, hit)
+                return self._from_cache(ctx, spec, hit, est)
 
         if not self.settings.base_url or not self.settings.api_key:
             raise LLMCallFailed("llm_not_configured")
 
         last_status = "no_attempt"
-        for attempt in range(1, self.settings.max_attempts + 1):
+        dropped = False  # P2-31: reasoning parameter refused once, now sent without it
+        skip_cooldown = False  # P2-33: the last wait already covered the shared cool-down
+        attempt = 0
+        while attempt < self.settings.max_attempts:
+            attempt += 1
             self._check_stops(ctx)
-            self._wait_shared(ctx)
+            if not self._project(ctx, spec, est, body["max_tokens"]).fits:
+                raise LLMStopped("doc_llm_cap")  # P2-36: predicted before the call
+            probe = self._wait_shared(ctx, skip_cooldown=skip_cooldown)
+            skip_cooldown = False
             holder = f"{self._holder_prefix}:{uuid.uuid4().hex[:8]}"
             slot = self._acquire_slot(ctx, holder)
             try:
-                result = self._attempt(ctx, spec, body, attempt)
+                result = self._attempt(ctx, spec, body, attempt, dropped=dropped, est=est)
             finally:
                 self.store.release_slot(slot, holder)
             last_status = result.status
@@ -281,22 +308,61 @@ class LLMClient:
                 if self._cache and key:
                     self._cache.put(key, result.data or {})
                 return self._to_result(spec, result.data or {})
-            if self.store.note_failure(
-                self.settings.breaker_threshold, self.settings.breaker_pause_s
-            ):
+            if result.status == "http_400" and "reasoning" in body and not dropped:
+                # P2-31: the gateway refused the reasoning parameter; once more without it.
+                # A parameter problem, not an outage: no breaker count, no attempt used.
+                body = {k: v for k, v in body.items() if k != "reasoning"}
+                dropped = True
+                attempt -= 1
+                log.warning("llm reasoning param refused job=%s model=%s", ctx.job_id, spec.id)
+                if probe:
+                    self.store.release_probe()
+                continue
+            tripped = self.store.note_failure(
+                self.settings.breaker_threshold, self.settings.breaker_pause_s, probe=probe
+            )
+            if tripped:
                 log.warning("llm circuit breaker opened (%ss)", self.settings.breaker_pause_s)
             if not result.retryable:
                 raise LLMCallFailed(last_status)
             if attempt == self.settings.max_attempts:
                 break
+            if tripped:
+                continue  # the breaker pause (in _wait_shared) replaces the backoff
+            # P2-33: one wait = max(backoff, Retry-After, shared cool-down left), never a sum
             base = self.settings.backoff_s[min(attempt - 1, len(self.settings.backoff_s) - 1)]
-            delay = max(base + self._rng.uniform(0, 0.25 * base), result.retry_after or 0.0)
+            delay = max(
+                base + self._rng.uniform(0, 0.25 * base),
+                result.retry_after or 0.0,
+                self.store.shared_state().cooldown_s,
+            )
             if delay >= self._time_left(ctx):
                 raise LLMStopped("deadline")
             self._sleep(delay)
+            skip_cooldown = True
         raise LLMCallFailed(last_status)
 
     # --- internals ----------------------------------------------------------------------
+
+    def projection(
+        self,
+        ctx: CallContext,
+        model: str,
+        messages: list[dict[str, Any]],
+        *,
+        max_tokens: int | None = None,
+    ) -> Projection:
+        """P2-36: high-side cost of one call with these messages, and the doc's spend so far."""
+        spec = self.catalog.get(model)
+        est = self.catalog.estimate.tokens(messages)
+        return self._project(ctx, spec, est, int(max_tokens or spec.max_tokens))
+
+    def _project(self, ctx: CallContext, spec: ModelSpec, est: int, max_out: int) -> Projection:
+        cost = spec.cost(est, max_out)  # cliff: whole call at the multiplier (R22)
+        if ctx.job_id is None:
+            return Projection(est, cost)
+        spent = self.store.doc_usage(ctx.job_id).cost_computed
+        return Projection(est, cost, spent, self.settings.max_usd_per_doc)
 
     def _time_left(self, ctx: CallContext) -> float:
         return ctx.deadline - self._clock()
@@ -312,18 +378,36 @@ class LLMClient:
         if self._time_left(ctx) <= 0:
             raise LLMStopped("deadline")
 
-    def _wait_shared(self, ctx: CallContext) -> None:
-        cooldown, breaker = self.store.waits()
-        if breaker > 0:
+    def _wait_shared(self, ctx: CallContext, *, skip_cooldown: bool = False) -> bool:
+        """Wait out the shared cool-down / breaker. True when this caller holds the probe.
+
+        Breaker (P2-29, half-open per P2-33): while the pause runs everyone waits; when it
+        ends exactly one caller claims the probe in Postgres and goes; the others poll until
+        the probe closes the breaker (go) or re-opens it (wait out the new pause).
+        """
+        waited_for = None  # the pause end this caller has already slept through
+        while True:
+            st = self.store.shared_state()
+            if st.open_until is None:
+                if st.cooldown_s > 0 and not skip_cooldown:
+                    if st.cooldown_s >= self._time_left(ctx):
+                        raise LLMStopped("deadline")
+                    self._sleep(st.cooldown_s)
+                return False
             if self.settings.breaker_abort:
                 raise LLMStopped("circuit_open")
-            if breaker >= self._time_left(ctx):
+            if st.breaker_s > 0 and waited_for != st.open_until:
+                if st.breaker_s >= self._time_left(ctx):
+                    raise LLMStopped("deadline")
+                self._sleep(st.breaker_s)
+                waited_for = st.open_until
+                continue
+            if self.store.try_claim_probe(st.open_until, self.settings.slot_lease_s):
+                log.info("llm breaker half-open: probe job=%s", ctx.job_id)
+                return True
+            if self.settings.probe_poll_s >= self._time_left(ctx):
                 raise LLMStopped("deadline")
-            self._sleep(breaker)  # then one probe call; its result closes or re-opens
-        elif cooldown > 0:
-            if cooldown >= self._time_left(ctx):
-                raise LLMStopped("deadline")
-            self._sleep(cooldown)
+            self._sleep(self.settings.probe_poll_s)
 
     def _acquire_slot(self, ctx: CallContext, holder: str) -> int:
         s = self.settings
@@ -336,7 +420,14 @@ class LLMClient:
             self._sleep(s.slot_poll_s)
 
     def _attempt(
-        self, ctx: CallContext, spec: ModelSpec, body: dict[str, Any], attempt: int
+        self,
+        ctx: CallContext,
+        spec: ModelSpec,
+        body: dict[str, Any],
+        attempt: int,
+        *,
+        dropped: bool = False,
+        est: int | None = None,
     ) -> _Attempt:
         timeout = max(1.0, min(self.settings.request_timeout_s, self._time_left(ctx)))
         t0 = time.monotonic()
@@ -375,6 +466,9 @@ class LLMClient:
                 finish_reason=choice.get("finish_reason") if isinstance(choice, dict) else None,
                 cost_computed=spec.cost(nums["tokens_in"], nums["tokens_out"]),
                 latency_ms=latency_ms,
+                reasoning_effort=(body.get("reasoning") or {}).get("effort"),
+                reasoning_param_dropped=dropped,
+                tokens_estimated=est,
                 **nums,
             )
         )
@@ -434,8 +528,13 @@ class LLMClient:
             cache_hit=cache_hit,
         )
 
-    def _from_cache(self, ctx: CallContext, spec: ModelSpec, data: dict[str, Any]) -> ChatResult:
+    def _from_cache(
+        self, ctx: CallContext, spec: ModelSpec, data: dict[str, Any], est: int | None = None
+    ) -> ChatResult:
         nums = _usage_numbers(data)
+        original = nums["cost_reported"]  # the same body the paid call returned
+        if original is None:
+            original = spec.cost(nums["tokens_in"], nums["tokens_out"])
         nums["cost_reported"] = None
         self.store.record(
             LedgerRow(
@@ -446,6 +545,8 @@ class LLMClient:
                 model_returned=data.get("model"),
                 status="cache_hit",
                 cache_hit=True,
+                tokens_estimated=est,
+                cost_original=original,
                 **nums,
             )
         )

@@ -6,5 +6,7 @@ services:
     environment:
       DEV_BUDGET_USD: ${DEV_BUDGET_USD:-8}
       LLM_CACHE_DIR: /cache/llm
+      # P2-31 pilot only: default|none for every model; empty = per-model YAML setting
+      LLM_REASONING_OVERRIDE: ${LLM_REASONING_OVERRIDE:-}
     volumes:
       - ./cache:/cache

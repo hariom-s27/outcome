@@ -29,6 +29,7 @@ from app.llm import (
 from app.llm.client import _parse_retry_after
 from app.llm.jsonparse import JSONParseError, parse_json_object
 from app.llm.models import ALLOWED_MODEL_IDS
+from app.llm.store import LedgerRow
 
 HAIKU = "anthropic/claude-haiku-5.5"
 DEEPSEEK = "deepseek/deepseek-v3.2"
@@ -133,7 +134,7 @@ def store(database_url):
         conn.execute("TRUNCATE llm_calls, llm_slots")
         conn.execute(
             "UPDATE llm_state SET cooldown_until = NULL, consecutive_failures = 0, "
-            "breaker_open_until = NULL"
+            "breaker_open_until = NULL, probe_until = NULL"
         )
     s = LLMStore(database_url)
     yield s
@@ -195,7 +196,8 @@ def test_success_shape_and_ledger(make_client, ctx, store, database_url):
     assert out.status == "ok" and out.data == {"widget_count": 3}
     body = fake.requests[0]
     assert body["model"] == HAIKU and body["max_tokens"] == 4096
-    assert "reasoning" not in body and "temperature" not in body and "models" not in body
+    assert body["reasoning"] == {"effort": "none"}  # P2-31: Haiku set to none, snapshot allows
+    assert "temperature" not in body and "models" not in body
     assert fake.headers[0]["authorization"] == "Bearer test-key"
     assert ledger(database_url) == [("ok", 1, HAIKU, False, False, "extract")]
     meta = store.job_metadata(JOB, latency_ms=1234)
@@ -335,7 +337,7 @@ def test_json_object_only_when_config_lists_it(store, clock, ctx, listed):
                 "vision": True,
                 "price_in": 0.1,
                 "price_out": 0.5,
-                "reasoning": "omit",
+                "reasoning": "default",
                 "response_format": listed,
                 "max_tokens": 100,
             }
@@ -387,7 +389,9 @@ def test_per_doc_call_cap(make_client, ctx):
 
 def test_per_doc_usd_cap(make_client, ctx):
     fake = FakeLLM(j(ok_body(tokens_in=100_000, tokens_out=10_000)))
-    client = make_client(fake, max_usd_per_doc=0.001)
+    # the projection (tiny prompt + max_tokens) fits 0.01; the real bill does not: the
+    # after-call check stops the next call (P2-36 keeps it)
+    client = make_client(fake, max_usd_per_doc=0.01)
     assert client.complete_json(ctx, HAIKU, MSGS).status == "ok"
     out = client.complete_json(ctx, HAIKU, MSGS)
     assert out.status == "stopped" and out.reason == "doc_llm_cap"
@@ -435,6 +439,23 @@ def test_cache_hit_makes_no_second_http_call(make_client, ctx, tmp_path, store, 
     assert [r[3] for r in ledger(database_url)] == [False, True]
     meta = store.job_metadata(JOB, 0)
     assert meta["model_calls"] == 1 and meta["cache_hits"] == 1
+
+
+def test_cache_hit_keeps_the_original_cost_for_the_uncached_figure(
+    make_client, ctx, tmp_path, store, database_url
+):
+    fake = FakeLLM(j(ok_body(cost=0.0002)))
+    client = make_client(fake, cache_dir=str(tmp_path / "llm"))
+    client.complete_json(ctx, HAIKU, MSGS)
+    client.complete_json(ctx, HAIKU, MSGS)
+    with psycopg.connect(database_url) as conn:
+        rows = conn.execute(
+            "SELECT cache_hit, cost_reported, cost_original FROM llm_calls ORDER BY id"
+        ).fetchall()
+    assert rows == [(False, 0.0002, None), (True, None, 0.0002)]
+    meta = store.job_metadata(JOB, 0)
+    assert meta["cost_usd"] == pytest.approx(0.0002)  # paid
+    assert meta["cost_uncached_usd"] == pytest.approx(0.0004)  # what a grader would pay
 
 
 def test_no_cache_unless_configured(make_client, ctx):
@@ -560,3 +581,263 @@ def test_price_cliff(catalog):
     below = spec.cost(99_999, 0)
     at = spec.cost(100_000, 0)
     assert at == pytest.approx(5 * 100_000 * 0.10 / 1e6) and below < at / 4
+
+
+# --- P2 addendum (P2-31, P2-33): wrapper fixes, MockTransport fakes, no network ----------
+#
+# - one wait after a 429: max(backoff, Retry-After, shared cool-down left), never the sum
+# - half-open breaker: after the pause exactly one probe call goes; success closes, failure
+#   re-opens for another pause; the others wait
+# - per-model reasoning: none -> {"effort": "none"} only when the snapshot allows it;
+#   a 400 to it -> one retry without, ledger flag reasoning_param_dropped
+# Payloads are invented (widgets).
+
+
+def _state(url: str) -> tuple:
+    with psycopg.connect(url) as conn:
+        return conn.execute(
+            "SELECT breaker_open_until IS NOT NULL, "
+            "coalesce(extract(epoch FROM breaker_open_until - now()), 0), "
+            "probe_until IS NOT NULL, consecutive_failures FROM llm_state"
+        ).fetchone()
+
+
+def _half_open(url: str, probe_held: bool = False) -> None:
+    """Breaker pause already over (half-open); optionally a live caller holds the probe."""
+    with psycopg.connect(url) as conn:
+        conn.execute(
+            "UPDATE llm_state SET breaker_open_until = now() - interval '1 second', "
+            "probe_until = CASE WHEN %s THEN now() + interval '5 minutes' END",
+            (probe_held,),
+        )
+
+
+def _ledger_flags(url: str) -> list[tuple]:
+    with psycopg.connect(url) as conn:
+        return conn.execute(
+            "SELECT status, reasoning_effort, reasoning_param_dropped FROM llm_calls ORDER BY id"
+        ).fetchall()
+
+
+# --- one wait after a 429 ------------------------------------------------------------------
+
+
+def test_429_retry_after_is_waited_once_not_twice(make_client, ctx, clock, store):
+    fake = FakeLLM(j({"error": {"message": "slow"}}, 429, {"Retry-After": "7"}), j(ok_body()))
+    assert make_client(fake).complete_json(ctx, HAIKU, MSGS).status == "ok"
+    assert store.waits()[0] > 0  # the shared cool-down is still set for other workers...
+    assert len(clock.sleeps) == 1 and 7 <= clock.sleeps[0] < 8  # ...but this caller waited once
+
+
+def test_429_without_retry_after_waits_the_longer_of_backoff_and_cooldown(make_client, ctx, clock):
+    fake = FakeLLM(j({"error": {"message": "slow"}}, 429), j(ok_body()))
+    assert make_client(fake, default_cooldown_s=5.0).complete_json(ctx, HAIKU, MSGS).status == "ok"
+    # backoff 1-1.25 s, cool-down 5 s -> one wait of about 5 s, not 6+
+    assert len(clock.sleeps) == 1 and 4.5 <= clock.sleeps[0] <= 5.0
+
+
+def test_other_callers_still_honour_the_shared_cooldown(make_client, ctx, clock, store):
+    store.set_cooldown(3.0)  # another worker hit a 429
+    assert make_client(FakeLLM(j(ok_body()))).complete_json(ctx, HAIKU, MSGS).status == "ok"
+    assert len(clock.sleeps) == 1 and 2.0 < clock.sleeps[0] <= 3.0
+
+
+# --- half-open breaker ----------------------------------------------------------------------
+
+
+def test_only_one_caller_can_claim_the_probe(store):
+    _half_open(store._url)
+    open_until = store.shared_state().open_until
+    assert store.try_claim_probe(open_until, lease_s=60) is True
+    assert store.try_claim_probe(open_until, lease_s=60) is False  # second caller waits
+    assert store.shared_state().probe_held is True
+
+
+def test_probe_success_closes_the_breaker(make_client, ctx, store):
+    _half_open(store._url)
+    fake = FakeLLM(j(ok_body()))
+    assert make_client(fake).complete_json(ctx, HAIKU, MSGS).status == "ok"
+    assert len(fake.requests) == 1
+    assert _state(store._url) == (False, 0, False, 0)  # closed, probe cleared
+
+
+def test_probe_failure_reopens_for_another_pause(make_client, ctx, store):
+    _half_open(store._url)
+    fake = FakeLLM(j({"error": "bad request"}, 400))  # DeepSeek: no reasoning param to drop
+    with pytest.raises(LLMCallFailed):
+        make_client(fake).chat(ctx, DEEPSEEK, MSGS)
+    is_open, left, probe, _ = _state(store._url)
+    assert is_open and 55 <= left <= 60 and not probe  # one failure was enough to re-open
+
+
+def test_others_wait_while_the_probe_is_out(make_client, clock, store):
+    _half_open(store._url, probe_held=True)
+    short = CallContext(job_id=JOB, deadline=clock() + 5)
+    fake = FakeLLM()
+    with pytest.raises(LLMStopped, match="deadline"):
+        make_client(fake).chat(short, HAIKU, MSGS)
+    assert fake.requests == []  # no second probe
+    assert clock.sleeps and all(s == 1.0 for s in clock.sleeps)  # polled, did not call
+
+
+def test_crashed_probers_lease_frees_the_probe(make_client, ctx, store):
+    _half_open(store._url)
+    with psycopg.connect(store._url) as conn:
+        conn.execute("UPDATE llm_state SET probe_until = now() - interval '1 second'")
+    fake = FakeLLM(j(ok_body()))
+    assert make_client(fake).complete_json(ctx, HAIKU, MSGS).status == "ok"
+    assert len(fake.requests) == 1
+
+
+def test_after_the_pause_exactly_one_probe_then_everyone_goes(make_client, ctx, clock, store):
+    store.note_failure(threshold=1, pause_s=60)  # breaker open for 60 s
+    fake = FakeLLM(j(ok_body()), j(ok_body()))
+    first = make_client(fake)
+    assert first.complete_json(ctx, HAIKU, MSGS).status == "ok"  # waits 60 s, probes, closes
+    assert any(55 <= s <= 60.5 for s in clock.sleeps)
+    clock.sleeps.clear()
+    assert make_client(fake).complete_json(ctx, HAIKU, MSGS).status == "ok"
+    assert clock.sleeps == [] and len(fake.requests) == 2  # breaker closed: no wait at all
+
+
+# --- per-model reasoning ---------------------------------------------------------------------
+
+
+def test_reasoning_none_sent_only_where_configured(make_client, ctx, database_url):
+    fake = FakeLLM(j(ok_body()), j(ok_body(model=DEEPSEEK)))
+    client = make_client(fake)
+    client.chat(ctx, HAIKU, MSGS)
+    client.chat(ctx, DEEPSEEK, MSGS)
+    assert fake.requests[0]["reasoning"] == {"effort": "none"}
+    assert "reasoning" not in fake.requests[1]  # DeepSeek: default
+    assert _ledger_flags(database_url) == [("ok", "none", False), ("ok", None, False)]
+
+
+def test_reasoning_override_default_sends_nothing(make_client, ctx):
+    fake = FakeLLM(j(ok_body()))
+    make_client(fake, reasoning_override="default").chat(ctx, HAIKU, MSGS)
+    assert "reasoning" not in fake.requests[0]
+
+
+def test_400_to_reasoning_param_retries_once_without_it(make_client, ctx, store, database_url):
+    fake = FakeLLM(j({"error": {"message": "unsupported parameter"}}, 400), j(ok_body()))
+    out = make_client(fake).complete_json(ctx, HAIKU, MSGS)
+    assert out.status == "ok"
+    assert "reasoning" in fake.requests[0] and "reasoning" not in fake.requests[1]
+    assert _ledger_flags(database_url) == [("http_400", "none", False), ("ok", None, True)]
+    assert store.job_metadata(JOB, 0)["reasoning_param_dropped"] is True
+    assert _state(database_url)[3] == 0  # not counted as a gateway failure
+
+
+def test_second_400_without_reasoning_fails(make_client, ctx):
+    fake = FakeLLM(j({"error": "bad"}, 400), j({"error": "bad"}, 400))
+    with pytest.raises(LLMCallFailed, match="http_400"):
+        make_client(fake).chat(ctx, HAIKU, MSGS)
+    assert len(fake.requests) == 2
+
+
+@pytest.mark.parametrize(
+    "snap, expect",
+    [
+        ({"mandatory": False, "supported_efforts": ["low", "none"]}, {"effort": "none"}),
+        ({"mandatory": True, "supported_efforts": ["low", "none"]}, None),  # mandatory
+        ({"mandatory": False, "supported_efforts": ["low", "high"]}, None),  # no "none"
+        (None, None),  # snapshot lists no reasoning for the model
+    ],
+)
+def test_none_needs_the_snapshot_to_allow_it(snap, expect):
+    raw = {
+        "baseline": HAIKU,
+        "models": {
+            HAIKU: {
+                "vision": True,
+                "price_in": 0.1,
+                "price_out": 0.5,
+                "reasoning": "none",
+                "response_format": True,
+                "max_tokens": 64,
+            }
+        },
+    }
+    snapshot = {"models": {HAIKU: {"reasoning": snap} if snap else {}}}
+    assert ModelCatalog.from_dict(raw, snapshot).get(HAIKU).reasoning_param() == expect
+
+
+def test_unknown_reasoning_setting_refused():
+    raw = {
+        "baseline": HAIKU,
+        "models": {
+            HAIKU: {
+                "vision": True,
+                "price_in": 0.1,
+                "price_out": 0.5,
+                "reasoning": "omit",
+                "response_format": True,
+                "max_tokens": 64,
+            }
+        },
+    }
+    with pytest.raises(ValueError, match="reasoning"):
+        ModelCatalog.from_dict(raw)
+
+
+# --- P2-36: per-document cost fuse, predicted before every call --------------------------------
+
+
+def test_fuse_estimate_is_high_side_and_counts_images(catalog):
+    est = catalog.estimate
+    text = [{"role": "user", "content": "x" * 3000}]
+    assert est.tokens(text) >= 3000 / 3 * 1.15  # never below the 1-per-3-chars rule
+    img = [{"role": "user", "content": [{"type": "image_url", "image_url": {"url": JPEG}}]}]
+    assert est.tokens(img) >= est.image_tokens * (1 + est.margin)
+
+
+def test_fuse_call_that_fits_goes_out_and_writes_the_estimate(
+    make_client, ctx, catalog, database_url
+):
+    fake = FakeLLM(j(ok_body(cost=0.0002)))
+    client = make_client(fake)
+    proj = client.projection(ctx, HAIKU, MSGS)
+    assert proj.fits and proj.spent_usd == 0.0 and proj.cap_usd == 0.05
+    assert client.complete_json(ctx, HAIKU, MSGS).status == "ok"
+    with psycopg.connect(database_url) as conn:
+        rows = conn.execute("SELECT tokens_estimated, tokens_in FROM llm_calls").fetchall()
+    assert rows == [(catalog.estimate.tokens(MSGS), 1000)]  # estimate next to real tokens
+
+
+def test_fuse_prices_the_whole_call_at_the_cliff_rate(make_client, ctx, catalog):
+    spec = catalog.get(HAIKU)
+    client = make_client(FakeLLM())
+    big = [{"role": "user", "content": "7" * 160_000}]
+    proj = client.projection(ctx, HAIKU, big, max_tokens=1000)
+    assert proj.tokens_estimated >= spec.cliff_tokens
+    plain = (proj.tokens_estimated * spec.price_in + 1000 * spec.price_out) / 1e6
+    assert proj.cost_usd == pytest.approx(plain * spec.cliff_multiplier)
+    small = client.projection(ctx, HAIKU, MSGS, max_tokens=1000)
+    assert small.cost_usd == pytest.approx(
+        (small.tokens_estimated * spec.price_in + 1000 * spec.price_out) / 1e6
+    )
+
+
+def test_fuse_skips_a_call_that_would_pass_the_cap(make_client, ctx, database_url):
+    fake = FakeLLM(j(ok_body()))
+    client = make_client(fake, max_usd_per_doc=0.000001)
+    out = client.complete_json(ctx, HAIKU, MSGS)
+    assert out.status == "stopped" and out.reason == "doc_llm_cap"
+    assert fake.requests == [] and ledger(database_url) == []
+
+
+def test_fuse_counts_what_the_doc_already_spent(make_client, ctx, store):
+    store.record(
+        LedgerRow(
+            job_id=JOB,
+            purpose="extract",
+            attempt=1,
+            model_requested=HAIKU,
+            status="ok",
+            cost_computed=0.0499,
+        )
+    )
+    client = make_client(FakeLLM(j(ok_body())))
+    proj = client.projection(ctx, HAIKU, MSGS)
+    assert proj.spent_usd == pytest.approx(0.0499) and not proj.fits

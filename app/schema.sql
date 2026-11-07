@@ -110,3 +110,14 @@ CREATE TABLE IF NOT EXISTS llm_state (
     breaker_open_until   timestamptz
 );
 INSERT INTO llm_state (id) VALUES (1) ON CONFLICT DO NOTHING;
+
+-- P2-31 / P2-33 additions (idempotent for databases created before them)
+ALTER TABLE llm_calls ADD COLUMN IF NOT EXISTS reasoning_effort text;
+ALTER TABLE llm_calls ADD COLUMN IF NOT EXISTS reasoning_param_dropped boolean NOT NULL DEFAULT false;
+-- half-open breaker: when the pause ends exactly one caller holds the probe (lease, so a
+-- crashed prober frees it). The claim names the breaker_open_until value it waited out.
+ALTER TABLE llm_state ADD COLUMN IF NOT EXISTS probe_until timestamptz;
+-- P2-36: the high-side input estimate made before the call, next to the real prompt tokens
+ALTER TABLE llm_calls ADD COLUMN IF NOT EXISTS tokens_estimated integer;
+-- dev-cache hit rows: what the call that filled the cache cost (graders have no cache)
+ALTER TABLE llm_calls ADD COLUMN IF NOT EXISTS cost_original double precision;

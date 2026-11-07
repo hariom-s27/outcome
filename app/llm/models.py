@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+import math
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -9,6 +11,8 @@ from typing import Any
 import yaml
 
 DEFAULT_MODELS_PATH = Path(__file__).resolve().parents[2] / "config" / "models.yaml"
+SNAPSHOT_NAME = "models_snapshot.json"  # next to models.yaml (P2-14)
+REASONING_SETTINGS = ("default", "none")  # P2-31
 
 # ASSIGNMENT §3, byte-for-byte. The YAML may not add anything outside this set.
 ALLOWED_MODEL_IDS: frozenset[str] = frozenset(
@@ -41,6 +45,13 @@ class ModelSpec:
     max_tokens: int
     cliff_tokens: int | None = None
     cliff_multiplier: float = 1.0
+    reasoning_none_ok: bool = False  # snapshot lists reasoning, not mandatory, "none" allowed
+
+    def reasoning_param(self, setting: str | None = None) -> dict[str, str] | None:
+        """P2-31: {"effort": "none"} only when asked for and the snapshot allows it."""
+        if (setting or self.reasoning) == "none" and self.reasoning_none_ok:
+            return {"effort": "none"}
+        return None
 
     def cost(self, tokens_in: int, tokens_out: int) -> float:
         usd = (tokens_in * self.price_in + tokens_out * self.price_out) / 1_000_000
@@ -49,7 +60,38 @@ class ModelSpec:
         return usd
 
 
+@dataclass(frozen=True)
+class Estimate:
+    """P2-36: high-side input-token estimate made before every call (config `estimate:`)."""
+
+    chars_per_token: float = 1.5
+    image_tokens: int = 2600
+    margin: float = 0.15
+    message_overhead: int = 8  # role and framing tokens per message
+
+    def tokens(self, messages: list[dict[str, Any]]) -> int:
+        chars = images = 0
+        for msg in messages:
+            content = msg.get("content")
+            if isinstance(content, str):
+                chars += len(content)
+                continue
+            for part in content or []:
+                if part.get("type") == "image_url":
+                    images += 1
+                else:
+                    chars += len(part.get("text") or "")
+        raw = (
+            chars / self.chars_per_token
+            + images * self.image_tokens
+            + len(messages) * self.message_overhead
+        )
+        return math.ceil(raw * (1 + self.margin))
+
+
 class ModelCatalog:
+    estimate: Estimate = Estimate()
+
     def __init__(self, specs: dict[str, ModelSpec], baseline: str, fallback_order: list[str]):
         for mid in [*specs, baseline, *fallback_order]:
             if mid not in ALLOWED_MODEL_IDS:
@@ -62,16 +104,19 @@ class ModelCatalog:
 
     @classmethod
     def load(cls, path: Path | str = DEFAULT_MODELS_PATH) -> ModelCatalog:
-        raw = yaml.safe_load(Path(path).read_text(encoding="utf-8"))
-        return cls.from_dict(raw)
+        path = Path(path)
+        raw = yaml.safe_load(path.read_text(encoding="utf-8"))
+        snap_path = path.with_name(SNAPSHOT_NAME)
+        snapshot = json.loads(snap_path.read_text(encoding="utf-8")) if snap_path.exists() else None
+        return cls.from_dict(raw, snapshot)
 
     @classmethod
-    def from_dict(cls, raw: dict[str, Any]) -> ModelCatalog:
+    def from_dict(cls, raw: dict[str, Any], snapshot: dict[str, Any] | None = None) -> ModelCatalog:
+        snap_models = (snapshot or {}).get("models") or {}
         specs: dict[str, ModelSpec] = {}
         for mid, m in raw["models"].items():
-            if m["reasoning"] != "omit":
-                # P2-04: generic profile only; P4 spike 10 decides per-model controls.
-                raise ValueError(f"{mid}: reasoning {m['reasoning']!r} not supported in P2")
+            if m["reasoning"] not in REASONING_SETTINGS:
+                raise ValueError(f"{mid}: reasoning must be one of {REASONING_SETTINGS}")
             cliff = m.get("price_cliff") or {}
             specs[mid] = ModelSpec(
                 id=mid,
@@ -83,8 +128,16 @@ class ModelCatalog:
                 max_tokens=int(m["max_tokens"]),
                 cliff_tokens=int(cliff["prompt_tokens"]) if cliff else None,
                 cliff_multiplier=float(cliff.get("multiplier", 1.0)) if cliff else 1.0,
+                reasoning_none_ok=_none_allowed(snap_models.get(mid)),
             )
-        return cls(specs, raw["baseline"], raw.get("fallback_order") or [])
+        catalog = cls(specs, raw["baseline"], raw.get("fallback_order") or [])
+        est = raw.get("estimate") or {}
+        catalog.estimate = Estimate(
+            chars_per_token=float(est.get("chars_per_token", Estimate.chars_per_token)),
+            image_tokens=int(est.get("image_tokens", Estimate.image_tokens)),
+            margin=float(est.get("margin", Estimate.margin)),
+        )
+        return catalog
 
     def get(self, model_id: str) -> ModelSpec:
         try:
@@ -98,3 +151,12 @@ class ModelCatalog:
     def cheapest_text_model(self) -> ModelSpec:
         """For the text-only JSON repair call (P2-08); ties keep YAML order."""
         return min(self._specs.values(), key=lambda s: s.price_in + s.price_out)
+
+
+def _none_allowed(snap: dict[str, Any] | None) -> bool:
+    """True when the snapshot lists a reasoning block that is not mandatory and allows none."""
+    r = (snap or {}).get("reasoning")
+    if not isinstance(r, dict) or r.get("mandatory") is not False:
+        return False
+    efforts = r.get("supported_efforts")
+    return efforts is None or "none" in efforts

@@ -1,9 +1,15 @@
 # The only models the service may call (ASSIGNMENT §3; P2-02). Ids are sent byte-for-byte (R28).
 # Code refuses any id not listed here. Prices are USD per million tokens.
 # price_source: "card" = research §8 card (7 Nov); "snapshot" = config/models_snapshot.json.
-# reasoning: "omit" = send no reasoning parameter, measure reasoning_tokens (P2-04).
+# reasoning (P2-31): "default" = send no parameter; "none" = send reasoning {"effort": "none"}
+#   only when the snapshot lists reasoning for the model and it is not mandatory (else nothing).
+#   A 400 to it -> one retry without, ledger flag reasoning_param_dropped.
 # response_format: true only when the /models snapshot lists it (P2-05 ladder).
 # price_cliff: whole request billed at multiplier x when prompt tokens >= threshold (R22).
+# estimate (P2-36): high-side input-token estimate before every call, for the per-doc $ fuse.
+#   chars_per_token 1.5: P2 DEV calls measured sheet rows at ~1.75 and prose at ~2.6 chars per
+#   real token, so 3 would undercount; image_tokens: per page image; margin added on top.
+estimate: {chars_per_token: 1.5, image_tokens: 2600, margin: 0.15}
 baseline: anthropic/claude-haiku-5.5
 fallback_order:
   - anthropic/claude-haiku-5.5
@@ -22,7 +28,7 @@ models:
     price_out: 0.5
     price_source: snapshot
     price_cliff: {prompt_tokens: 100000, multiplier: 5.0}
-    reasoning: omit
+    reasoning: none
     response_format: true
     max_tokens: 4096
   openai/gpt-6-luna:
@@ -30,7 +36,7 @@ models:
     price_in: 0.1
     price_out: 0.5
     price_source: snapshot
-    reasoning: omit
+    reasoning: default
     response_format: true
     max_tokens: 4096
   z-ai/glm-5.3-flash:
@@ -38,7 +44,7 @@ models:
     price_in: 0.15
     price_out: 0.5
     price_source: snapshot
-    reasoning: omit
+    reasoning: default
     response_format: true
     max_tokens: 4096
   qwen/qwen3-vl-235b-a22b-instruct:
@@ -46,7 +52,7 @@ models:
     price_in: 0.21
     price_out: 1.9
     price_source: snapshot
-    reasoning: omit
+    reasoning: default
     response_format: true
     max_tokens: 4096
   deepseek/deepseek-v3.2:
@@ -54,7 +60,7 @@ models:
     price_in: 0.26
     price_out: 0.38
     price_source: snapshot
-    reasoning: omit
+    reasoning: default
     response_format: true
     max_tokens: 4096
   google/gemini-3.8-flash:
@@ -62,7 +68,7 @@ models:
     price_in: 0.75
     price_out: 3.75
     price_source: snapshot
-    reasoning: omit
+    reasoning: default
     response_format: true
     max_tokens: 4096
   google/gemini-3.1-pro-preview:
@@ -71,7 +77,7 @@ models:
     price_out: 12
     price_source: snapshot
     price_cliff: {prompt_tokens: 200000, multiplier: 2.0}
-    reasoning: omit
+    reasoning: default
     response_format: true
     max_tokens: 4096
   anthropic/claude-sonnet-5.5:
@@ -79,7 +85,7 @@ models:
     price_in: 2
     price_out: 10
     price_source: snapshot
-    reasoning: omit
+    reasoning: default
     response_format: true
     max_tokens: 4096
   openai/gpt-6.1-sol:
@@ -87,6 +93,6 @@ models:
     price_in: 2
     price_out: 10
     price_source: snapshot
-    reasoning: omit
+    reasoning: default
     response_format: true
     max_tokens: 4096

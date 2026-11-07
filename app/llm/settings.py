@@ -27,12 +27,16 @@ class LLMSettings:
     breaker_pause_s: float = 60.0  # P2-29
     breaker_abort: bool = False  # LLM_BREAKER_ABORT=1 in dev scripts: tripped -> abort run
     slot_poll_s: float = 0.25
+    probe_poll_s: float = 1.0  # P2-33: how often a caller re-checks a half-open breaker
+    reasoning_override: str | None = None  # P2-31 dev only (compose.dev.yaml): default|none
 
     def __post_init__(self) -> None:
         if self.max_concurrency < 1:
             raise ValueError(f"LLM_MAX_CONCURRENCY must be >= 1, got {self.max_concurrency}")
         if self.max_attempts < 1:
             raise ValueError("max_attempts must be >= 1")
+        if self.reasoning_override not in (None, "default", "none"):
+            raise ValueError("LLM_REASONING_OVERRIDE must be default or none")
 
     @property
     def slot_lease_s(self) -> float:
@@ -52,4 +56,5 @@ class LLMSettings:
             cache_dir=env.get("LLM_CACHE_DIR") or None,
             request_timeout_s=float(env.get("LLM_REQUEST_TIMEOUT_S") or 120.0),
             breaker_abort=(env.get("LLM_BREAKER_ABORT") or "") in ("1", "true", "yes"),
+            reasoning_override=env.get("LLM_REASONING_OVERRIDE") or None,
         )

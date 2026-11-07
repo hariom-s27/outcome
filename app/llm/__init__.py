@@ -8,6 +8,7 @@ from app.llm.client import (
     LLMCallFailed,
     LLMClient,
     LLMStopped,
+    Projection,
 )
 from app.llm.models import ModelCatalog, UnknownModelError
 from app.llm.settings import LLMSettings
@@ -24,5 +25,6 @@ __all__ = [
     "LLMStopped",
     "LLMStore",
     "ModelCatalog",
+    "Projection",
     "UnknownModelError",
 ]
