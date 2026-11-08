@@ -5,6 +5,11 @@ over HTTP, score them with tools/validate.py's score(), record the numbers.
     uv run python scripts/eval_dev.py --docs boxscore_001 --max-usd 0.03 --no-record \\
         --label reasoning=none                             # pilot
     uv run python scripts/eval_dev.py --reuse <run_id>     # re-score a saved run, no HTTP
+    uv run python scripts/eval_dev.py --docs lease_002 --expect-live --run-index 1  # P5 live
+
+--expect-live (P5 D-1): every job's calls must be live; one dev-cache replay -> exit 3,
+nothing scored or recorded. History lines carry path, cache_mode, run_index, prompt_version,
+all_live (P5 D-2).
 
 HTTP only (localhost:8080): submit, poll every 2 s, read result.metadata.cost_usd for the
 --max-usd stop. No key, no DB. Documents run one at a time; the run aborts when the spend
@@ -134,8 +139,31 @@ def score_doc(doc_id: str, schema_name: str, job: dict) -> dict[str, Any]:
         reasoning_effort=meta.get("reasoning_effort"),
         cache_hits=meta.get("cache_hits", 0),
         truncated=bool(meta.get("truncated", False)),
+        path=doc_path(job),
+        cache_mode=meta.get("cache_mode", "unknown"),
+        replays=replays(job),
     )
     return rec
+
+
+# --- P5 D-1 / D-2: live runs and what a history line records ------------------------------------
+
+
+def _meta(job: dict) -> dict:
+    return ((job.get("result") or {}).get("metadata")) or {}
+
+
+def replays(job: dict) -> int:
+    """Calls of this job answered from the dev cache (ledger cache_hit rows)."""
+    meta = _meta(job)
+    ext = meta.get("extraction") if isinstance(meta.get("extraction"), dict) else {}
+    return max(int(meta.get("cache_hits", 0) or 0), int(ext.get("cache_replays", 0) or 0))
+
+
+def doc_path(job: dict) -> str:
+    """'smart' when the single-value smart path ran (even if it fell back), else 'baseline'."""
+    ext = _meta(job).get("extraction")
+    return "smart" if isinstance(ext, dict) and ext.get("path") == "smart" else "baseline"
 
 
 # --- running ------------------------------------------------------------------------------------
@@ -214,8 +242,13 @@ def summarise(
     label: str,
     aborted: str | None,
     gates: dict[str, Any] | None = None,
+    run_index: int = 1,
 ) -> dict:
+    from app.pipeline.single_value import PROMPT_VERSION
+
     scored = [r for r in records if "score" in r]
+    paths = sorted({r.get("path") or "baseline" for r in scored})
+    modes = sorted({r.get("cache_mode") or "unknown" for r in scored})
     lat = [r["latency_ms"] for r in scored if r.get("latency_ms")]
     totals = Counter()
     for r in scored:
@@ -252,6 +285,13 @@ def summarise(
         # P4-05/06: a report must say when a gate was bypassed
         "dry_run": (gates or {}).get("dry_run", "not_run"),
         "allow_dirty_used": bool((gates or {}).get("allow_dirty_used", False)),
+        # P5 D-2
+        "path": "+".join(paths) or "unknown",
+        "path_per_doc": {r["doc"]: r.get("path") or "baseline" for r in scored},
+        "cache_mode": "+".join(modes) or "unknown",
+        "run_index": int(run_index),
+        "prompt_version": PROMPT_VERSION,
+        "all_live": bool(scored) and all(r.get("replays", 0) == 0 for r in scored),
     }
 
 
@@ -358,6 +398,14 @@ def main() -> int:
         action="store_true",
         help="skip the dry-run gate (Hariom's yes only; recorded)",
     )
+    ap.add_argument(
+        "--expect-live",
+        action="store_true",
+        help="P5: refuse to score if any job replayed a call from the dev cache",
+    )
+    ap.add_argument(
+        "--run-index", type=int, default=1, help="P5: run number (1..n) recorded in history"
+    )
     args = ap.parse_args()
     if args.reuse_from and (args.reuse or not args.docs):
         ap.error("--reuse-from needs --docs and cannot be combined with --reuse")
@@ -387,6 +435,7 @@ def main() -> int:
         return 2
 
     records: list[dict] = []
+    jobs: list[tuple[str, dict]] = []
     spent = 0.0
     fail_streak = 0
     aborted = None
@@ -407,10 +456,29 @@ def main() -> int:
         else:
             job = submit_and_wait(args.base_url, doc_id, rows[doc_id])
             raw_path.write_text(json.dumps(job, indent=1), encoding="utf-8", newline="\n")
+        meta = _meta(job)
+        spent += float(meta.get("cost_usd", 0.0) or 0.0)
+        if args.expect_live:  # P5 D-1: no score is computed until every job is known live
+            print(
+                f"{doc_id:14s} {job.get('status', '?'):8s} calls={meta.get('model_calls', 0)} "
+                f"replays={replays(job)} cache_mode={meta.get('cache_mode', 'unknown')}",
+                flush=True,
+            )
+            if replays(job):
+                print(f"refused: {doc_id} replayed {replays(job)} call(s) from the dev cache; "
+                      "no scores computed or recorded (--expect-live)")  # fmt: skip
+                return 3
+        jobs.append((doc_id, job))
+        reason = meta.get("terminal_reason")
+        fail_streak = fail_streak + 1 if reason in LLM_FAILURE_REASONS else 0
+        if fail_streak >= 2:
+            aborted = "2 documents in a row ended with an LLM failure reason"
+            break
+
+    for doc_id, job in jobs:
         rec = score_doc(doc_id, rows[doc_id]["schema_name"], job)
-        rec["pipeline"] = ((job.get("result") or {}).get("metadata") or {}).get("pipeline")
+        rec["pipeline"] = _meta(job).get("pipeline")
         records.append(rec)
-        spent += rec.get("cost_usd", 0.0)
         print(fmt_doc(rec), flush=True)
         if args.write_outputs and rec.get("valid") and "result" in job:
             OUT.mkdir(exist_ok=True)
@@ -418,12 +486,8 @@ def main() -> int:
             (OUT / f"{doc_id}.json").write_text(
                 json.dumps(out, indent=2) + "\n", encoding="utf-8", newline="\n"
             )
-        fail_streak = fail_streak + 1 if rec.get("terminal_reason") in LLM_FAILURE_REASONS else 0
-        if fail_streak >= 2:
-            aborted = "2 documents in a row ended with an LLM failure reason"
-            break
 
-    summary = summarise(records, rid, args.label, aborted, gates)
+    summary = summarise(records, rid, args.label, aborted, gates, args.run_index)
     print(
         f"\nMEAN {summary['mean_score']:.3f} n={summary['n_docs']} "
         f"all_valid={summary['all_valid']} "
