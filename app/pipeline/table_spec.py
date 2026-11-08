@@ -1,14 +1,23 @@
-"""Long-table path (P6): the model writes a recipe, code copies every row (T-1, T-2).
+"""Spreadsheet table path (P6, P6b): the model writes a recipe, code copies every row (T-1, T-2).
 
-Runs only for a field list with a primary field, an XLSX/CSV file, and a profiled data region
-of more than MIN_DATA_LINES lines (T-3); otherwise the baseline runs unchanged (PDF: T-4).
+Runs for every field list with a primary field on an XLSX/CSV file with a profiled data
+region (P6b B-2: no length threshold, so the model never types table rows on a spreadsheet
+and cannot fall into a long repetition loop); otherwise the baseline runs unchanged (PDF: T-4).
 
 1. profile the sheets (app.tables.profile) -> compact preview
-2. two specs: the model's (one call, JSON; one repair call with the validator's message if
-   it is invalid, T-13) and the heuristic one (no call, T-6)
+2. two specs: the model's (one call, JSON) and the heuristic one (no call, T-6). The model's
+   spec is salvaged per entry (B-3): a bad row_fields / doc_fields entry is dropped, the
+   rest kept; the one repair call happens only when the core (sheet, rows, key column,
+   record_start, skip) is invalid, and it asks to keep every valid entry unchanged
 3. execute both on every line, run the free checks; hard-failed specs (C1 or C5) are dropped,
    the rest ranked by checks_passed + 2 x filled_fraction (row-level fields with a non-null
-   value), ties -> the model's spec; both hard-failed -> the baseline once (T-14)
+   value)
+4. field-level merge (B-4): when the specs agree on sheet + key column (+ compatible
+   record_start), the winner's entries plus the others' entries for fields the winner leaves
+   unmapped; kept only if its rank >= the best single spec
+5. fresh retry (B-5): if the chosen spec fills 0 row-level fields, one fresh spec call (no
+   repair history), then 3-4 again
+6. nothing passes -> the baseline once (T-14)
 Metadata `extraction.table`: chosen spec, check results, lines by disposition, rows, calls.
 Nothing here logs or stores document text (R23).
 """
@@ -31,16 +40,16 @@ from app.tables import heuristic
 from app.tables.checks import run_checks, spec_score
 from app.tables.execute import Execution, execute
 from app.tables.profile import WorkbookProfile, preview, profile_blocks
-from app.tables.spec import Spec, validate_spec
+from app.tables.spec import Spec, salvage_spec, validate_spec
 
 log = logging.getLogger("app.pipeline.table_spec")
 
 PIPELINE = "table-spec-v1"
-MIN_DATA_LINES = 60  # T-3: only tables longer than this take the spec path
 TABLE_FILE_TYPES = ("xlsx", "csv")
 SPEC_MAX_TOKENS = 2048
 SPEC_OUT_REALISTIC = 700  # dry-run estimate of a spec answer's length
-MAX_REPAIRS = 1
+MAX_REPAIRS = 1  # only for a broken core (B-3)
+MAX_RETRIES = 1  # fresh spec call when the chosen spec fills no row field (B-5)
 CONF_TOTALS = 0.85  # chosen spec passed, C3 passed
 CONF_NO_TOTAL = 0.75  # chosen spec passed, no total to check
 CONF_TOTALS_FAILED = 0.65  # chosen spec passed, C3 failed (soft)
@@ -114,7 +123,8 @@ in row_fields or doc_fields (null when the sheet does not hold it). Do not list 
 """
 
 REPAIR = (
-    "The validator rejected that spec:\n{errors}\nReturn the corrected spec as ONE JSON "
+    "The validator rejected that spec:\n{errors}\nKeep every valid entry of row_fields and "
+    "doc_fields unchanged; fix only the listed errors. Return the corrected spec as ONE JSON "
     "object, nothing else."
 )
 
@@ -129,15 +139,15 @@ def primary_key(field_list: dict[str, Any]) -> str | None:
 def applies(
     field_list: dict[str, Any], blocks: list[Block], file_type: str
 ) -> tuple[bool, str, WorkbookProfile | None]:
-    """T-3 / T-4: (take the spec path?, why, profile)."""
+    """T-4 / P6b B-2: (take the spec path?, why, profile). Any table length."""
     if file_type not in TABLE_FILE_TYPES:
         return False, "file_type", None
     if primary_key(field_list) is None:
         return False, "no_primary", None
     wp = profile_blocks(blocks)
-    if wp.data_line_count() <= MIN_DATA_LINES:
-        return False, "short_table", wp
-    return True, "long_table", wp
+    if wp.data_line_count() == 0:
+        return False, "no_table", wp
+    return True, "table", wp
 
 
 # --- the model's spec --------------------------------------------------------------------------
@@ -164,28 +174,39 @@ def ask_spec(
     wp: WorkbookProfile,
     file_type: str,
     info: dict[str, Any],
+    *,
+    purpose: str = "table_spec",
+    repairs: int = MAX_REPAIRS,
 ) -> Spec | None:
+    """One spec call, salvaged per entry (B-3); a repair call only for a broken core.
+    `info` gets counts and error kinds only (never document text)."""
     messages = build_messages(field_list, wp, file_type)
     info["tokens_estimated"] = llm.catalog.estimate.tokens(messages, None)
-    for attempt in range(1 + MAX_REPAIRS):
-        purpose = "table_spec" if attempt == 0 else "table_spec_repair"
+    for attempt in range(1 + repairs):
+        call = purpose if attempt == 0 else f"{purpose}_repair"
         out = llm.complete_json(
-            replace(ctx, purpose=purpose), model, messages, max_tokens=SPEC_MAX_TOKENS
+            replace(ctx, purpose=call), model, messages, max_tokens=SPEC_MAX_TOKENS
         )
         info["calls"] += 1
         if out.status != "ok":
             info["llm_reason"] = out.reason or out.status
+            info["llm_status"] = out.status
             return None
-        spec, errors = validate_spec(out.data, field_list, wp, source="ai")
+        spec, core_errors, dropped = salvage_spec(out.data, field_list, wp, source="ai")
+        if dropped:
+            info["entries_dropped"] = info.get("entries_dropped", 0) + len(dropped)
+            kinds = set(info.get("dropped_kinds", [])) | {e.split(":", 1)[0] for e in dropped}
+            info["dropped_kinds"] = sorted(kinds)[:10]
+            log.info("job %s table spec: %d entries dropped", ctx.job_id, len(dropped))
         if spec is not None:
             info["repaired"] = attempt > 0
             return spec
-        info["errors"] = len(errors)
-        info["error_kinds"] = sorted({e.split(":", 1)[0] for e in errors})[:10]
+        info["errors"] = len(core_errors)
+        info["error_kinds"] = sorted({e.split(":", 1)[0] for e in core_errors})[:10]
         messages = [
             *messages,
             {"role": "assistant", "content": json.dumps(out.data)[:20_000]},
-            {"role": "user", "content": REPAIR.format(errors="\n".join(errors[:20]))},
+            {"role": "user", "content": REPAIR.format(errors="\n".join(core_errors[:20]))},
         ]
     return None
 
@@ -231,13 +252,78 @@ def run_candidate(spec: Spec, wp: WorkbookProfile, field_list: dict[str, Any]) -
     }
 
 
+# tie order: a merge that ranks as high as the best single spec is kept (B-4); then the
+# model's first spec, its fresh retry, the heuristic
+PREFER = {"merged": 3, "ai": 2, "retry": 1, "heuristic": 0}
+KEY_STARTS = ("key_nonempty", "key_matches_shape")
+
+
 def choose(cands: dict[str, dict[str, Any]]) -> str | None:
     """Hard-failed specs (C1 or C5) are dropped; among the rest the highest
-    checks_passed + 2 x filled_fraction wins; ties -> the model's spec."""
+    checks_passed + 2 x filled_fraction wins; ties -> PREFER (merged, ai, retry, heuristic)."""
     ok = [
-        (round(c["rank"], 9), name == "ai", name) for name, c in cands.items() if not c["hard_fail"]
+        (round(c["rank"], 9), PREFER.get(name, -1), name)
+        for name, c in cands.items()
+        if not c["hard_fail"]
     ]
     return max(ok)[2] if ok else None
+
+
+def compatible(a: Spec, b: Spec) -> bool:
+    """B-4: same sheet and key column, and record starts that pick records from the key
+    column (or the same column_nonempty rule)."""
+    if a.sheet != b.sheet or a.key_column != b.key_column:
+        return False
+    if a.record_start in KEY_STARTS and b.record_start in KEY_STARTS:
+        return True
+    return a.record_start == b.record_start and a.record_col == b.record_col
+
+
+def merge_spec(winner: Spec, others: list[Spec]) -> tuple[Spec | None, int]:
+    """B-4 field-level merge: the winner's core and entries, plus, from each compatible other
+    spec in turn, the entries for fields the winner leaves unmapped (no row rule and no
+    document cell). (None, 0) when nothing would be added."""
+    row = dict(winner.row_fields)
+    doc = dict(winner.doc_fields)
+    added = 0
+    for other in others:
+        if not compatible(winner, other):
+            continue
+        for key, rule in other.row_fields.items():
+            if key in row or doc.get(key) is not None:
+                continue
+            row[key] = rule
+            doc.pop(key, None)
+            added += 1
+        for key, ref in other.doc_fields.items():
+            if ref is None or key in row or doc.get(key) is not None:
+                continue
+            doc[key] = ref
+            added += 1
+    if not added:
+        return None, 0
+    return replace(winner, row_fields=row, doc_fields=doc, source="merged"), added
+
+
+def select(
+    cands: dict[str, dict[str, Any]], wp: WorkbookProfile, field_list: dict[str, Any]
+) -> str | None:
+    """Pick the best single spec, try the merge on top of it, then pick again (B-4)."""
+    cands.pop("merged", None)
+    best = choose(cands)
+    if best is None:
+        return None
+    others = [
+        c["spec"]
+        for name, c in sorted(cands.items(), key=lambda kv: -kv[1]["rank"])
+        if name != best
+    ]
+    merged, added = merge_spec(cands[best]["spec"], others)
+    if merged is not None:
+        cands["merged"] = run_candidate(merged, wp, field_list)
+        cands["merged"]["added"] = added
+        cands["merged"]["base"] = best
+    return choose(cands)
 
 
 def confidence(cand: dict[str, Any], name: str) -> float:
@@ -264,7 +350,9 @@ def entries_with_confidence(ex: Execution, conf: float) -> list[dict[str, Any]]:
 
 def summary(cand: dict[str, Any]) -> dict[str, Any]:
     ex: Execution = cand["ex"]
+    extra = {k: cand[k] for k in ("added", "base") if k in cand}
     return {
+        **extra,
         "score": cand["score"],
         "hard_fail": cand["hard_fail"],
         "filled": round(cand["filled"], 4),
@@ -294,6 +382,21 @@ def candidates(
     return cands, info
 
 
+def needs_retry(
+    chosen: str | None,
+    cands: dict[str, dict[str, Any]],
+    field_list: dict[str, Any],
+    ai_info: dict[str, Any],
+) -> bool:
+    """B-5: the chosen spec fills no row-level field (key only) while the field list has
+    some, and the model is still reachable (its call was not stopped by a cap or failed)."""
+    if chosen is None or MAX_RETRIES < 1:
+        return False
+    if ai_info.get("llm_status") in ("stopped", "failed"):
+        return False
+    return cands[chosen]["filled"] == 0 and bool(row_level_fields(field_list))
+
+
 def _zero_meta() -> dict[str, Any]:
     return {"model_calls": 0, "tokens_in": 0, "tokens_out": 0, "cost_usd": 0.0, "latency_ms": 0}
 
@@ -316,8 +419,19 @@ def _spec_path(
     table["ai_spec"] = {"valid": ai_spec is not None, **ai_info}
     cands, info = candidates(field_list, wp, ai_spec)
     table.update(info)
+    chosen = select(cands, wp, field_list)
+    if needs_retry(chosen, cands, field_list, ai_info):  # B-5: once, no repair history
+        r_info: dict[str, Any] = {"calls": 0}
+        r_spec = ask_spec(
+            llm, ctx, model, field_list, wp, file_type, r_info,
+            purpose="table_spec_retry", repairs=0,
+        )  # fmt: skip
+        table["calls"] += r_info.pop("calls")
+        table["retry"] = {"valid": r_spec is not None, **r_info}
+        if r_spec is not None:
+            cands["retry"] = run_candidate(r_spec, wp, field_list)
+            chosen = select(cands, wp, field_list)
     table["candidates"] = {name: summary(c) for name, c in cands.items()}
-    chosen = choose(cands)
     if chosen is None:
         table["chosen"] = "fallback"
         table["fallback_reason"] = "no_spec_passed" if cands else "no_valid_spec"
@@ -392,8 +506,8 @@ def plan(
         preview_chars=len(messages[1]["content"]),
         est_tokens_in=est,
         calls_planned=1,
-        calls_max=1 + MAX_REPAIRS,
-        est_usd_fuse=round((1 + MAX_REPAIRS) * spec.cost(est, SPEC_MAX_TOKENS), 6),
+        calls_max=1 + MAX_REPAIRS + MAX_RETRIES,
+        est_usd_fuse=round((1 + MAX_REPAIRS + MAX_RETRIES) * spec.cost(est, SPEC_MAX_TOKENS), 6),
         est_usd_realistic=round(spec.cost(math.ceil(est * 0.8), SPEC_OUT_REALISTIC), 6),
         heuristic=summary(h) if h else None,
     )

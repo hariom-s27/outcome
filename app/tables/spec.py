@@ -198,19 +198,65 @@ def _check_rule(
 def validate_spec(
     raw: Any, field_list: dict[str, Any], wp: WorkbookProfile, source: str = "ai"
 ) -> tuple[Spec | None, list[str]]:
-    """Model (or heuristic) JSON -> Spec, or None with the reasons (no document text)."""
-    errors: list[str] = []
+    """Strict: model (or heuristic) JSON -> Spec, or None with the reasons (no document text).
+    Any error (core or entry) makes the spec invalid."""
+    spec, core_errors, entry_errors = salvage_spec(raw, field_list, wp, source)
+    errors = core_errors + entry_errors
+    return (None, errors) if errors else (spec, [])
+
+
+def salvage_spec(
+    raw: Any, field_list: dict[str, Any], wp: WorkbookProfile, source: str = "ai"
+) -> tuple[Spec | None, list[str], list[str]]:
+    """P6b B-3 per-entry salvage: (spec, core errors, dropped-entry errors).
+
+    The core (sheet, header_row, data rows, until_blank_run, key_column, record_start, skip)
+    must be valid, else spec is None. Each row_fields / doc_fields entry is checked on its
+    own; a bad entry is dropped with its reason and the rest of the spec is kept. Unknown
+    top-level keys are dropped too (reported with the entries)."""
     if not isinstance(raw, dict):
-        return None, ["spec must be a JSON object"]
+        return None, ["spec must be a JSON object"], []
     if "spec" in raw and isinstance(raw["spec"], dict) and len(raw) == 1:
         raw = raw["spec"]  # tolerated wrapper
+    core = _check_core(raw, wp)
+    errors: list[str] = []  # entry level
     unknown = set(raw) - SPEC_KEYS
     if unknown:
         errors.append(f"unknown keys: {sorted(unknown)}")
-    fields: dict[str, Any] = field_list.get("fields") or {}
-    primary = next(
-        (k for k, v in fields.items() if isinstance(v, dict) and v.get("primary") is True), None
+    key_col = raw.get("key_column")
+    row_fields, doc_fields = _check_entries(raw, field_list, wp, key_col, errors)
+    if core.errors:
+        return None, core.errors, errors
+    return (
+        Spec(
+            sheet=raw["sheet"],
+            header_row=raw.get("header_row"),
+            data_first_row=raw["data_first_row"],
+            data_last_row=raw.get("data_last_row"),
+            until_blank_run=raw.get("until_blank_run"),
+            key_column=key_col,
+            record_start=core.record_start,
+            record_col=core.record_col,
+            skip=tuple(dict.fromkeys(core.skip)),
+            row_fields=row_fields,
+            doc_fields=doc_fields,
+            source=source,
+        ),
+        [],
+        errors,
     )
+
+
+@dataclass
+class _Core:
+    errors: list[str]
+    record_start: str = ""
+    record_col: str | None = None
+    skip: list[str] = field(default_factory=list)
+
+
+def _check_core(raw: dict[str, Any], wp: WorkbookProfile) -> _Core:
+    errors: list[str] = []
     sheet = raw.get("sheet")
     if not isinstance(sheet, str) or sheet not in wp.sheets:
         errors.append("sheet: must name one of the workbook's sheets")
@@ -242,8 +288,25 @@ def validate_spec(
     if not isinstance(skip, list) or any(s not in SKIPS for s in skip):
         errors.append(f"skip: a list of {SKIPS}")
         skip = []
+    return _Core(errors, rs if isinstance(rs, str) else "", record_col, list(skip))
+
+
+def _check_entries(
+    raw: dict[str, Any],
+    field_list: dict[str, Any],
+    wp: WorkbookProfile,
+    key_col: Any,
+    errors: list[str],
+) -> tuple[dict[str, dict[str, Any]], dict[str, str | None]]:
+    """Each row_fields / doc_fields entry on its own; bad ones go to `errors` and are left out."""
+    fields: dict[str, Any] = field_list.get("fields") or {}
+    primary = next(
+        (k for k, v in fields.items() if isinstance(v, dict) and v.get("primary") is True), None
+    )
     row_fields: dict[str, dict[str, Any]] = {}
     rf = raw.get("row_fields", {})
+    if rf is None:
+        rf = {}
     if not isinstance(rf, dict):
         errors.append("row_fields: an object")
         rf = {}
@@ -262,6 +325,8 @@ def validate_spec(
         row_fields[key] = checked
     doc_fields: dict[str, str | None] = {}
     df = raw.get("doc_fields", {})
+    if df is None:
+        df = {}
     if not isinstance(df, dict):
         errors.append("doc_fields: an object")
         df = {}
@@ -288,22 +353,4 @@ def validate_spec(
             errors.append(f"doc_fields.{key}: unknown sheet or bad cell reference")
             continue
         doc_fields[key] = f"{sh}!{a1.strip().upper().replace('$', '')}"
-    if errors:
-        return None, errors
-    return (
-        Spec(
-            sheet=sheet,
-            header_row=hr,
-            data_first_row=first,
-            data_last_row=last,
-            until_blank_run=run,
-            key_column=key_col,
-            record_start=rs,
-            record_col=record_col,
-            skip=tuple(dict.fromkeys(skip)),
-            row_fields=row_fields,
-            doc_fields=doc_fields,
-            source=source,
-        ),
-        [],
-    )
+    return row_fields, doc_fields
