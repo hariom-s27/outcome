@@ -235,6 +235,12 @@ def fmt_doc(r: dict) -> str:
     )
 
 
+def default_docs(rows: dict[str, dict], final_sealed: bool) -> list[str]:
+    """Every DEV doc; with --final-sealed (P8b Z-7) every manifest doc, held-out included, so
+    the held-out ids never have to be typed on a command line."""
+    return [d for d in rows if final_sealed or d not in HELD_OUT]
+
+
 def paid_run_gates(
     live_docs: list[str], allow_dirty: bool, skip_dry_run: bool, git=None
 ) -> tuple[bool, dict[str, Any]]:
@@ -248,7 +254,9 @@ def paid_run_gates(
         print("dry run SKIPPED by --skip-dry-run")
         gates["dry_run"] = "skipped"
         return True, gates
-    passed, recs = dry_run.run(live_docs)
+    # P8b Z-7: the dry run never opens a held-out document (dry_run refuses them); held-out
+    # documents are opened once, by the sealed run itself.
+    passed, recs = dry_run.run([d for d in live_docs if d not in HELD_OUT])
     for r in recs:
         if not r.get("ok"):
             print(dry_run.fmt(r))
@@ -266,6 +274,7 @@ def summarise(
     aborted: str | None,
     gates: dict[str, Any] | None = None,
     run_index: int = 1,
+    final: bool = False,
 ) -> dict:
     from app.pipeline.single_value import PROMPT_VERSION
 
@@ -280,9 +289,16 @@ def summarise(
     uncached = sum(r.get("cost_uncached_usd", r.get("cost_usd", 0.0)) for r in scored)
     models = sorted({m for r in scored for m in r.get("models_returned") or []})
     pipelines = sorted({r.get("pipeline") or "" for r in scored} - {""})
+    dev = [r for r in scored if r["doc"] not in HELD_OUT]
+    held = [r for r in scored if r["doc"] in HELD_OUT]
     return {
         "run_id": rid,
         "date": dt.datetime.now(dt.UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        # P8b Z-7/Z-8: the sealed final run; DEV and held-out reported apart
+        "final": bool(final),
+        "n_dev": len(dev),
+        "dev_mean_score": round(statistics.fmean(r["score"] for r in dev), 4) if dev else 0.0,
+        "held_out_per_doc": {r["doc"]: r["score"] for r in held},
         "pipeline": ",".join(pipelines) or "unknown",
         "model": ",".join(models) or "-",
         "label": label,
@@ -332,6 +348,15 @@ def reason_extras(r: dict) -> str:
 
 
 def write_report(records: list[dict], summary: dict, report: Path = REPORT) -> None:
+    if summary.get("final"):  # P8b Z-8: DEV mean and held-out count stated apart
+        head = (
+            f"**DEV mean {summary['dev_mean_score']:.3f} over n = {summary['n_dev']} DEV docs; "
+            f"held-out (scored once): {len(summary['held_out_per_doc'])} docs** · "
+        )
+    else:
+        head = (
+            f"**Mean score {summary['mean_score']:.3f} over n = {summary['n_docs']} DEV docs** · "
+        )
     lines = [
         "# DEV eval (baseline)",
         "",
@@ -362,8 +387,7 @@ def write_report(records: list[dict], summary: dict, report: Path = REPORT) -> N
         )
     lines += [
         "",
-        f"**Mean score {summary['mean_score']:.3f} over n = {summary['n_docs']} DEV docs** · "
-        f"paid ${summary['cost_usd']:.5f} (computed ${summary['cost_computed_usd']:.5f}) · "
+        head + f"paid ${summary['cost_usd']:.5f} (computed ${summary['cost_computed_usd']:.5f}) · "
         f"uncached ${summary['cost_uncached_usd']:.5f} · "
         f"**${summary['usd_per_doc']:.5f}/doc uncached** · p50 latency "
         f"{summary['p50_latency_ms'] / 1000:.1f} s · reasoning tokens "
@@ -448,7 +472,7 @@ def main() -> int:
     report = args.report if args.report.is_absolute() else ROOT / args.report
 
     rows = manifest()
-    docs = args.docs or [d for d in rows if d not in HELD_OUT]
+    docs = args.docs or default_docs(rows, args.final_sealed)
     sealed = [d for d in docs if d in HELD_OUT]
     if sealed and not args.final_sealed:
         print(f"refused: held-out documents are sealed until P8 ({len(sealed)} requested)")
@@ -523,7 +547,9 @@ def main() -> int:
                 json.dumps(out, indent=2) + "\n", encoding="utf-8", newline="\n"
             )
 
-    summary = summarise(records, rid, args.label, aborted, gates, args.run_index)
+    summary = summarise(
+        records, rid, args.label, aborted, gates, args.run_index, final=args.final_sealed
+    )
     summary["raw_dir"] = run_dir.relative_to(RUNS).as_posix()
     print(
         f"\nMEAN {summary['mean_score']:.3f} n={summary['n_docs']} "
