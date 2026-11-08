@@ -7,6 +7,8 @@
 sample/
 cache/
 _freshclone/
+# submission zip built by scripts/make_zip.py
+dist/
 
 # process files stay on disk for the agent to read but are not committed (replaces D04);
 # logs/ IS committed
