@@ -12,7 +12,6 @@ SINGLE_VALUE_PATHS = ("baseline", "smart")
 TABLE_PATHS = ("baseline", "spec")
 SCAN_PAGE_METHODS = ("first", "locate")
 PDF_TABLE_METHODS = ("single", "grid")
-E0_ON = ("1", "true", "yes", "on")  # P9c: values that turn an off-by-default switch on
 E0_OFF = ("0", "false", "no", "off")  # Z-35: E0_ROBUST values that turn E0 off; unset = on
 
 
@@ -56,8 +55,9 @@ class Settings:
     # Z-50 passed, runs 141-143; must-not-error full set run 144); single = the v1.0 call.
     pdf_table_method: str = "grid"
     # P9c Z-51: two general cleanup rules on code-copied table rows (placeholder cells -> null,
-    # "(continued)" off carried section labels). Default off; env TABLE_CLEANUP=1 turns it on.
-    table_cleanup: bool = False
+    # "(continued)" off carried section labels). Default on (lab) since Z-60 cleared it (runs
+    # 154-157, 161-166); env TABLE_CLEANUP=0 (or false/no/off) turns it off.
+    table_cleanup: bool = True
 
     def __post_init__(self) -> None:
         if self.pdf_table_method not in PDF_TABLE_METHODS:
@@ -108,5 +108,5 @@ class Settings:
             lab_mode=(env.get("LAB_MODE") or "").strip().lower() in ("1", "true", "yes"),
             e0_robust=(env.get("E0_ROBUST") or "").strip().lower() not in E0_OFF,
             pdf_table_method=(env.get("PDF_TABLE_METHOD") or "grid").strip().lower(),
-            table_cleanup=(env.get("TABLE_CLEANUP") or "").strip().lower() in E0_ON,
+            table_cleanup=(env.get("TABLE_CLEANUP") or "").strip().lower() not in E0_OFF,
         )
