@@ -24,7 +24,7 @@ from app import db, queue
 from app.config import Settings
 from app.extract.compile_fields import is_single_value
 from app.llm import CallContext, LLMClient, LLMSettings
-from app.pipeline import baseline, single_value, table_spec
+from app.pipeline import baseline, baseline_located, single_value, table_spec
 from app.readers import ReaderError, read_document
 from app.results import stub_result
 
@@ -81,12 +81,16 @@ class Heartbeat:
 def choose_pipeline(settings: Settings, field_list: dict[str, Any]) -> ModuleType:
     """P5-03/P5-04: smart path only when switched on AND the field list is single-value.
     P6 T-15: table field lists go to table_spec only when switched on; it keeps the baseline
-    itself for PDFs and short tables (T-3, T-4)."""
+    itself for PDFs and short tables (T-3, T-4).
+    P8b Z-13: single-value lists on the baseline use locate page choice for long scans only
+    when SCAN_PAGE_METHOD=locate."""
     single = is_single_value(field_list)
     if settings.single_value_path == "smart" and single:
         return single_value
     if settings.table_path == "spec" and not single:
         return table_spec
+    if settings.scan_page_method == "locate" and single:
+        return baseline_located
     return baseline
 
 
@@ -250,11 +254,13 @@ def main() -> None:  # pragma: no cover - container entry point
     else:
         log.warning("LLM_API_KEY not set: jobs get the P1 skeleton (PARTIAL), R17")
     log.info(
-        "worker %s started (pipeline=%s, single_value_path=%s, table_path=%s, cache_mode=%s)",
+        "worker %s started (pipeline=%s, single_value_path=%s, table_path=%s, scan_pages=%s, "
+        "cache_mode=%s)",
         wid,
         baseline.PIPELINE if llm else "stub",
         settings.single_value_path,
         settings.table_path,
+        settings.scan_page_method,
         llm.cache_mode if llm else "off",
     )
     threading.Thread(target=_sweep_loop, args=(settings, wid), name="sweeper", daemon=True).start()

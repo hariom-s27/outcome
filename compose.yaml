@@ -61,6 +61,7 @@ services:
       DOCX_PAGE_METHOD: ${DOCX_PAGE_METHOD:-none}
       EXTRACT_SINGLE_VALUE_PATH: ${EXTRACT_SINGLE_VALUE_PATH:-baseline}
       EXTRACT_TABLE_PATH: ${EXTRACT_TABLE_PATH:-baseline}
+      SCAN_PAGE_METHOD: ${SCAN_PAGE_METHOD:-first}
     depends_on:
       db:
         condition: service_healthy
