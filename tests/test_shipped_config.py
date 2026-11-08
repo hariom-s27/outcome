@@ -66,10 +66,10 @@ def test_single_value_path_defaults_to_baseline(compose):
     assert env["EXTRACT_SINGLE_VALUE_PATH"] == "${EXTRACT_SINGLE_VALUE_PATH:-baseline}"
 
 
-def test_table_path_defaults_to_baseline(compose):
-    # P6 T-15: shipped = baseline until P6 ships
+def test_table_path_defaults_to_spec(compose):
+    # P8b: shipped = the table recipe (T-16b passed with the live floor, Z-5)
     env = _env(compose["services"]["worker"])
-    assert env["EXTRACT_TABLE_PATH"] == "${EXTRACT_TABLE_PATH:-baseline}"
+    assert env["EXTRACT_TABLE_PATH"] == "${EXTRACT_TABLE_PATH:-spec}"
 
 
 def test_scan_page_method_defaults_to_first(compose):
@@ -100,5 +100,5 @@ def test_settings_from_shipped_env(compose, monkeypatch):
     assert llm.reasoning_override is None
     assert llm.api_key == ""
     assert Settings.from_env().single_value_path == "baseline"
-    assert Settings.from_env().table_path == "baseline"
+    assert Settings.from_env().table_path == "spec"
     assert Settings.from_env().scan_page_method == "first"

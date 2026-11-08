@@ -364,7 +364,9 @@ def test_switch_routes_single_value_lists_only():
     on = Settings(scan_page_method="locate")
     assert worker.choose_pipeline(Settings(), SCAN_FIELDS) is baseline
     assert worker.choose_pipeline(on, SCAN_FIELDS) is baseline_located
-    assert worker.choose_pipeline(on, FLAT_FIELDS) is baseline  # table lists unchanged
+    assert worker.choose_pipeline(on, FLAT_FIELDS) is table_spec  # table lists unchanged
+    off_tables = Settings(scan_page_method="locate", table_path="baseline")
+    assert worker.choose_pipeline(off_tables, FLAT_FIELDS) is baseline
     smart = Settings(scan_page_method="locate", single_value_path="smart")
     assert worker.choose_pipeline(smart, SCAN_FIELDS) is single_value
 

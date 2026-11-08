@@ -21,7 +21,7 @@ from app.llm import CallContext, JSONOutcome, LLMClient, LLMSettings, LLMStore, 
 from app.llm.client import Projection, check_messages
 from app.llm.jsonparse import salvage_object
 from app.llm.models import Estimate, OutputBudget
-from app.pipeline import baseline, single_value
+from app.pipeline import baseline, single_value, table_spec
 from app.pipeline.single_value import (
     Checked,
     DocView,
@@ -480,7 +480,9 @@ def test_switch_default_is_baseline_and_tables_never_go_smart():
     assert worker.choose_pipeline(Settings(), LEASE_FIELDS) is baseline
     smart = Settings(single_value_path="smart")
     assert worker.choose_pipeline(smart, LEASE_FIELDS) is single_value
-    assert worker.choose_pipeline(smart, TABLE_FIELDS) is baseline
+    assert worker.choose_pipeline(smart, TABLE_FIELDS) is table_spec  # P8b: shipped default
+    smart_old_tables = Settings(single_value_path="smart", table_path="baseline")
+    assert worker.choose_pipeline(smart_old_tables, TABLE_FIELDS) is baseline
     with pytest.raises(ValueError):
         Settings(single_value_path="clever")
 

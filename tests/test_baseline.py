@@ -4,6 +4,7 @@ MockTransport gateway. Invented widget data only (R31). No network, no key (R32)
 
 from __future__ import annotations
 
+import dataclasses
 import json
 import random
 from types import SimpleNamespace
@@ -327,6 +328,7 @@ def test_worker_with_key_runs_baseline_to_success(client, settings, database_url
     }
     llm, seen = _llm_client(database_url, reply)
     jid = _submit_csv(client)
+    settings = dataclasses.replace(settings, table_path="baseline")  # the baseline path itself
     assert worker.process_one(settings, "w1", llm) is True
     body = client.get(f"/jobs/{jid}").json()
     assert body["status"] == "SUCCESS"
@@ -342,6 +344,7 @@ def test_worker_with_key_runs_baseline_to_success(client, settings, database_url
 def test_worker_with_unusable_answer_is_partial_skeleton(client, settings, database_url):
     llm, _ = _llm_client(database_url, {"nothing": "useful"})
     jid = _submit_csv(client)
+    settings = dataclasses.replace(settings, table_path="baseline")  # the baseline path itself
     worker.process_one(settings, "w1", llm)
     body = client.get(f"/jobs/{jid}").json()
     assert body["status"] == "PARTIAL"

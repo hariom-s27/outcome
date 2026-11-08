@@ -27,9 +27,9 @@ class Settings:
     # P5-03/P5-04: single-value field lists go to the smart path only when "smart";
     # table field lists always keep the baseline. env EXTRACT_SINGLE_VALUE_PATH.
     single_value_path: str = "baseline"
-    # P6 T-15: table field lists go to the spec path (long XLSX/CSV tables) only when "spec";
-    # default baseline until P6 ships. env EXTRACT_TABLE_PATH.
-    table_path: str = "baseline"
+    # P6 T-15: table field lists go to the spec path (XLSX/CSV tables) when "spec"; shipped
+    # default since P8b (T-16b passed with the live floor, Z-5). env EXTRACT_TABLE_PATH.
+    table_path: str = "spec"
     # P8b Z-13: the baseline single-value path on a scan with more page images than it can
     # send: "first" = the first pages (as before), "locate" = the P5 locator picks them.
     # env SCAN_PAGE_METHOD.
@@ -71,6 +71,6 @@ class Settings:
             worker_poll_s=float(env.get("WORKER_POLL_S") or 1.0),
             version=env.get("APP_VERSION") or "dev",
             single_value_path=(env.get("EXTRACT_SINGLE_VALUE_PATH") or "baseline").strip().lower(),
-            table_path=(env.get("EXTRACT_TABLE_PATH") or "baseline").strip().lower(),
+            table_path=(env.get("EXTRACT_TABLE_PATH") or "spec").strip().lower(),
             scan_page_method=(env.get("SCAN_PAGE_METHOD") or "first").strip().lower(),
         )

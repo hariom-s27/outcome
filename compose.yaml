@@ -60,7 +60,7 @@ services:
       LLM_API_KEY: ${LLM_API_KEY:-}
       DOCX_PAGE_METHOD: ${DOCX_PAGE_METHOD:-none}
       EXTRACT_SINGLE_VALUE_PATH: ${EXTRACT_SINGLE_VALUE_PATH:-baseline}
-      EXTRACT_TABLE_PATH: ${EXTRACT_TABLE_PATH:-baseline}
+      EXTRACT_TABLE_PATH: ${EXTRACT_TABLE_PATH:-spec}
       SCAN_PAGE_METHOD: ${SCAN_PAGE_METHOD:-first}
     depends_on:
       db:

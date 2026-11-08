@@ -689,10 +689,10 @@ def test_pdf_keeps_the_current_path():
     assert [c[0] for c in fake.calls] == ["extract"] and "extraction" not in out.notes
 
 
-def test_switch_routes_and_defaults_to_baseline():
+def test_switch_routes_and_defaults_to_spec():
     single = {"name": "s", "fields": {"a": {"name": "A", "description": "A."}}}
-    off, on = Settings(), Settings(table_path="spec")
-    assert off.table_path == "baseline"
+    off, on = Settings(table_path="baseline"), Settings()
+    assert on.table_path == "spec"  # P8b: shipped default
     assert worker.choose_pipeline(off, FLAT_FIELDS) is baseline
     assert worker.choose_pipeline(on, FLAT_FIELDS) is table_spec
     assert worker.choose_pipeline(on, single) is baseline
@@ -705,13 +705,16 @@ def test_switch_routes_and_defaults_to_baseline():
 def test_switch_from_env(monkeypatch):
     monkeypatch.setenv("EXTRACT_TABLE_PATH", " Spec ")
     assert Settings.from_env().table_path == "spec"
-    monkeypatch.delenv("EXTRACT_TABLE_PATH")
+    monkeypatch.setenv("EXTRACT_TABLE_PATH", "baseline")
     assert Settings.from_env().table_path == "baseline"
+    monkeypatch.delenv("EXTRACT_TABLE_PATH")
+    assert Settings.from_env().table_path == "spec"
 
 
 def test_switch_off_output_identical_on_long_table():
     blocks = blocks_of(LONG)
-    via_worker = worker.choose_pipeline(Settings(), FLAT_FIELDS).extract(
+    off = Settings(table_path="baseline")
+    via_worker = worker.choose_pipeline(off, FLAT_FIELDS).extract(
         FakeLLM(baseline_answer()), CTX, FLAT_FIELDS, blocks, "xlsx"
     )
     direct = baseline.extract(FakeLLM(baseline_answer()), CTX, FLAT_FIELDS, blocks, "xlsx")
