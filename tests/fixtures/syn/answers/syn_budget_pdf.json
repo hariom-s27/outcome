@@ -1,0 +1,3110 @@
+{
+  "schema": "budget_variance",
+  "document": "syn_budget_pdf",
+  "entries": [
+    {
+      "property_name": {
+        "value": "Halcyon Point Office Center",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "property_rsf": {
+        "value": 186450,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_year": {
+        "value": 2042,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "gl_code": {
+        "value": "4010-590",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "line_item": {
+        "value": "Monthly Rent from Office Suites",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "section": {
+        "value": "Rent Billings",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_budget": {
+        "value": 487728.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_reforecast": {
+        "value": 376422.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget": {
+        "value": 394327.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_variance": {
+        "value": -111306.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_pct": {
+        "value": -22.82,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_variance": {
+        "value": 17905.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_pct": {
+        "value": 4.76,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "explanation_of_variance": {
+        "value": "Rate increase of four percent per the amended service agreement, plus one additional inspection required by the city.",
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Halcyon Point Office Center",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "property_rsf": {
+        "value": 186450,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_year": {
+        "value": 2042,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "gl_code": {
+        "value": "4020-940",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "line_item": {
+        "value": "Monthly Rent from Street Shops",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "section": {
+        "value": "Rent Billings",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_budget": {
+        "value": 292286.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_reforecast": {
+        "value": 215347.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget": {
+        "value": 214126.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_variance": {
+        "value": -76939.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_pct": {
+        "value": -26.32,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_variance": {
+        "value": -1221.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_pct": {
+        "value": -0.57,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "explanation_of_variance": {
+        "value": "Vendor change; new contract includes quarterly deep cleaning of all restrooms.",
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Halcyon Point Office Center",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "property_rsf": {
+        "value": 186450,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_year": {
+        "value": 2042,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "gl_code": {
+        "value": "4030-750",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "line_item": {
+        "value": "Rent Waived Under Lease Deals",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "section": {
+        "value": "Rent Billings",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_budget": {
+        "value": 0.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_reforecast": {
+        "value": 121772,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget": {
+        "value": 124025.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_variance": {
+        "value": 121772.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_pct": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_variance": {
+        "value": 2253.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_pct": {
+        "value": 1.85,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "explanation_of_variance": {
+        "value": "Reforecast reflects two new leases signed in the third quarter, partly offset by one early move-out on the fourth floor.",
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Halcyon Point Office Center",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "property_rsf": {
+        "value": 186450,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_year": {
+        "value": 2042,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "gl_code": {
+        "value": "4040-230",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "line_item": {
+        "value": "Rent from Lower-Level Lockers",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "section": {
+        "value": "Rent Billings",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_budget": {
+        "value": 174843.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_reforecast": {
+        "value": 206023.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget": {
+        "value": 240501.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_variance": {
+        "value": 31180.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_pct": {
+        "value": 17.83,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_variance": {
+        "value": 34478.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_pct": {
+        "value": 16.74,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "explanation_of_variance": {
+        "value": "No change expected.",
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Halcyon Point Office Center",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "property_rsf": {
+        "value": 186450,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_year": {
+        "value": 2042,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "gl_code": {
+        "value": "4110-830",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "line_item": {
+        "value": "Running Costs Billed Back",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "section": {
+        "value": "Tenant Cost Pass-Throughs",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_budget": {
+        "value": 98537.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_reforecast": {
+        "value": 71378.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget": {
+        "value": 71194.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_variance": {
+        "value": -27159.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_pct": {
+        "value": -27.56,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_variance": {
+        "value": -184.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_pct": {
+        "value": -0.26,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "explanation_of_variance": {
+        "value": "Vendor change; new contract includes quarterly deep cleaning of all restrooms.",
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Halcyon Point Office Center",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "property_rsf": {
+        "value": 186450,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_year": {
+        "value": 2042,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "gl_code": {
+        "value": "4120-450",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "line_item": {
+        "value": "Levy Share Billed Back",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "section": {
+        "value": "Tenant Cost Pass-Throughs",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_budget": {
+        "value": 7302.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_reforecast": {
+        "value": 6003.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget": {
+        "value": 5665.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_variance": {
+        "value": -1299.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_pct": {
+        "value": -17.79,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_variance": {
+        "value": -338.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_pct": {
+        "value": -5.63,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "explanation_of_variance": {
+        "value": "Higher usage expected after the lobby renovation is completed in the spring.",
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Halcyon Point Office Center",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "property_rsf": {
+        "value": 186450,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_year": {
+        "value": 2042,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "gl_code": {
+        "value": "4130-120",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "line_item": {
+        "value": "Metered Power Rebilled",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "section": {
+        "value": "Tenant Cost Pass-Throughs",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_budget": {
+        "value": 50560.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_reforecast": {
+        "value": 43282.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget": {
+        "value": 39409.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_variance": {
+        "value": -7278.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_pct": {
+        "value": -14.39,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_variance": {
+        "value": -3873.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_pct": {
+        "value": -8.95,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "explanation_of_variance": {
+        "value": "No change expected.",
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Halcyon Point Office Center",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "property_rsf": {
+        "value": 186450,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_year": {
+        "value": 2042,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "gl_code": {
+        "value": "4210-690",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "line_item": {
+        "value": "Garage Ticket Sales",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "section": {
+        "value": "Sundry Building Income",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_budget": {
+        "value": 9960.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_reforecast": {
+        "value": 12917.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget": {
+        "value": 13916.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_variance": {
+        "value": 2957.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_pct": {
+        "value": 29.69,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_variance": {
+        "value": 999.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_pct": {
+        "value": 7.73,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "explanation_of_variance": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Halcyon Point Office Center",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "property_rsf": {
+        "value": 186450,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_year": {
+        "value": 2042,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "gl_code": {
+        "value": "4220-190",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "line_item": {
+        "value": "Rooftop Antenna Rent",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "section": {
+        "value": "Sundry Building Income",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_budget": {
+        "value": 389765.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_reforecast": {
+        "value": 424231.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget": {
+        "value": 448548.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_variance": {
+        "value": 34466.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_pct": {
+        "value": 8.84,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_variance": {
+        "value": 24317.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_pct": {
+        "value": 5.73,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "explanation_of_variance": {
+        "value": "Vendor change; new contract includes quarterly deep cleaning of all restrooms.",
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Halcyon Point Office Center",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "property_rsf": {
+        "value": 186450,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_year": {
+        "value": 2042,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "gl_code": {
+        "value": "4230-710",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "line_item": {
+        "value": "Charges on Overdue Rent",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "section": {
+        "value": "Sundry Building Income",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_budget": {
+        "value": 0.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_reforecast": {
+        "value": 166370,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget": {
+        "value": 174530.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_variance": {
+        "value": 166370.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_pct": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_variance": {
+        "value": 8160.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_pct": {
+        "value": 4.9,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "explanation_of_variance": {
+        "value": "Rate increase of four percent per the amended service agreement, plus one additional inspection required by the city.",
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Halcyon Point Office Center",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "property_rsf": {
+        "value": 186450,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_year": {
+        "value": 2042,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "gl_code": {
+        "value": "6310-620",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "line_item": {
+        "value": "Nightly Custodial Crew",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "section": {
+        "value": "Custodial Costs",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_budget": {
+        "value": 12118.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_reforecast": {
+        "value": 10776.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget": {
+        "value": 10943.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_variance": {
+        "value": -1342.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_pct": {
+        "value": -11.07,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_variance": {
+        "value": 167.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_pct": {
+        "value": 1.55,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "explanation_of_variance": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Halcyon Point Office Center",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "property_rsf": {
+        "value": 186450,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_year": {
+        "value": 2042,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "gl_code": {
+        "value": "6320-230",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "line_item": {
+        "value": "Exterior Glass Washing",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "section": {
+        "value": "Custodial Costs",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_budget": {
+        "value": 30150.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_reforecast": {
+        "value": 31700.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget": {
+        "value": 36786.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_variance": {
+        "value": 1550.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_pct": {
+        "value": 5.14,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_variance": {
+        "value": 5086.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_pct": {
+        "value": 16.04,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "explanation_of_variance": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Halcyon Point Office Center",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "property_rsf": {
+        "value": 186450,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_year": {
+        "value": 2042,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "gl_code": {
+        "value": "6330-630",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "line_item": {
+        "value": "Restroom Paper Goods",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "section": {
+        "value": "Custodial Costs",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_budget": {
+        "value": 21102.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_reforecast": {
+        "value": 18304.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget": {
+        "value": 21692.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_variance": {
+        "value": -2798.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_pct": {
+        "value": -13.26,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_variance": {
+        "value": 3388.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_pct": {
+        "value": 18.51,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "explanation_of_variance": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Halcyon Point Office Center",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "property_rsf": {
+        "value": 186450,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_year": {
+        "value": 2042,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "gl_code": {
+        "value": "6340-150",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "line_item": {
+        "value": "Daytime Porter Staff",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "section": {
+        "value": "Custodial Costs",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_budget": {
+        "value": 121867.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_reforecast": {
+        "value": 144123.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget": {
+        "value": 164192.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_variance": {
+        "value": 22256.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_pct": {
+        "value": 18.26,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_variance": {
+        "value": 20069.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_pct": {
+        "value": 13.92,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "explanation_of_variance": {
+        "value": "Contract rebid in Q2 at a lower monthly rate.",
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Halcyon Point Office Center",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "property_rsf": {
+        "value": 186450,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_year": {
+        "value": 2042,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "gl_code": {
+        "value": "6350-570",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "line_item": {
+        "value": "Carpet Shampooing",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "section": {
+        "value": "Custodial Costs",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_budget": {
+        "value": 1300.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_reforecast": {
+        "value": 1485.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget": {
+        "value": 1291.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_variance": {
+        "value": 185.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_pct": {
+        "value": 14.23,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_variance": {
+        "value": -194.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_pct": {
+        "value": -13.06,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "explanation_of_variance": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Halcyon Point Office Center",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "property_rsf": {
+        "value": 186450,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_year": {
+        "value": 2042,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "gl_code": {
+        "value": "6410-440",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "line_item": {
+        "value": "Lift Service Agreement",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "section": {
+        "value": "Building Upkeep",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_budget": {
+        "value": 1084.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_reforecast": {
+        "value": 1355.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget": {
+        "value": 1249.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_variance": {
+        "value": 271.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_pct": {
+        "value": 25.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_variance": {
+        "value": -106.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_pct": {
+        "value": -7.82,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "explanation_of_variance": {
+        "value": "Vendor change; new contract includes quarterly deep cleaning of all restrooms.",
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Halcyon Point Office Center",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "property_rsf": {
+        "value": 186450,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_year": {
+        "value": 2042,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "gl_code": {
+        "value": "6420-640",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "line_item": {
+        "value": "Heating and Cooling Agreement",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "section": {
+        "value": "Building Upkeep",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_budget": {
+        "value": 11513.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_reforecast": {
+        "value": 9702.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget": {
+        "value": 10281.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_variance": {
+        "value": -1811.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_pct": {
+        "value": -15.73,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_variance": {
+        "value": 579.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_pct": {
+        "value": 5.97,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "explanation_of_variance": {
+        "value": "Higher usage expected after the lobby renovation is completed in the spring.",
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Halcyon Point Office Center",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "property_rsf": {
+        "value": 186450,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_year": {
+        "value": 2042,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "gl_code": {
+        "value": "6430-360",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "line_item": {
+        "value": "Heating and Cooling Fixes",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "section": {
+        "value": "Building Upkeep",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_budget": {
+        "value": 128603.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_reforecast": {
+        "value": 127709.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget": {
+        "value": 109343.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_variance": {
+        "value": -894.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_pct": {
+        "value": -0.7,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_variance": {
+        "value": -18366.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_pct": {
+        "value": -14.38,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "explanation_of_variance": {
+        "value": "Assessment appeal is pending; budget holds the reforecast value flat.",
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Halcyon Point Office Center",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "property_rsf": {
+        "value": 186450,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_year": {
+        "value": 2042,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "gl_code": {
+        "value": "6440-140",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "line_item": {
+        "value": "Pipe and Drain Fixes",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "section": {
+        "value": "Building Upkeep",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_budget": {
+        "value": 1354.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_reforecast": {
+        "value": 980.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget": {
+        "value": 1108.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_variance": {
+        "value": -374.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_pct": {
+        "value": -27.62,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_variance": {
+        "value": 128.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_pct": {
+        "value": 13.06,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "explanation_of_variance": {
+        "value": "Contract rebid in Q2 at a lower monthly rate.",
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Halcyon Point Office Center",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "property_rsf": {
+        "value": 186450,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_year": {
+        "value": 2042,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "gl_code": {
+        "value": "6450-230",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "line_item": {
+        "value": "Wiring and Lighting Fixes",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "section": {
+        "value": "Building Upkeep",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_budget": {
+        "value": 1199.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_reforecast": {
+        "value": 1475.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget": {
+        "value": 1627.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_variance": {
+        "value": 276.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_pct": {
+        "value": 23.02,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_variance": {
+        "value": 152.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_pct": {
+        "value": 10.31,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "explanation_of_variance": {
+        "value": "Premium rates rising across the market; renewal quote received from the broker in November.",
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Halcyon Point Office Center",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "property_rsf": {
+        "value": 186450,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_year": {
+        "value": 2042,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "gl_code": {
+        "value": "6460-290",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "line_item": {
+        "value": "Roof Patching",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "section": {
+        "value": "Building Upkeep",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_budget": {
+        "value": 39459.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_reforecast": {
+        "value": 46454.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget": {
+        "value": 52191.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_variance": {
+        "value": 6995.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_pct": {
+        "value": 17.73,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_variance": {
+        "value": 5737.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_pct": {
+        "value": 12.35,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "explanation_of_variance": {
+        "value": "Contract rebid in Q2 at a lower monthly rate.",
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Halcyon Point Office Center",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "property_rsf": {
+        "value": 186450,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_year": {
+        "value": 2042,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "gl_code": {
+        "value": "6470-620",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "line_item": {
+        "value": "Sprinkler and Alarm Testing",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "section": {
+        "value": "Building Upkeep",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_budget": {
+        "value": 11844.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_reforecast": {
+        "value": 14610.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget": {
+        "value": 13388.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_variance": {
+        "value": 2766.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_pct": {
+        "value": 23.35,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_variance": {
+        "value": -1222.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_pct": {
+        "value": -8.36,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "explanation_of_variance": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Halcyon Point Office Center",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "property_rsf": {
+        "value": 186450,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_year": {
+        "value": 2042,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "gl_code": {
+        "value": "6510-130",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "line_item": {
+        "value": "Lobby and Hall Power",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "section": {
+        "value": "Power, Water and Fuel",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_budget": {
+        "value": 1424.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_reforecast": {
+        "value": 1080.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget": {
+        "value": 987.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_variance": {
+        "value": -344.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_pct": {
+        "value": -24.16,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_variance": {
+        "value": -93.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_pct": {
+        "value": -8.61,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "explanation_of_variance": {
+        "value": "Rate increase of four percent per the amended service agreement, plus one additional inspection required by the city.",
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Halcyon Point Office Center",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "property_rsf": {
+        "value": 186450,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_year": {
+        "value": 2042,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "gl_code": {
+        "value": "6520-860",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "line_item": {
+        "value": "Water and Drain Charges",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "section": {
+        "value": "Power, Water and Fuel",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_budget": {
+        "value": 147423.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_reforecast": {
+        "value": 145579.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget": {
+        "value": 160410.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_variance": {
+        "value": -1844.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_pct": {
+        "value": -1.25,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_variance": {
+        "value": 14831.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_pct": {
+        "value": 10.19,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "explanation_of_variance": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Halcyon Point Office Center",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "property_rsf": {
+        "value": 186450,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_year": {
+        "value": 2042,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "gl_code": {
+        "value": "6530-290",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "line_item": {
+        "value": "Boiler Gas Charges",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "section": {
+        "value": "Power, Water and Fuel",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_budget": {
+        "value": 29127.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_reforecast": {
+        "value": 37420.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget": {
+        "value": 35447.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_variance": {
+        "value": 8293.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_pct": {
+        "value": 28.47,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_variance": {
+        "value": -1973.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_pct": {
+        "value": -5.27,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "explanation_of_variance": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Halcyon Point Office Center",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "property_rsf": {
+        "value": 186450,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_year": {
+        "value": 2042,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "gl_code": {
+        "value": "6540-690",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "line_item": {
+        "value": "Waste Hauling",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "section": {
+        "value": "Power, Water and Fuel",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_budget": {
+        "value": 14382.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_reforecast": {
+        "value": 16105.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget": {
+        "value": 14731.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_variance": {
+        "value": 1723.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_pct": {
+        "value": 11.98,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_variance": {
+        "value": -1374.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_pct": {
+        "value": -8.53,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "explanation_of_variance": {
+        "value": "Contract rebid in Q2 at a lower monthly rate.",
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Halcyon Point Office Center",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "property_rsf": {
+        "value": 186450,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_year": {
+        "value": 2042,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "gl_code": {
+        "value": "7610-860",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "line_item": {
+        "value": "Guard Staffing Hours",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "section": {
+        "value": "Guarding and Access",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_budget": {
+        "value": 5776.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_reforecast": {
+        "value": 6954.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget": {
+        "value": 8318.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_variance": {
+        "value": 1178.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_pct": {
+        "value": 20.39,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_variance": {
+        "value": 1364.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_pct": {
+        "value": 19.61,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "explanation_of_variance": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Halcyon Point Office Center",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "property_rsf": {
+        "value": 186450,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_year": {
+        "value": 2042,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "gl_code": {
+        "value": "7620-210",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "line_item": {
+        "value": "Badge Reader Upkeep",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "section": {
+        "value": "Guarding and Access",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_budget": {
+        "value": 33775.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_reforecast": {
+        "value": 26470.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget": {
+        "value": 28950.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_variance": {
+        "value": -7305.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_pct": {
+        "value": -21.63,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_variance": {
+        "value": 2480.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_pct": {
+        "value": 9.37,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "explanation_of_variance": {
+        "value": "Reforecast reflects two new leases signed in the third quarter, partly offset by one early move-out on the fourth floor.",
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Halcyon Point Office Center",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "property_rsf": {
+        "value": 186450,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_year": {
+        "value": 2042,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "gl_code": {
+        "value": "7630-950",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "line_item": {
+        "value": "Alarm Watch Service",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "section": {
+        "value": "Guarding and Access",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_budget": {
+        "value": 8107.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_reforecast": {
+        "value": 6593.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget": {
+        "value": 7656.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_variance": {
+        "value": -1514.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_pct": {
+        "value": -18.68,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_variance": {
+        "value": 1063.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_pct": {
+        "value": 16.12,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "explanation_of_variance": {
+        "value": "Assessment appeal is pending; budget holds the reforecast value flat.",
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Halcyon Point Office Center",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "property_rsf": {
+        "value": 186450,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_year": {
+        "value": 2042,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "gl_code": {
+        "value": "7710-260",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "line_item": {
+        "value": "Site Office Wages",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "section": {
+        "value": "Site Office Costs",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_budget": {
+        "value": 1074.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_reforecast": {
+        "value": 892.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget": {
+        "value": 982.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_variance": {
+        "value": -182.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_pct": {
+        "value": -16.95,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_variance": {
+        "value": 90.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_pct": {
+        "value": 10.09,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "explanation_of_variance": {
+        "value": "Premium rates rising across the market; renewal quote received from the broker in November.",
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Halcyon Point Office Center",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "property_rsf": {
+        "value": 186450,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_year": {
+        "value": 2042,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "gl_code": {
+        "value": "7720-410",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "line_item": {
+        "value": "Stationery and Postage",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "section": {
+        "value": "Site Office Costs",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_budget": {
+        "value": 8404.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_reforecast": {
+        "value": 10035.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget": {
+        "value": 10139.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_variance": {
+        "value": 1631.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_pct": {
+        "value": 19.41,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_variance": {
+        "value": 104.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_pct": {
+        "value": 1.04,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "explanation_of_variance": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Halcyon Point Office Center",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "property_rsf": {
+        "value": 186450,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_year": {
+        "value": 2042,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "gl_code": {
+        "value": "7730-690",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "line_item": {
+        "value": "Phone and Data Lines",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "section": {
+        "value": "Site Office Costs",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_budget": {
+        "value": 8056.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_reforecast": {
+        "value": 8291.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget": {
+        "value": 8082.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_variance": {
+        "value": 235.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_pct": {
+        "value": 2.92,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_variance": {
+        "value": -209.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_pct": {
+        "value": -2.52,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "explanation_of_variance": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Halcyon Point Office Center",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "property_rsf": {
+        "value": 186450,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_year": {
+        "value": 2042,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "gl_code": {
+        "value": "7740-240",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "line_item": {
+        "value": "Tenant Events and Gifts",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "section": {
+        "value": "Site Office Costs",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_budget": {
+        "value": 21679.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_reforecast": {
+        "value": 16680.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget": {
+        "value": 18756.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_variance": {
+        "value": -4999.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_pct": {
+        "value": -23.06,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_variance": {
+        "value": 2076.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_pct": {
+        "value": 12.45,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "explanation_of_variance": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Halcyon Point Office Center",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "property_rsf": {
+        "value": 186450,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_year": {
+        "value": 2042,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "gl_code": {
+        "value": "7750-360",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "line_item": {
+        "value": "Audit and Legal Bills",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "section": {
+        "value": "Site Office Costs",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_budget": {
+        "value": 55262.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_reforecast": {
+        "value": 49598.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget": {
+        "value": 48319.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_variance": {
+        "value": -5664.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_pct": {
+        "value": -10.25,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_variance": {
+        "value": -1279.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_pct": {
+        "value": -2.58,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "explanation_of_variance": {
+        "value": "Contract rebid in Q2 at a lower monthly rate.",
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Halcyon Point Office Center",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "property_rsf": {
+        "value": 186450,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_year": {
+        "value": 2042,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "gl_code": {
+        "value": "7810-970",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "line_item": {
+        "value": "All-Risk Building Policy",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "section": {
+        "value": "Policy Premiums",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_budget": {
+        "value": 151572.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_reforecast": {
+        "value": 127391.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget": {
+        "value": 112868.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_variance": {
+        "value": -24181.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_pct": {
+        "value": -15.95,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_variance": {
+        "value": -14523.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_pct": {
+        "value": -11.4,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "explanation_of_variance": {
+        "value": "Contract rebid in Q2 at a lower monthly rate.",
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Halcyon Point Office Center",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "property_rsf": {
+        "value": 186450,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_year": {
+        "value": 2042,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "gl_code": {
+        "value": "7820-770",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "line_item": {
+        "value": "General Claims Policy",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "section": {
+        "value": "Policy Premiums",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_budget": {
+        "value": 4627.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_reforecast": {
+        "value": 3682.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget": {
+        "value": 4267.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_variance": {
+        "value": -945.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_pct": {
+        "value": -20.42,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_variance": {
+        "value": 585.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_pct": {
+        "value": 15.89,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "explanation_of_variance": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Halcyon Point Office Center",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "property_rsf": {
+        "value": 186450,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_year": {
+        "value": 2042,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "gl_code": {
+        "value": "7910-660",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "line_item": {
+        "value": "Annual County Levy",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "section": {
+        "value": "Property Levies",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_budget": {
+        "value": 20521.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_reforecast": {
+        "value": 17751.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget": {
+        "value": 20998.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_variance": {
+        "value": -2770.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_pct": {
+        "value": -13.5,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_variance": {
+        "value": 3247.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_pct": {
+        "value": 18.29,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "explanation_of_variance": {
+        "value": "Rate increase of four percent per the amended service agreement, plus one additional inspection required by the city.",
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Halcyon Point Office Center",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "property_rsf": {
+        "value": 186450,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_year": {
+        "value": 2042,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "gl_code": {
+        "value": "7920-990",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "line_item": {
+        "value": "Levy Appeal Advisors",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "section": {
+        "value": "Property Levies",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_budget": {
+        "value": 139418.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_reforecast": {
+        "value": 165086.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget": {
+        "value": 177545.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_variance": {
+        "value": 25668.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_pct": {
+        "value": 18.41,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_variance": {
+        "value": 12459.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_pct": {
+        "value": 7.55,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "explanation_of_variance": {
+        "value": "Reforecast reflects two new leases signed in the third quarter, partly offset by one early move-out on the fourth floor.",
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Halcyon Point Office Center",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "property_rsf": {
+        "value": 186450,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_year": {
+        "value": 2042,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "gl_code": {
+        "value": "7010-780",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "line_item": {
+        "value": "Site Operator Fee",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "section": {
+        "value": "Owner Oversight Fees",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_budget": {
+        "value": 20375.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_reforecast": {
+        "value": 20312.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget": {
+        "value": 23869.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_variance": {
+        "value": -63.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_pct": {
+        "value": -0.31,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_variance": {
+        "value": 3557.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_pct": {
+        "value": 17.51,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "explanation_of_variance": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Halcyon Point Office Center",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "property_rsf": {
+        "value": 186450,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_year": {
+        "value": 2042,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "gl_code": {
+        "value": "7020-240",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "line_item": {
+        "value": "Owner's Rep Fee",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "section": {
+        "value": "Owner Oversight Fees",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_budget": {
+        "value": 1993.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_reforecast": {
+        "value": 1955.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget": {
+        "value": 2204.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_variance": {
+        "value": -38.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_pct": {
+        "value": -1.91,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_variance": {
+        "value": 249.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_pct": {
+        "value": 12.74,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "explanation_of_variance": {
+        "value": "No change expected.",
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Halcyon Point Office Center",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "property_rsf": {
+        "value": 186450,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_year": {
+        "value": 2042,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "gl_code": {
+        "value": "7110-630",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "line_item": {
+        "value": "Lawn and Shrub Care",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "section": {
+        "value": "Grounds Care",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_budget": {
+        "value": 4454.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_reforecast": {
+        "value": 4065.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget": {
+        "value": 4349.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_variance": {
+        "value": -389.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_pct": {
+        "value": -8.73,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_variance": {
+        "value": 284.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_pct": {
+        "value": 6.99,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "explanation_of_variance": {
+        "value": "Higher usage expected after the lobby renovation is completed in the spring.",
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Halcyon Point Office Center",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "property_rsf": {
+        "value": 186450,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_year": {
+        "value": 2042,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "gl_code": {
+        "value": "7120-990",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "line_item": {
+        "value": "Snow Plowing and Salt",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "section": {
+        "value": "Grounds Care",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_budget": {
+        "value": 12516.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_reforecast": {
+        "value": 9176.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget": {
+        "value": 8904.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_variance": {
+        "value": -3340.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_pct": {
+        "value": -26.69,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_variance": {
+        "value": -272.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_pct": {
+        "value": -2.96,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "explanation_of_variance": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Halcyon Point Office Center",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "property_rsf": {
+        "value": 186450,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_year": {
+        "value": 2042,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "gl_code": {
+        "value": "7130-200",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "line_item": {
+        "value": "Seasonal Flower Beds",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "section": {
+        "value": "Grounds Care",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_budget": {
+        "value": 6621.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "prior_year_reforecast": {
+        "value": 5610.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget": {
+        "value": 5654.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_variance": {
+        "value": -1011.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "reforecast_vs_prior_budget_pct": {
+        "value": -15.27,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_variance": {
+        "value": 44.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "budget_vs_reforecast_pct": {
+        "value": 0.78,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "explanation_of_variance": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      }
+    }
+  ],
+  "metadata": {
+    "model_calls": 0,
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "cost_usd": 0.0,
+    "latency_ms": 0,
+    "synthetic": true
+  }
+}

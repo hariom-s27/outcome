@@ -1,0 +1,2624 @@
+{
+  "schema": "rent_roll_units",
+  "document": "syn_rentroll_pdf",
+  "entries": [
+    {
+      "property_name": {
+        "value": "Juniper Hollow Apartments",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "report_period": {
+        "value": "2043-10",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_number": {
+        "value": "J-101",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_type_code": {
+        "value": "A1",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_square_feet": {
+        "value": 640,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_status": {
+        "value": "Leased - current",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "resident_name": {
+        "value": "Merriweather, Ellison",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "market_rent": {
+        "value": 1055.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_rent": {
+        "value": 1055.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_other_charges": {
+        "value": 38.5,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_total_charges": {
+        "value": 1093.5,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "deposit_held": {
+        "value": 1055.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "balance": {
+        "value": 0.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "move_in_date": {
+        "value": "2041-03-20",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_start_date": {
+        "value": "2043-03-20",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_end_date": {
+        "value": "2044-03-19",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Juniper Hollow Apartments",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "report_period": {
+        "value": "2043-10",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_number": {
+        "value": "J-102",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_type_code": {
+        "value": "A1",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_square_feet": {
+        "value": 640,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_status": {
+        "value": "Leased - current",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "resident_name": {
+        "value": "Stanhope, Marlow",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "market_rent": {
+        "value": 1090.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_rent": {
+        "value": 1090.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_other_charges": {
+        "value": 14.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_total_charges": {
+        "value": 1104.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "deposit_held": {
+        "value": 250.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "balance": {
+        "value": 0.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "move_in_date": {
+        "value": "2042-07-19",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_start_date": {
+        "value": "2043-07-19",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_end_date": {
+        "value": "2044-07-18",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Juniper Hollow Apartments",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "report_period": {
+        "value": "2043-10",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_number": {
+        "value": "J-103",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_type_code": {
+        "value": "B2",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_square_feet": {
+        "value": 1065,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_status": {
+        "value": "Leased - notice, unit re-let",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "resident_name": {
+        "value": "Merriweather, Marlow",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "market_rent": {
+        "value": 1755.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_rent": {
+        "value": 1680.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_other_charges": {
+        "value": 52.5,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_total_charges": {
+        "value": 1732.5,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "deposit_held": {
+        "value": 250.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "balance": {
+        "value": -134.48,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "move_in_date": {
+        "value": "2043-09-12",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_start_date": {
+        "value": "2043-09-12",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_end_date": {
+        "value": "2044-09-11",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "expected_move_out_date": {
+        "value": "2044-09-11",
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Juniper Hollow Apartments",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "report_period": {
+        "value": "2043-10",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_number": {
+        "value": "J-104",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_type_code": {
+        "value": "B1",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_square_feet": {
+        "value": 980,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_status": {
+        "value": "Leased - current",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "resident_name": {
+        "value": "Gilchrist, Avery",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "market_rent": {
+        "value": 1615.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_rent": {
+        "value": 1565.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_other_charges": {
+        "value": 52.5,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_total_charges": {
+        "value": 1617.5,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "deposit_held": {
+        "value": 1615.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "balance": {
+        "value": 540.97,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "move_in_date": {
+        "value": "2042-06-14",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_start_date": {
+        "value": "2043-06-14",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_end_date": {
+        "value": "2044-06-13",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Juniper Hollow Apartments",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "report_period": {
+        "value": "2043-10",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_number": {
+        "value": "J-105",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_type_code": {
+        "value": "B2",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_square_feet": {
+        "value": 1065,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_status": {
+        "value": "Leased - notice given",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "resident_name": {
+        "value": "Merriweather, Darby",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "market_rent": {
+        "value": 1755.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_rent": {
+        "value": 1755.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_other_charges": {
+        "value": 140.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_total_charges": {
+        "value": 1895.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "deposit_held": {
+        "value": 1755.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "balance": {
+        "value": 400.59,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "move_in_date": {
+        "value": "2041-01-18",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_start_date": {
+        "value": "2043-01-18",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_end_date": {
+        "value": "2044-01-17",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "expected_move_out_date": {
+        "value": "2044-01-17",
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Juniper Hollow Apartments",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "report_period": {
+        "value": "2043-10",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_number": {
+        "value": "J-106",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_type_code": {
+        "value": "A2",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_square_feet": {
+        "value": 715,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_status": {
+        "value": "Empty - pre-leased",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "resident_name": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "market_rent": {
+        "value": 1110.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_rent": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_other_charges": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_total_charges": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "deposit_held": {
+        "value": 0.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "balance": {
+        "value": 0.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "move_in_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_start_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_end_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Juniper Hollow Apartments",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "report_period": {
+        "value": "2043-10",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_number": {
+        "value": "J-107",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_type_code": {
+        "value": "B1",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_square_feet": {
+        "value": 980,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_status": {
+        "value": "Leased - current",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "resident_name": {
+        "value": "Quarles, Darby",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "market_rent": {
+        "value": 1570.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_rent": {
+        "value": 1520.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_other_charges": {
+        "value": 35.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_total_charges": {
+        "value": 1555.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "deposit_held": {
+        "value": 250.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "balance": {
+        "value": 386.36,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "move_in_date": {
+        "value": "2041-08-14",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_start_date": {
+        "value": "2043-08-14",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_end_date": {
+        "value": "2044-08-13",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Juniper Hollow Apartments",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "report_period": {
+        "value": "2043-10",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_number": {
+        "value": "J-108",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_type_code": {
+        "value": "A1",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_square_feet": {
+        "value": 640,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_status": {
+        "value": "Leased - notice given",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "resident_name": {
+        "value": "Ravenscroft, Linden",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "market_rent": {
+        "value": 1055.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_rent": {
+        "value": 1055.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_other_charges": {
+        "value": 49.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_total_charges": {
+        "value": 1104.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "deposit_held": {
+        "value": 250.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "balance": {
+        "value": 212.22,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "move_in_date": {
+        "value": "2042-04-15",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_start_date": {
+        "value": "2043-04-15",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_end_date": {
+        "value": "2044-04-14",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "expected_move_out_date": {
+        "value": "2044-04-14",
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Juniper Hollow Apartments",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "report_period": {
+        "value": "2043-10",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_number": {
+        "value": "J-109",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_type_code": {
+        "value": "B1",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_square_feet": {
+        "value": 980,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_status": {
+        "value": "Leased - current",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "resident_name": {
+        "value": "Abernathy, Casey",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "market_rent": {
+        "value": 1520.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_rent": {
+        "value": 1520.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_other_charges": {
+        "value": 133.5,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_total_charges": {
+        "value": 1653.5,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "deposit_held": {
+        "value": 500.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "balance": {
+        "value": 0.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "move_in_date": {
+        "value": "2042-10-18",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_start_date": {
+        "value": "2042-10-18",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_end_date": {
+        "value": "2043-10-17",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Juniper Hollow Apartments",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "report_period": {
+        "value": "2043-10",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_number": {
+        "value": "J-110",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_type_code": {
+        "value": "C1",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_square_feet": {
+        "value": 1290,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_status": {
+        "value": "Leased - notice, unit re-let",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "resident_name": {
+        "value": "Underhill, Linden",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "market_rent": {
+        "value": 2195.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_rent": {
+        "value": 2195.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_other_charges": {
+        "value": 74.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_total_charges": {
+        "value": 2269.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "deposit_held": {
+        "value": 250.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "balance": {
+        "value": 0.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "move_in_date": {
+        "value": "2042-03-14",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_start_date": {
+        "value": "2043-03-14",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_end_date": {
+        "value": "2044-03-13",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "expected_move_out_date": {
+        "value": "2044-03-13",
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Juniper Hollow Apartments",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "report_period": {
+        "value": "2043-10",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_number": {
+        "value": "J-201",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_type_code": {
+        "value": "B2",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_square_feet": {
+        "value": 1065,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_status": {
+        "value": "Leased - current",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "resident_name": {
+        "value": "Fairbanks, Avery",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "market_rent": {
+        "value": 1755.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_rent": {
+        "value": 1730.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_other_charges": {
+        "value": 74.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_total_charges": {
+        "value": 1804.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "deposit_held": {
+        "value": 250.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "balance": {
+        "value": 0.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "move_in_date": {
+        "value": "2042-03-20",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_start_date": {
+        "value": "2043-03-20",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_end_date": {
+        "value": "2044-03-19",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Juniper Hollow Apartments",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "report_period": {
+        "value": "2043-10",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_number": {
+        "value": "J-202",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_type_code": {
+        "value": "A1",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_square_feet": {
+        "value": 640,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_status": {
+        "value": "Leased - notice given",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "resident_name": {
+        "value": "Penhallow, Linden",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "market_rent": {
+        "value": 1090.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_rent": {
+        "value": 1015.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_other_charges": {
+        "value": 109.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_total_charges": {
+        "value": 1124.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "deposit_held": {
+        "value": 500.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "balance": {
+        "value": 0.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "move_in_date": {
+        "value": "2041-09-16",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_start_date": {
+        "value": "2043-09-16",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_end_date": {
+        "value": "2044-09-15",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "expected_move_out_date": {
+        "value": "2044-09-15",
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Juniper Hollow Apartments",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "report_period": {
+        "value": "2043-10",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_number": {
+        "value": "J-203",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_type_code": {
+        "value": "C1",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_square_feet": {
+        "value": 1290,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_status": {
+        "value": "Empty - available",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "resident_name": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "market_rent": {
+        "value": 2195.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_rent": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_other_charges": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_total_charges": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "deposit_held": {
+        "value": 0.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "balance": {
+        "value": 0.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "move_in_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_start_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_end_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Juniper Hollow Apartments",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "report_period": {
+        "value": "2043-10",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_number": {
+        "value": "J-204",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_type_code": {
+        "value": "B2",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_square_feet": {
+        "value": 1065,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_status": {
+        "value": "Leased - current",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "resident_name": {
+        "value": "Fairbanks, Wren",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "market_rent": {
+        "value": 1755.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_rent": {
+        "value": 1705.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_other_charges": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_total_charges": {
+        "value": 1705.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "deposit_held": {
+        "value": 1755.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "balance": {
+        "value": 0.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "move_in_date": {
+        "value": "2043-03-20",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_start_date": {
+        "value": "2043-03-20",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_end_date": {
+        "value": "2044-03-19",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Juniper Hollow Apartments",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "report_period": {
+        "value": "2043-10",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_number": {
+        "value": "J-205",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_type_code": {
+        "value": "C1",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_square_feet": {
+        "value": 1290,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_status": {
+        "value": "Leased - current",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "resident_name": {
+        "value": "Thistlewood, Emerson",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "market_rent": {
+        "value": 2065.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_rent": {
+        "value": 2040.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_other_charges": {
+        "value": 74.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_total_charges": {
+        "value": 2114.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "deposit_held": {
+        "value": 500.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "balance": {
+        "value": 0.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "move_in_date": {
+        "value": "2043-10-11",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_start_date": {
+        "value": "2043-10-11",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_end_date": {
+        "value": "2044-10-10",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Juniper Hollow Apartments",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "report_period": {
+        "value": "2043-10",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_number": {
+        "value": "J-206",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_type_code": {
+        "value": "C1",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_square_feet": {
+        "value": 1290,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_status": {
+        "value": "Leased - notice, unit re-let",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "resident_name": {
+        "value": "Penhallow, Jordan",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "market_rent": {
+        "value": 2130.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_rent": {
+        "value": 2055.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_other_charges": {
+        "value": 87.5,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_total_charges": {
+        "value": 2142.5,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "deposit_held": {
+        "value": 250.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "balance": {
+        "value": 512.84,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "move_in_date": {
+        "value": "2043-06-12",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_start_date": {
+        "value": "2043-06-12",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_end_date": {
+        "value": "2044-06-11",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "expected_move_out_date": {
+        "value": "2044-06-11",
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Juniper Hollow Apartments",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "report_period": {
+        "value": "2043-10",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_number": {
+        "value": "J-207",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_type_code": {
+        "value": "B2",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_square_feet": {
+        "value": 1065,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_status": {
+        "value": "Empty - pre-leased",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "resident_name": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "market_rent": {
+        "value": 1705.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_rent": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_other_charges": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_total_charges": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "deposit_held": {
+        "value": 0.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "balance": {
+        "value": 0.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "move_in_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_start_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_end_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Juniper Hollow Apartments",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "report_period": {
+        "value": "2043-10",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_number": {
+        "value": "J-208",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_type_code": {
+        "value": "C1",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_square_feet": {
+        "value": 1290,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_status": {
+        "value": "Empty - pre-leased",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "resident_name": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "market_rent": {
+        "value": 2000.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_rent": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_other_charges": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_total_charges": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "deposit_held": {
+        "value": 0.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "balance": {
+        "value": 0.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "move_in_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_start_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_end_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Juniper Hollow Apartments",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "report_period": {
+        "value": "2043-10",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_number": {
+        "value": "J-209",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_type_code": {
+        "value": "C1",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_square_feet": {
+        "value": 1290,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_status": {
+        "value": "Empty - available",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "resident_name": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "market_rent": {
+        "value": 2195.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_rent": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_other_charges": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_total_charges": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "deposit_held": {
+        "value": 0.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "balance": {
+        "value": 0.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "move_in_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_start_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_end_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Juniper Hollow Apartments",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "report_period": {
+        "value": "2043-10",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_number": {
+        "value": "J-210",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_type_code": {
+        "value": "A1",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_square_feet": {
+        "value": 640,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_status": {
+        "value": "Empty - available",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "resident_name": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "market_rent": {
+        "value": 1055.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_rent": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_other_charges": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_total_charges": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "deposit_held": {
+        "value": 0.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "balance": {
+        "value": 0.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "move_in_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_start_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_end_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Juniper Hollow Apartments",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "report_period": {
+        "value": "2043-10",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_number": {
+        "value": "J-301",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_type_code": {
+        "value": "A1",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_square_feet": {
+        "value": 640,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_status": {
+        "value": "Leased - current",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "resident_name": {
+        "value": "Kittredge, Linden",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "market_rent": {
+        "value": 1090.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_rent": {
+        "value": 1065.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_other_charges": {
+        "value": 38.5,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_total_charges": {
+        "value": 1103.5,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "deposit_held": {
+        "value": 1090.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "balance": {
+        "value": 0.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "move_in_date": {
+        "value": "2042-02-12",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_start_date": {
+        "value": "2043-02-12",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_end_date": {
+        "value": "2044-02-11",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Juniper Hollow Apartments",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "report_period": {
+        "value": "2043-10",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_number": {
+        "value": "J-302",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_type_code": {
+        "value": "A2",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_square_feet": {
+        "value": 715,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_status": {
+        "value": "Leased - current",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "resident_name": {
+        "value": "Merriweather, Sutton",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "market_rent": {
+        "value": 1110.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_rent": {
+        "value": 1110.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_other_charges": {
+        "value": 95.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_total_charges": {
+        "value": 1205.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "deposit_held": {
+        "value": 250.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "balance": {
+        "value": 0.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "move_in_date": {
+        "value": "2041-08-13",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_start_date": {
+        "value": "2043-08-13",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_end_date": {
+        "value": "2044-08-12",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Juniper Hollow Apartments",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "report_period": {
+        "value": "2043-10",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_number": {
+        "value": "J-303",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_type_code": {
+        "value": "A1",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_square_feet": {
+        "value": 640,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_status": {
+        "value": "Leased - notice, unit re-let",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "resident_name": {
+        "value": "Fairbanks, Linden",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "market_rent": {
+        "value": 1090.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_rent": {
+        "value": 1040.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_other_charges": {
+        "value": 83.5,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_total_charges": {
+        "value": 1123.5,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "deposit_held": {
+        "value": 250.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "balance": {
+        "value": 37.82,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "move_in_date": {
+        "value": "2041-07-11",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_start_date": {
+        "value": "2043-07-11",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_end_date": {
+        "value": "2044-07-10",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "expected_move_out_date": {
+        "value": "2044-07-10",
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Juniper Hollow Apartments",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "report_period": {
+        "value": "2043-10",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_number": {
+        "value": "J-304",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_type_code": {
+        "value": "A2",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_square_feet": {
+        "value": 715,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_status": {
+        "value": "Leased - current",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "resident_name": {
+        "value": "Lockhart, Linden",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "market_rent": {
+        "value": 1145.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_rent": {
+        "value": 1120.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_other_charges": {
+        "value": 98.5,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_total_charges": {
+        "value": 1218.5,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "deposit_held": {
+        "value": 500.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "balance": {
+        "value": 0.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "move_in_date": {
+        "value": "2043-08-19",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_start_date": {
+        "value": "2043-08-19",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_end_date": {
+        "value": "2044-08-18",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Juniper Hollow Apartments",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "report_period": {
+        "value": "2043-10",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_number": {
+        "value": "J-305",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_type_code": {
+        "value": "A2",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_square_feet": {
+        "value": 715,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_status": {
+        "value": "Leased - current",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "resident_name": {
+        "value": "Harrowgate, Jordan",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "market_rent": {
+        "value": 1215.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_rent": {
+        "value": 1140.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_other_charges": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_total_charges": {
+        "value": 1140.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "deposit_held": {
+        "value": 500.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "balance": {
+        "value": 0.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "move_in_date": {
+        "value": "2043-01-17",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_start_date": {
+        "value": "2043-01-17",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_end_date": {
+        "value": "2044-01-16",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Juniper Hollow Apartments",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "report_period": {
+        "value": "2043-10",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_number": {
+        "value": "J-306",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_type_code": {
+        "value": "B2",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_square_feet": {
+        "value": 1065,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_status": {
+        "value": "Leased - current",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "resident_name": {
+        "value": "Coldwell, Morgan",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "market_rent": {
+        "value": 1755.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_rent": {
+        "value": 1755.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_other_charges": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_total_charges": {
+        "value": 1755.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "deposit_held": {
+        "value": 1755.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "balance": {
+        "value": 0.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "move_in_date": {
+        "value": "2041-05-19",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_start_date": {
+        "value": "2043-05-19",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_end_date": {
+        "value": "2044-05-18",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Juniper Hollow Apartments",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "report_period": {
+        "value": "2043-10",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_number": {
+        "value": "J-307",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_type_code": {
+        "value": "A2",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_square_feet": {
+        "value": 715,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_status": {
+        "value": "Leased - current",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "resident_name": {
+        "value": "Fairbanks, Darby",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "market_rent": {
+        "value": 1145.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_rent": {
+        "value": 1145.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_other_charges": {
+        "value": 49.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_total_charges": {
+        "value": 1194.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "deposit_held": {
+        "value": 250.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "balance": {
+        "value": 654.86,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "move_in_date": {
+        "value": "2042-05-18",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_start_date": {
+        "value": "2043-05-18",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_end_date": {
+        "value": "2044-05-17",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Juniper Hollow Apartments",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "report_period": {
+        "value": "2043-10",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_number": {
+        "value": "J-308",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_type_code": {
+        "value": "A1",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_square_feet": {
+        "value": 640,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_status": {
+        "value": "Leased - current",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "resident_name": {
+        "value": "Thistlewood, Linden",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "market_rent": {
+        "value": 990.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_rent": {
+        "value": 940.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_other_charges": {
+        "value": 118.5,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_total_charges": {
+        "value": 1058.5,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "deposit_held": {
+        "value": 250.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "balance": {
+        "value": 0.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "move_in_date": {
+        "value": "2041-10-11",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_start_date": {
+        "value": "2043-10-11",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_end_date": {
+        "value": "2044-10-10",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Juniper Hollow Apartments",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "report_period": {
+        "value": "2043-10",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_number": {
+        "value": "J-309",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_type_code": {
+        "value": "B1",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_square_feet": {
+        "value": 980,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_status": {
+        "value": "Empty - pre-leased",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "resident_name": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "market_rent": {
+        "value": 1615.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_rent": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_other_charges": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_total_charges": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "deposit_held": {
+        "value": 0.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "balance": {
+        "value": 0.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "move_in_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_start_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_end_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Juniper Hollow Apartments",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "report_period": {
+        "value": "2043-10",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_number": {
+        "value": "J-310",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_type_code": {
+        "value": "C1",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_square_feet": {
+        "value": 1290,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_status": {
+        "value": "Leased - notice, unit re-let",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "resident_name": {
+        "value": "Kittredge, Jordan",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "market_rent": {
+        "value": 2130.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_rent": {
+        "value": 2055.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_other_charges": {
+        "value": 112.5,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_total_charges": {
+        "value": 2167.5,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "deposit_held": {
+        "value": 2130.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "balance": {
+        "value": 0.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "move_in_date": {
+        "value": "2041-02-20",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_start_date": {
+        "value": "2043-02-20",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_end_date": {
+        "value": "2044-02-19",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "expected_move_out_date": {
+        "value": "2044-02-19",
+        "citation": "",
+        "confidence": 1.0
+      }
+    }
+  ],
+  "metadata": {
+    "model_calls": 0,
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "cost_usd": 0.0,
+    "latency_ms": 0,
+    "synthetic": true
+  }
+}

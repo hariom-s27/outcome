@@ -1,0 +1,18 @@
+Box Score
+Larkspur Flats (Phase II)
+Period: 10/11/2043 - 10/17/2043
+
+Availability
+Code,Name,Avg. Sq Ft.,Avg. Rent,Units,Occupied (no notice),Vacant - Rented,Vacant - Unrented,On Notice - Rented,On Notice - Unrented,Avail,Model,Down,Admin,% Occ,% Occ w/NonRev,% Leased,% Trend
+LF-S1,Studio Classic,512,"$1,063.39",31,23,1,3,1,3,6,0,0,0,87.10%,87.10%,80.65%,80.65%
+LF-S2,Studio Loft,588,"$1,071.44",34,27,2,2,0,3,5,0,0,0,88.24%,88.24%,85.29%,85.29%
+LF-A1,One Bed Garden,702,"$1,329.58",38,31,3,0,2,2,2,0,0,0,92.11%,92.11%,94.74%,94.74%
+LF-A2,One Bed Corner,768,"$1,592.99",42,39,1,0,1,1,1,0,0,0,97.62%,97.62%,97.62%,97.62%
+LF-B1,Two Bed Terrace,1044,"$2,119.13",34,29,2,1,2,0,1,0,0,0,91.18%,91.18%,97.06%,97.06%
+LF-B2,Two Bed Flex,1121,"$2,143.53",34,27,1,0,2,3,3,0,0,1,94.12%,97.06%,88.24%,88.24%
+LF-C1,Three Bed Villa,1386,"$2,862.96",59,53,1,0,0,3,3,1,1,0,94.92%,96.61%,91.53%,91.53%
+Totals,,920,"$1,840.69",272,229,11,6,8,15,21,1,1,1,,,,
+
+Resident Activity
+Move-Ins,Move-Outs,Renewals,Notices
+6,4,4,7

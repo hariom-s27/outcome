@@ -1,0 +1,246 @@
+{
+  "schema": "lease_abstraction",
+  "document": "syn_lease_scan",
+  "entries": [
+    {
+      "tenant_name": {
+        "value": "Pell & Ostrander Dental Group, P.C.",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "landlord_legal_name": {
+        "value": "Marrow Creek Holdings, Inc.",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "property_name": {
+        "value": "Marrow Creek Medical Pavilion",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "building_address": {
+        "value": "215 Quarry Bend Road, Ellisport, WA 98477",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "premises": {
+        "value": "Suite 210",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "rentable_square_footage": {
+        "value": 3180,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "pro_rata_share": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "permitted_use": {
+        "value": "dental and medical office",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_execution_date": {
+        "value": "2040-01-18",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_commencement_date": {
+        "value": "2040-02-15",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "rent_commencement_date": {
+        "value": "2040-04-15",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_expiration_date": {
+        "value": "2045-02-14",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_term_months": {
+        "value": 60,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "rent_schedule_start_dates": {
+        "value": [
+          "2040-04-15",
+          "2041-02-15",
+          "2042-02-15",
+          "2043-02-15",
+          "2044-02-15"
+        ],
+        "citation": "",
+        "confidence": 1.0
+      },
+      "rent_schedule_end_dates": {
+        "value": [
+          "2041-02-14",
+          "2042-02-14",
+          "2043-02-14",
+          "2044-02-14",
+          "2045-02-14"
+        ],
+        "citation": "",
+        "confidence": 1.0
+      },
+      "rent_schedule_monthly_rent": {
+        "value": [
+          7950.0,
+          8148.75,
+          8352.47,
+          8561.28,
+          8775.31
+        ],
+        "citation": "",
+        "confidence": 1.0
+      },
+      "rent_schedule_annual_rent_per_rsf": {
+        "value": [
+          30.0,
+          30.75,
+          31.52,
+          32.31,
+          33.11
+        ],
+        "citation": "",
+        "confidence": 1.0
+      },
+      "total_base_rent": {
+        "value": 485553.72,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "base_rent_escalation": {
+        "value": "2.5% annually",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "free_rent_months": {
+        "value": 2,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "security_deposit_amount": {
+        "value": 19080.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "letter_of_credit_required": {
+        "value": true,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "expense_structure": {
+        "value": "triple net",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "base_year_expenses": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "base_year_taxes": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "electricity_provision": {
+        "value": "separately metered",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "parking_spaces": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "parking_monthly_charge": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "ti_allowance_total": {
+        "value": 47700.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "renewal_option_exists": {
+        "value": true,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "renewal_options_count": {
+        "value": 2,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "renewal_term_months": {
+        "value": [
+          60,
+          60
+        ],
+        "citation": "",
+        "confidence": 1.0
+      },
+      "renewal_notice_months": {
+        "value": [
+          9,
+          9
+        ],
+        "citation": "",
+        "confidence": 1.0
+      },
+      "early_termination_right": {
+        "value": true,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "termination_fee_description": {
+        "value": "unamortized TI allowance plus 3 months Base Rent",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "right_to_sublet": {
+        "value": "not permitted without landlord consent",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "guarantor_name": {
+        "value": "Dr. Lena Ostrander",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "broker_names": {
+        "value": [],
+        "citation": "",
+        "confidence": 1.0
+      },
+      "late_fee": {
+        "value": "10% of the overdue amount",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "holdover_rent": {
+        "value": "200% of the last monthly Base Rent",
+        "citation": "",
+        "confidence": 1.0
+      }
+    }
+  ],
+  "metadata": {
+    "model_calls": 0,
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "cost_usd": 0.0,
+    "latency_ms": 0,
+    "synthetic": true
+  }
+}

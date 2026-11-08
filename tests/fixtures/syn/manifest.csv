@@ -1,0 +1,9 @@
+document_id,file,schema_name,kind,notes
+syn_lease_text,syn_lease_text.pdf,lease_abstraction,pdf,8-page text lease; clauses spread across pages; amendment changes rent and deposit
+syn_lease_scan,syn_lease_scan.pdf,lease_abstraction,pdf,"15 scanned pages (images only, slight rotation and grain); filled-in form on pages 9-14; rider on page 15 changes the deposit"
+syn_lease_docx,syn_lease_docx.docx,lease_abstraction,docx,DOCX lease with one rent table
+syn_budget_pdf,syn_budget_pdf.pdf,budget_variance,pdf,3-page budget table; repeated header; subtotals; wrapped commentary column
+syn_rentroll_pdf,syn_rentroll_pdf.pdf,rent_roll_units,pdf,30 unit blocks over 2 pages
+syn_rentroll_xlsx,syn_rentroll_xlsx.xlsx,rent_roll_units,xlsx,"parameters sheet first, report sheet second; unit blocks with charge lines"
+syn_boxscore_csv,syn_boxscore_csv.csv,boxscore,csv,"header block, availability table, totals row"
+syn_loan_unseen,syn_loan_unseen.pdf,syn_loan_summary,pdf,3-page loan summary; unseen field list; one computed field; one absent field

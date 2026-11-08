@@ -1,0 +1,2102 @@
+{
+  "schema": "rent_roll_units",
+  "document": "syn_rentroll_xlsx",
+  "entries": [
+    {
+      "property_name": {
+        "value": "Copperleaf Commons",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "report_period": {
+        "value": "2043-08",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_number": {
+        "value": "CL-101",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_type_code": {
+        "value": "B1",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_square_feet": {
+        "value": 980,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_status": {
+        "value": "Leased - notice given",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "resident_name": {
+        "value": "Coldwell, Morgan",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "market_rent": {
+        "value": 1570.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_rent": {
+        "value": 1545.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_other_charges": {
+        "value": 73.5,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_total_charges": {
+        "value": 1618.5,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "deposit_held": {
+        "value": 500.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "balance": {
+        "value": 571.43,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "move_in_date": {
+        "value": "2043-03-20",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_start_date": {
+        "value": "2043-03-20",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_end_date": {
+        "value": "2044-03-19",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "expected_move_out_date": {
+        "value": "2044-03-19",
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Copperleaf Commons",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "report_period": {
+        "value": "2043-08",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_number": {
+        "value": "CL-102",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_type_code": {
+        "value": "A1",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_square_feet": {
+        "value": 640,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_status": {
+        "value": "Empty - available",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "resident_name": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "market_rent": {
+        "value": 1025.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_rent": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_other_charges": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_total_charges": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "deposit_held": {
+        "value": 0.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "balance": {
+        "value": 0.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "move_in_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_start_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_end_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Copperleaf Commons",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "report_period": {
+        "value": "2043-08",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_number": {
+        "value": "CL-103",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_type_code": {
+        "value": "B1",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_square_feet": {
+        "value": 980,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_status": {
+        "value": "Leased - current",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "resident_name": {
+        "value": "Kittredge, Sutton",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "market_rent": {
+        "value": 1665.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_rent": {
+        "value": 1665.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_other_charges": {
+        "value": 109.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_total_charges": {
+        "value": 1774.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "deposit_held": {
+        "value": 250.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "balance": {
+        "value": 0.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "move_in_date": {
+        "value": "2041-12-17",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_start_date": {
+        "value": "2042-12-17",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_end_date": {
+        "value": "2043-12-16",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Copperleaf Commons",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "report_period": {
+        "value": "2043-08",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_number": {
+        "value": "CL-104",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_type_code": {
+        "value": "C1",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_square_feet": {
+        "value": 1290,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_status": {
+        "value": "Leased - current",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "resident_name": {
+        "value": "Underhill, Riley",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "market_rent": {
+        "value": 2065.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_rent": {
+        "value": 1990.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_other_charges": {
+        "value": 74.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_total_charges": {
+        "value": 2064.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "deposit_held": {
+        "value": 250.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "balance": {
+        "value": 0.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "move_in_date": {
+        "value": "2042-10-20",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_start_date": {
+        "value": "2042-10-20",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_end_date": {
+        "value": "2043-10-19",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Copperleaf Commons",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "report_period": {
+        "value": "2043-08",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_number": {
+        "value": "CL-105",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_type_code": {
+        "value": "B1",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_square_feet": {
+        "value": 980,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_status": {
+        "value": "Leased - notice given",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "resident_name": {
+        "value": "Merriweather, Emerson",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "market_rent": {
+        "value": 1570.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_rent": {
+        "value": 1570.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_other_charges": {
+        "value": 14.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_total_charges": {
+        "value": 1584.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "deposit_held": {
+        "value": 250.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "balance": {
+        "value": 0.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "move_in_date": {
+        "value": "2043-03-15",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_start_date": {
+        "value": "2043-03-15",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_end_date": {
+        "value": "2044-03-14",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "expected_move_out_date": {
+        "value": "2044-03-14",
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Copperleaf Commons",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "report_period": {
+        "value": "2043-08",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_number": {
+        "value": "CL-106",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_type_code": {
+        "value": "A2",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_square_feet": {
+        "value": 715,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_status": {
+        "value": "Leased - current",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "resident_name": {
+        "value": "Abernathy, Casey",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "market_rent": {
+        "value": 1145.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_rent": {
+        "value": 1145.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_other_charges": {
+        "value": 74.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_total_charges": {
+        "value": 1219.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "deposit_held": {
+        "value": 250.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "balance": {
+        "value": 0.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "move_in_date": {
+        "value": "2041-01-15",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_start_date": {
+        "value": "2043-01-15",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_end_date": {
+        "value": "2044-01-14",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Copperleaf Commons",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "report_period": {
+        "value": "2043-08",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_number": {
+        "value": "CL-107",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_type_code": {
+        "value": "C1",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_square_feet": {
+        "value": 1290,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_status": {
+        "value": "Leased - current",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "resident_name": {
+        "value": "Thistlewood, Ellison",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "market_rent": {
+        "value": 2195.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_rent": {
+        "value": 2170.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_other_charges": {
+        "value": 143.5,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_total_charges": {
+        "value": 2313.5,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "deposit_held": {
+        "value": 2195.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "balance": {
+        "value": 0.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "move_in_date": {
+        "value": "2041-04-19",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_start_date": {
+        "value": "2043-04-19",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_end_date": {
+        "value": "2044-04-18",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Copperleaf Commons",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "report_period": {
+        "value": "2043-08",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_number": {
+        "value": "CL-108",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_type_code": {
+        "value": "B2",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_square_feet": {
+        "value": 1065,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_status": {
+        "value": "Leased - current",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "resident_name": {
+        "value": "Underhill, Jordan",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "market_rent": {
+        "value": 1650.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_rent": {
+        "value": 1575.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_other_charges": {
+        "value": 109.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_total_charges": {
+        "value": 1684.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "deposit_held": {
+        "value": 250.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "balance": {
+        "value": 437.21,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "move_in_date": {
+        "value": "2041-08-17",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_start_date": {
+        "value": "2042-08-17",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_end_date": {
+        "value": "2043-08-16",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Copperleaf Commons",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "report_period": {
+        "value": "2043-08",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_number": {
+        "value": "CL-109",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_type_code": {
+        "value": "A2",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_square_feet": {
+        "value": 715,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_status": {
+        "value": "Empty - available",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "resident_name": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "market_rent": {
+        "value": 1180.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_rent": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_other_charges": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_total_charges": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "deposit_held": {
+        "value": 0.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "balance": {
+        "value": 0.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "move_in_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_start_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_end_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Copperleaf Commons",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "report_period": {
+        "value": "2043-08",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_number": {
+        "value": "CL-110",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_type_code": {
+        "value": "B1",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_square_feet": {
+        "value": 980,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_status": {
+        "value": "Leased - current",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "resident_name": {
+        "value": "Harrowgate, Emerson",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "market_rent": {
+        "value": 1665.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_rent": {
+        "value": 1665.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_other_charges": {
+        "value": 45.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_total_charges": {
+        "value": 1710.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "deposit_held": {
+        "value": 250.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "balance": {
+        "value": 0.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "move_in_date": {
+        "value": "2043-02-17",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_start_date": {
+        "value": "2043-02-17",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_end_date": {
+        "value": "2044-02-16",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Copperleaf Commons",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "report_period": {
+        "value": "2043-08",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_number": {
+        "value": "CL-201",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_type_code": {
+        "value": "C1",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_square_feet": {
+        "value": 1290,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_status": {
+        "value": "Leased - current",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "resident_name": {
+        "value": "Abernathy, Darby",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "market_rent": {
+        "value": 2130.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_rent": {
+        "value": 2080.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_other_charges": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_total_charges": {
+        "value": 2080.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "deposit_held": {
+        "value": 250.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "balance": {
+        "value": 133.53,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "move_in_date": {
+        "value": "2041-04-13",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_start_date": {
+        "value": "2043-04-13",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_end_date": {
+        "value": "2044-04-12",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Copperleaf Commons",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "report_period": {
+        "value": "2043-08",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_number": {
+        "value": "CL-202",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_type_code": {
+        "value": "B2",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_square_feet": {
+        "value": 1065,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_status": {
+        "value": "Leased - current",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "resident_name": {
+        "value": "Thistlewood, Riley",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "market_rent": {
+        "value": 1650.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_rent": {
+        "value": 1650.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_other_charges": {
+        "value": 140.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_total_charges": {
+        "value": 1790.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "deposit_held": {
+        "value": 1650.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "balance": {
+        "value": 0.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "move_in_date": {
+        "value": "2042-08-17",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_start_date": {
+        "value": "2042-08-17",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_end_date": {
+        "value": "2043-08-16",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Copperleaf Commons",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "report_period": {
+        "value": "2043-08",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_number": {
+        "value": "CL-203",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_type_code": {
+        "value": "B1",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_square_feet": {
+        "value": 980,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_status": {
+        "value": "Leased - notice, unit re-let",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "resident_name": {
+        "value": "Stanhope, Linden",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "market_rent": {
+        "value": 1570.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_rent": {
+        "value": 1545.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_other_charges": {
+        "value": 147.5,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_total_charges": {
+        "value": 1692.5,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "deposit_held": {
+        "value": 1570.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "balance": {
+        "value": 0.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "move_in_date": {
+        "value": "2042-10-19",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_start_date": {
+        "value": "2042-10-19",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_end_date": {
+        "value": "2043-10-18",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "expected_move_out_date": {
+        "value": "2043-10-18",
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Copperleaf Commons",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "report_period": {
+        "value": "2043-08",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_number": {
+        "value": "CL-204",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_type_code": {
+        "value": "A1",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_square_feet": {
+        "value": 640,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_status": {
+        "value": "Leased - current",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "resident_name": {
+        "value": "Ravenscroft, Morgan",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "market_rent": {
+        "value": 1055.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_rent": {
+        "value": 1055.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_other_charges": {
+        "value": 38.5,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_total_charges": {
+        "value": 1093.5,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "deposit_held": {
+        "value": 500.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "balance": {
+        "value": 0.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "move_in_date": {
+        "value": "2042-05-12",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_start_date": {
+        "value": "2043-05-12",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_end_date": {
+        "value": "2044-05-11",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Copperleaf Commons",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "report_period": {
+        "value": "2043-08",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_number": {
+        "value": "CL-205",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_type_code": {
+        "value": "B1",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_square_feet": {
+        "value": 980,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_status": {
+        "value": "Empty - pre-leased",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "resident_name": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "market_rent": {
+        "value": 1570.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_rent": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_other_charges": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_total_charges": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "deposit_held": {
+        "value": 0.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "balance": {
+        "value": 0.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "move_in_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_start_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_end_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Copperleaf Commons",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "report_period": {
+        "value": "2043-08",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_number": {
+        "value": "CL-206",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_type_code": {
+        "value": "A2",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_square_feet": {
+        "value": 715,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_status": {
+        "value": "Leased - current",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "resident_name": {
+        "value": "Ravenscroft, Hollis",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "market_rent": {
+        "value": 1110.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_rent": {
+        "value": 1085.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_other_charges": {
+        "value": 83.5,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_total_charges": {
+        "value": 1168.5,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "deposit_held": {
+        "value": 500.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "balance": {
+        "value": 0.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "move_in_date": {
+        "value": "2041-08-19",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_start_date": {
+        "value": "2042-08-19",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_end_date": {
+        "value": "2043-08-18",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Copperleaf Commons",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "report_period": {
+        "value": "2043-08",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_number": {
+        "value": "CL-207",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_type_code": {
+        "value": "A1",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_square_feet": {
+        "value": 640,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_status": {
+        "value": "Leased - current",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "resident_name": {
+        "value": "Draycott, Tatum",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "market_rent": {
+        "value": 1025.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_rent": {
+        "value": 975.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_other_charges": {
+        "value": 95.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_total_charges": {
+        "value": 1070.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "deposit_held": {
+        "value": 1025.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "balance": {
+        "value": -116.41,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "move_in_date": {
+        "value": "2041-02-18",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_start_date": {
+        "value": "2043-02-18",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_end_date": {
+        "value": "2044-02-17",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Copperleaf Commons",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "report_period": {
+        "value": "2043-08",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_number": {
+        "value": "CL-208",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_type_code": {
+        "value": "B2",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_square_feet": {
+        "value": 1065,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_status": {
+        "value": "Leased - current",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "resident_name": {
+        "value": "Lockhart, Rowan",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "market_rent": {
+        "value": 1810.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_rent": {
+        "value": 1760.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_other_charges": {
+        "value": 59.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_total_charges": {
+        "value": 1819.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "deposit_held": {
+        "value": 500.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "balance": {
+        "value": 0.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "move_in_date": {
+        "value": "2042-09-12",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_start_date": {
+        "value": "2042-09-12",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_end_date": {
+        "value": "2043-09-11",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Copperleaf Commons",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "report_period": {
+        "value": "2043-08",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_number": {
+        "value": "CL-209",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_type_code": {
+        "value": "B1",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_square_feet": {
+        "value": 980,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_status": {
+        "value": "Empty - pre-leased",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "resident_name": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "market_rent": {
+        "value": 1665.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_rent": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_other_charges": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_total_charges": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "deposit_held": {
+        "value": 0.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "balance": {
+        "value": 0.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "move_in_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_start_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_end_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Copperleaf Commons",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "report_period": {
+        "value": "2043-08",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_number": {
+        "value": "CL-210",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_type_code": {
+        "value": "C1",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_square_feet": {
+        "value": 1290,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_status": {
+        "value": "Leased - current",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "resident_name": {
+        "value": "Abernathy, Sutton",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "market_rent": {
+        "value": 2000.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_rent": {
+        "value": 1975.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_other_charges": {
+        "value": 38.5,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_total_charges": {
+        "value": 2013.5,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "deposit_held": {
+        "value": 500.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "balance": {
+        "value": 0.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "move_in_date": {
+        "value": "2042-07-14",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_start_date": {
+        "value": "2043-07-14",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_end_date": {
+        "value": "2044-07-13",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Copperleaf Commons",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "report_period": {
+        "value": "2043-08",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_number": {
+        "value": "CL-301",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_type_code": {
+        "value": "B2",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_square_feet": {
+        "value": 1065,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_status": {
+        "value": "Leased - current",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "resident_name": {
+        "value": "Gilchrist, Riley",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "market_rent": {
+        "value": 1705.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_rent": {
+        "value": 1705.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_other_charges": {
+        "value": 73.5,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_total_charges": {
+        "value": 1778.5,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "deposit_held": {
+        "value": 250.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "balance": {
+        "value": 590.09,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "move_in_date": {
+        "value": "2041-12-18",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_start_date": {
+        "value": "2042-12-18",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_end_date": {
+        "value": "2043-12-17",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Copperleaf Commons",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "report_period": {
+        "value": "2043-08",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_number": {
+        "value": "CL-302",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_type_code": {
+        "value": "C1",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_square_feet": {
+        "value": 1290,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_status": {
+        "value": "Empty - available",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "resident_name": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "market_rent": {
+        "value": 2000.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_rent": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_other_charges": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_total_charges": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "deposit_held": {
+        "value": 0.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "balance": {
+        "value": 0.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "move_in_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_start_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_end_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Copperleaf Commons",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "report_period": {
+        "value": "2043-08",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_number": {
+        "value": "CL-303",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_type_code": {
+        "value": "A1",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_square_feet": {
+        "value": 640,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_status": {
+        "value": "Empty - pre-leased",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "resident_name": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "market_rent": {
+        "value": 1055.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_rent": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_other_charges": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_total_charges": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "deposit_held": {
+        "value": 0.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "balance": {
+        "value": 0.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "move_in_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_start_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_end_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Copperleaf Commons",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "report_period": {
+        "value": "2043-08",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_number": {
+        "value": "CL-304",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_type_code": {
+        "value": "B1",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_square_feet": {
+        "value": 980,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "unit_status": {
+        "value": "Empty - pre-leased",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "resident_name": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "market_rent": {
+        "value": 1665.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_rent": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_other_charges": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_total_charges": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "deposit_held": {
+        "value": 0.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "balance": {
+        "value": 0.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "move_in_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_start_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_end_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "expected_move_out_date": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      }
+    }
+  ],
+  "metadata": {
+    "model_calls": 0,
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "cost_usd": 0.0,
+    "latency_ms": 0,
+    "synthetic": true
+  }
+}

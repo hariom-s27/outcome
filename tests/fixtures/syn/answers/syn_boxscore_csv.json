@@ -1,0 +1,728 @@
+{
+  "schema": "boxscore",
+  "document": "syn_boxscore_csv",
+  "entries": [
+    {
+      "property_name": {
+        "value": "Larkspur Flats",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "date": {
+        "value": "2043-10-17",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "code": {
+        "value": "LF-S1",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "name": {
+        "value": "Studio Classic",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "avg_sq_ft": {
+        "value": 512,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "avg_rent": {
+        "value": 1063.39,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "units": {
+        "value": 31,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "occ_no_notice": {
+        "value": 23,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "vacant_rented": {
+        "value": 1,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "vacant_unrented": {
+        "value": 3,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "notice_rented": {
+        "value": 1,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "notice_unrented": {
+        "value": 3,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "avail": {
+        "value": 6,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "model": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "down": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "admin": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "percent_occupied": {
+        "value": 87.1,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "p_occ_wornonrev": {
+        "value": 87.1,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "percent_leased": {
+        "value": 80.65,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "p_trend": {
+        "value": 80.65,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Larkspur Flats",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "date": {
+        "value": "2043-10-17",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "code": {
+        "value": "LF-S2",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "name": {
+        "value": "Studio Loft",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "avg_sq_ft": {
+        "value": 588,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "avg_rent": {
+        "value": 1071.44,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "units": {
+        "value": 34,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "occ_no_notice": {
+        "value": 27,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "vacant_rented": {
+        "value": 2,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "vacant_unrented": {
+        "value": 2,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "notice_rented": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "notice_unrented": {
+        "value": 3,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "avail": {
+        "value": 5,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "model": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "down": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "admin": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "percent_occupied": {
+        "value": 88.24,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "p_occ_wornonrev": {
+        "value": 88.24,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "percent_leased": {
+        "value": 85.29,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "p_trend": {
+        "value": 85.29,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Larkspur Flats",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "date": {
+        "value": "2043-10-17",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "code": {
+        "value": "LF-A1",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "name": {
+        "value": "One Bed Garden",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "avg_sq_ft": {
+        "value": 702,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "avg_rent": {
+        "value": 1329.58,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "units": {
+        "value": 38,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "occ_no_notice": {
+        "value": 31,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "vacant_rented": {
+        "value": 3,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "vacant_unrented": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "notice_rented": {
+        "value": 2,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "notice_unrented": {
+        "value": 2,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "avail": {
+        "value": 2,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "model": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "down": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "admin": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "percent_occupied": {
+        "value": 92.11,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "p_occ_wornonrev": {
+        "value": 92.11,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "percent_leased": {
+        "value": 94.74,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "p_trend": {
+        "value": 94.74,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Larkspur Flats",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "date": {
+        "value": "2043-10-17",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "code": {
+        "value": "LF-A2",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "name": {
+        "value": "One Bed Corner",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "avg_sq_ft": {
+        "value": 768,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "avg_rent": {
+        "value": 1592.99,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "units": {
+        "value": 42,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "occ_no_notice": {
+        "value": 39,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "vacant_rented": {
+        "value": 1,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "vacant_unrented": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "notice_rented": {
+        "value": 1,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "notice_unrented": {
+        "value": 1,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "avail": {
+        "value": 1,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "model": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "down": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "admin": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "percent_occupied": {
+        "value": 97.62,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "p_occ_wornonrev": {
+        "value": 97.62,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "percent_leased": {
+        "value": 97.62,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "p_trend": {
+        "value": 97.62,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Larkspur Flats",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "date": {
+        "value": "2043-10-17",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "code": {
+        "value": "LF-B1",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "name": {
+        "value": "Two Bed Terrace",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "avg_sq_ft": {
+        "value": 1044,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "avg_rent": {
+        "value": 2119.13,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "units": {
+        "value": 34,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "occ_no_notice": {
+        "value": 29,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "vacant_rented": {
+        "value": 2,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "vacant_unrented": {
+        "value": 1,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "notice_rented": {
+        "value": 2,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "notice_unrented": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "avail": {
+        "value": 1,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "model": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "down": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "admin": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "percent_occupied": {
+        "value": 91.18,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "p_occ_wornonrev": {
+        "value": 91.18,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "percent_leased": {
+        "value": 97.06,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "p_trend": {
+        "value": 97.06,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Larkspur Flats",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "date": {
+        "value": "2043-10-17",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "code": {
+        "value": "LF-B2",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "name": {
+        "value": "Two Bed Flex",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "avg_sq_ft": {
+        "value": 1121,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "avg_rent": {
+        "value": 2143.53,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "units": {
+        "value": 34,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "occ_no_notice": {
+        "value": 27,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "vacant_rented": {
+        "value": 1,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "vacant_unrented": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "notice_rented": {
+        "value": 2,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "notice_unrented": {
+        "value": 3,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "avail": {
+        "value": 3,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "model": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "down": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "admin": {
+        "value": 1,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "percent_occupied": {
+        "value": 94.12,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "p_occ_wornonrev": {
+        "value": 97.06,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "percent_leased": {
+        "value": 88.24,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "p_trend": {
+        "value": 88.24,
+        "citation": "",
+        "confidence": 1.0
+      }
+    },
+    {
+      "property_name": {
+        "value": "Larkspur Flats",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "date": {
+        "value": "2043-10-17",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "code": {
+        "value": "LF-C1",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "name": {
+        "value": "Three Bed Villa",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "avg_sq_ft": {
+        "value": 1386,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "avg_rent": {
+        "value": 2862.96,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "units": {
+        "value": 59,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "occ_no_notice": {
+        "value": 53,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "vacant_rented": {
+        "value": 1,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "vacant_unrented": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "notice_rented": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "notice_unrented": {
+        "value": 3,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "avail": {
+        "value": 3,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "model": {
+        "value": 1,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "down": {
+        "value": 1,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "admin": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "percent_occupied": {
+        "value": 94.92,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "p_occ_wornonrev": {
+        "value": 96.61,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "percent_leased": {
+        "value": 91.53,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "p_trend": {
+        "value": 91.53,
+        "citation": "",
+        "confidence": 1.0
+      }
+    }
+  ],
+  "metadata": {
+    "model_calls": 0,
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "cost_usd": 0.0,
+    "latency_ms": 0,
+    "synthetic": true
+  }
+}

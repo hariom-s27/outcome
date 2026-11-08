@@ -1,0 +1,247 @@
+{
+  "schema": "lease_abstraction",
+  "document": "syn_lease_text",
+  "entries": [
+    {
+      "tenant_name": {
+        "value": "Brightwater Analytics, LLC",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "landlord_legal_name": {
+        "value": "Corvane Tower Owner LP",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "property_name": {
+        "value": "Corvane Tower",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "building_address": {
+        "value": "4800 Linden Ridge Parkway, Ashford, OH 43991",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "premises": {
+        "value": "Suite 1150",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "rentable_square_footage": {
+        "value": 7420,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "pro_rata_share": {
+        "value": 2.35,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "permitted_use": {
+        "value": "general office use and related lawful purposes",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_execution_date": {
+        "value": "2040-03-14",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_commencement_date": {
+        "value": "2040-05-15",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "rent_commencement_date": {
+        "value": "2040-05-15",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_expiration_date": {
+        "value": "2045-05-14",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_term_months": {
+        "value": 60,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "rent_schedule_start_dates": {
+        "value": [
+          "2040-05-15",
+          "2041-05-15",
+          "2042-05-15",
+          "2043-05-15",
+          "2044-05-15"
+        ],
+        "citation": "",
+        "confidence": 1.0
+      },
+      "rent_schedule_end_dates": {
+        "value": [
+          "2041-05-14",
+          "2042-05-14",
+          "2043-05-14",
+          "2044-05-14",
+          "2045-05-14"
+        ],
+        "citation": "",
+        "confidence": 1.0
+      },
+      "rent_schedule_monthly_rent": {
+        "value": [
+          18550.0,
+          19106.5,
+          19679.7,
+          19950.0,
+          20400.0
+        ],
+        "citation": "",
+        "confidence": 1.0
+      },
+      "rent_schedule_annual_rent_per_rsf": {
+        "value": [
+          30.0,
+          30.9,
+          31.83,
+          32.26,
+          32.99
+        ],
+        "citation": "",
+        "confidence": 1.0
+      },
+      "total_base_rent": {
+        "value": 1172234.4,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "base_rent_escalation": {
+        "value": "set annual step-ups per the rent table",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "free_rent_months": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "security_deposit_amount": {
+        "value": 30000.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "letter_of_credit_required": {
+        "value": false,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "expense_structure": {
+        "value": "base year 2040",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "base_year_expenses": {
+        "value": 2040,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "base_year_taxes": {
+        "value": 2040,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "electricity_provision": {
+        "value": "separately metered and billed to Tenant",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "parking_spaces": {
+        "value": 18,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "parking_monthly_charge": {
+        "value": 95.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "ti_allowance_total": {
+        "value": 222600.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "renewal_option_exists": {
+        "value": true,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "renewal_options_count": {
+        "value": 1,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "renewal_term_months": {
+        "value": [
+          60
+        ],
+        "citation": "",
+        "confidence": 1.0
+      },
+      "renewal_notice_months": {
+        "value": [
+          12
+        ],
+        "citation": "",
+        "confidence": 1.0
+      },
+      "early_termination_right": {
+        "value": false,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "termination_fee_description": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "right_to_sublet": {
+        "value": "with Landlord's consent, not unreasonably withheld",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "guarantor_name": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "broker_names": {
+        "value": [
+          "Halverson Realty Partners",
+          "Kestrel Commercial Advisors"
+        ],
+        "citation": "",
+        "confidence": 1.0
+      },
+      "late_fee": {
+        "value": "5% of the overdue amount",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "holdover_rent": {
+        "value": "175% of the Base Rent in effect at expiration",
+        "citation": "",
+        "confidence": 1.0
+      }
+    }
+  ],
+  "metadata": {
+    "model_calls": 0,
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "cost_usd": 0.0,
+    "latency_ms": 0,
+    "synthetic": true
+  }
+}

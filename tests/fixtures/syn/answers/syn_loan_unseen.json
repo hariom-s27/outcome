@@ -1,0 +1,76 @@
+{
+  "schema": "syn_loan_summary",
+  "document": "syn_loan_unseen",
+  "entries": [
+    {
+      "lender_name": {
+        "value": "Ridgeway Mutual Life Assurance Society",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "borrower_name": {
+        "value": "Tamsin Court Owner, LLC",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "property_address": {
+        "value": "1020 Tamsin Court, Brookvale, CO 80612",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "loan_amount": {
+        "value": 14250000.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "interest_rate_pct": {
+        "value": 5.875,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "closing_date": {
+        "value": "2040-02-16",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "maturity_date": {
+        "value": "2045-02-16",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "loan_term_months": {
+        "value": 60,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "amortization_years": {
+        "value": 30,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "monthly_payment": {
+        "value": 84294.13,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "annual_debt_service": {
+        "value": 1011529.56,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "guarantor_name": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      }
+    }
+  ],
+  "metadata": {
+    "model_calls": 0,
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "cost_usd": 0.0,
+    "latency_ms": 0,
+    "synthetic": true
+  }
+}

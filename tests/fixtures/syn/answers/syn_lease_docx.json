@@ -1,0 +1,234 @@
+{
+  "schema": "lease_abstraction",
+  "document": "syn_lease_docx",
+  "entries": [
+    {
+      "tenant_name": {
+        "value": "Quillfeather Learning Co.",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "landlord_legal_name": {
+        "value": "Saltmeadow Office Partners, L.L.C.",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "property_name": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "building_address": {
+        "value": "77 Cobbler Street, Fenwick, NJ 07761",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "premises": {
+        "value": "3rd Floor",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "rentable_square_footage": {
+        "value": 12600,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "pro_rata_share": {
+        "value": 18.4,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "permitted_use": {
+        "value": "administrative and educational office use",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_execution_date": {
+        "value": "2040-06-12",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_commencement_date": {
+        "value": "2040-09-15",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "rent_commencement_date": {
+        "value": "2041-01-15",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_expiration_date": {
+        "value": "2045-09-14",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "lease_term_months": {
+        "value": 60,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "rent_schedule_start_dates": {
+        "value": [
+          "2041-01-15",
+          "2042-09-15",
+          "2044-09-15"
+        ],
+        "citation": "",
+        "confidence": 1.0
+      },
+      "rent_schedule_end_dates": {
+        "value": [
+          "2042-09-14",
+          "2044-09-14",
+          "2045-09-14"
+        ],
+        "citation": "",
+        "confidence": 1.0
+      },
+      "rent_schedule_monthly_rent": {
+        "value": [
+          26250.0,
+          28350.0,
+          30450.0
+        ],
+        "citation": "",
+        "confidence": 1.0
+      },
+      "rent_schedule_annual_rent_per_rsf": {
+        "value": [
+          25.0,
+          27.0,
+          29.0
+        ],
+        "citation": "",
+        "confidence": 1.0
+      },
+      "total_base_rent": {
+        "value": 1570800.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "base_rent_escalation": {
+        "value": "set step-ups per the rent table",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "free_rent_months": {
+        "value": 4,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "security_deposit_amount": {
+        "value": 52500.0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "letter_of_credit_required": {
+        "value": false,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "expense_structure": {
+        "value": "expense stop $11.50 per RSF",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "base_year_expenses": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "base_year_taxes": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "electricity_provision": {
+        "value": "included in Base Rent",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "parking_spaces": {
+        "value": 25,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "parking_monthly_charge": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "ti_allowance_total": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "renewal_option_exists": {
+        "value": false,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "renewal_options_count": {
+        "value": 0,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "renewal_term_months": {
+        "value": [],
+        "citation": "",
+        "confidence": 1.0
+      },
+      "renewal_notice_months": {
+        "value": [],
+        "citation": "",
+        "confidence": 1.0
+      },
+      "early_termination_right": {
+        "value": true,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "termination_fee_description": {
+        "value": "unamortized leasing costs plus six months of Base Rent",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "right_to_sublet": {
+        "value": "with landlord consent, which may be withheld in its sole discretion",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "guarantor_name": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      },
+      "broker_names": {
+        "value": [
+          "Northgate Tenant Advisory"
+        ],
+        "citation": "",
+        "confidence": 1.0
+      },
+      "late_fee": {
+        "value": "interest at 12% per annum",
+        "citation": "",
+        "confidence": 1.0
+      },
+      "holdover_rent": {
+        "value": null,
+        "citation": "",
+        "confidence": 1.0
+      }
+    }
+  ],
+  "metadata": {
+    "model_calls": 0,
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "cost_usd": 0.0,
+    "latency_ms": 0,
+    "synthetic": true
+  }
+}

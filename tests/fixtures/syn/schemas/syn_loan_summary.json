@@ -1,0 +1,54 @@
+{
+  "name": "syn_loan_summary",
+  "description": "Summary of a commercial mortgage loan from a loan summary or term sheet. One entry per document. Dates in YYYY-MM-DD. Money as plain numbers. Where the document does not state something, the value is null.",
+  "fields": {
+    "lender_name": {
+      "name": "Lender",
+      "description": "Full legal name of the lender exactly as written."
+    },
+    "borrower_name": {
+      "name": "Borrower",
+      "description": "Full legal name of the borrower exactly as written, including the entity suffix."
+    },
+    "property_address": {
+      "name": "Property Address",
+      "description": "Street address of the mortgaged property, including city, state and ZIP where given."
+    },
+    "loan_amount": {
+      "name": "Loan Amount",
+      "description": "Original principal amount of the loan, as a number."
+    },
+    "interest_rate_pct": {
+      "name": "Interest Rate",
+      "description": "Annual fixed interest rate as a percentage number exactly as printed (6.5 for 6.5%)."
+    },
+    "closing_date": {
+      "name": "Closing Date",
+      "description": "The date the loan closed or was funded."
+    },
+    "maturity_date": {
+      "name": "Maturity Date",
+      "description": "The date the loan matures and all principal is due."
+    },
+    "loan_term_months": {
+      "name": "Loan Term (months)",
+      "description": "Length of the loan term in whole months. Compute it from the dates if not stated."
+    },
+    "amortization_years": {
+      "name": "Amortization (years)",
+      "description": "Amortization period in years, as a number."
+    },
+    "monthly_payment": {
+      "name": "Monthly Payment",
+      "description": "Scheduled monthly payment of principal and interest, as a number."
+    },
+    "annual_debt_service": {
+      "name": "Yearly Loan Payments",
+      "description": "Total scheduled principal and interest payments for one year, as a number. Compute it as the monthly payment times 12 if not stated."
+    },
+    "guarantor_name": {
+      "name": "Guarantor",
+      "description": "Full name of any guarantor of the loan. null if no guarantor is named."
+    }
+  }
+}
