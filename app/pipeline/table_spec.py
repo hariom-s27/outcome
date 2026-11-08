@@ -50,7 +50,14 @@ from app.tables.execute import (
 )
 from app.tables.pdf_grid import Grid, GridResult, to_pdf_cells
 from app.tables.profile import WorkbookProfile, has_total_word, preview, profile_blocks, shape
-from app.tables.spec import Spec, salvage_spec, validate_spec
+from app.tables.spec import (
+    GRAMMAR_WORDS,
+    PARSES,
+    RULES,
+    Spec,
+    salvage_spec,
+    validate_spec,
+)
 
 log = logging.getLogger("app.pipeline.table_spec")
 
@@ -168,12 +175,46 @@ def field_lines(field_list: dict[str, Any]) -> str:
     return baseline._field_lines(fields, primary_key(field_list))
 
 
-def build_messages(field_list: dict[str, Any], wp: WorkbookProfile, file_type: str) -> list:
+def build_messages(
+    field_list: dict[str, Any], wp: WorkbookProfile, file_type: str, feedback: str | None = None
+) -> list:
+    """`feedback` (P9g, E0 retry only): a block saying what code rejected in the last spec."""
+    fb = f"\n\n{feedback}" if feedback else ""
     user = (
         f"SPREADSHEET PREVIEW ({file_type}):\n{preview(wp)}\n\n"
-        f"FIELDS:\n{field_lines(field_list)}\n\nReturn the spec JSON now."
+        f"FIELDS:\n{field_lines(field_list)}{fb}\n\nReturn the spec JSON now."
     )
     return [{"role": "system", "content": SYSTEM}, {"role": "user", "content": user}]
+
+
+def safe_key_names(names: list[str], field_list: dict[str, Any]) -> list[str]:
+    """P9g metadata: key names that are grammar words or field keys; any other -> "other"
+    (a model-made key could echo document text, R23)."""
+    vocab = GRAMMAR_WORDS | set(field_list.get("fields") or {})
+    return sorted({n if n in vocab else "other" for n in names})[:10]
+
+
+def _record_report(
+    report: dict[str, list[str]],
+    core_errors: list[str],
+    dropped: list[str],
+    field_list: dict[str, Any],
+    info: dict[str, Any],
+    notes: dict[str, Any],
+    ctx: CallContext,
+) -> None:
+    """P9g: counts + safe key names to `info` (metadata); the full reasons to `notes`, which
+    only ever feed the retry prompt (never metadata or logs)."""
+    ignored = report.get("ignored", [])
+    top = report.get("top_unknown", [])
+    info["unknown_keys_ignored"] = len(ignored)
+    if ignored:
+        info["unknown_key_names"] = safe_key_names([k.rsplit(".", 1)[-1] for k in ignored],
+                                                   field_list)  # fmt: skip
+        log.info("job %s table spec: %d unknown keys ignored", ctx.job_id, len(ignored))
+    if top:
+        info["unknown_top_keys"] = safe_key_names(top, field_list)
+    notes.update(core=list(core_errors), dropped=list(dropped), ignored=list(ignored), top=top)
 
 
 def ask_spec(
@@ -187,10 +228,14 @@ def ask_spec(
     *,
     purpose: str = "table_spec",
     repairs: int = MAX_REPAIRS,
+    notes: dict[str, Any] | None = None,
+    feedback: str | None = None,
 ) -> Spec | None:
     """One spec call, salvaged per entry (B-3); a repair call only for a broken core.
-    `info` gets counts and error kinds only (never document text)."""
-    messages = build_messages(field_list, wp, file_type)
+    `info` gets counts and error kinds only (never document text).
+    P9g (SPEC_RETRY_FEEDBACK): `notes` given -> lenient entry keys, and the last answer's
+    reasons go to `notes` for a retry prompt; `feedback` is added to the prompt."""
+    messages = build_messages(field_list, wp, file_type, feedback)
     info["tokens_estimated"] = llm.catalog.estimate.tokens(messages, None)
     for attempt in range(1 + repairs):
         call = purpose if attempt == 0 else f"{purpose}_repair"
@@ -202,7 +247,12 @@ def ask_spec(
             info["llm_reason"] = out.reason or out.status
             info["llm_status"] = out.status
             return None
-        spec, core_errors, dropped = salvage_spec(out.data, field_list, wp, source="ai")
+        report: dict[str, list[str]] | None = {} if notes is not None else None
+        spec, core_errors, dropped = salvage_spec(
+            out.data, field_list, wp, source="ai", report=report
+        )
+        if report is not None and notes is not None:
+            _record_report(report, core_errors, dropped, field_list, info, notes, ctx)
         if dropped:
             info["entries_dropped"] = info.get("entries_dropped", 0) + len(dropped)
             kinds = set(info.get("dropped_kinds", [])) | {e.split(":", 1)[0] for e in dropped}
@@ -466,6 +516,60 @@ def e0_needs_retry(
     return None
 
 
+TOP_KEYS = ("sheet", "header_row", "data_first_row", "data_last_row", "until_blank_run",
+            "key_column", "record_start", "skip", "row_fields", "doc_fields")  # fmt: skip
+ALLOWED_TEXT = (
+    f"Allowed top-level keys: {', '.join(TOP_KEYS)}.\n"
+    f"Each row_fields rule has exactly one of {', '.join(RULES)}: "
+    '{"col": "<letter>"} with optional "fold", "except_label", "parse"; '
+    '{"pick_by_label": {"label_col", "label_text", "value_col"}} with optional "parse"; '
+    '{"section_context": true}; {"derived": {"op", "cols"}}; {"map_distinct": {"from", "map"}}. '
+    f"parse is one of {', '.join(PARSES)}.\n"
+    'Each doc_fields value: {"cell": "<Sheet>!<A1>"} with optional "parse", or null. '
+    "No other keys anywhere."
+)
+FEEDBACK_MAX_LINES = 20
+FEEDBACK_MAX_CHARS = 200  # per problem line
+
+
+def feedback_block(
+    notes: dict[str, Any], field_list: dict[str, Any], before: dict[str, Any] | None
+) -> tuple[str, dict[str, int]]:
+    """P9g: what code rejected or ignored in the last spec (entry + reason + key names, all
+    from the validator's messages), the allowed keys, and the unfilled row-level field names
+    when fill < E0_MIN_FILL. No document values: the validator's messages name keys only.
+    Returns (prompt text, counts for metadata)."""
+    problems = [*notes.get("core", []), *notes.get("dropped", [])]
+    ignored = notes.get("ignored", [])
+    top = notes.get("top", [])
+    lines = ["FEEDBACK ON YOUR PREVIOUS SPEC. Code checked it; fix exactly these problems and "
+             "keep every other entry as it was:"]  # fmt: skip
+    for i, e in enumerate(problems[:FEEDBACK_MAX_LINES], 1):
+        lines.append(f"{i}. {e[:FEEDBACK_MAX_CHARS]}")
+    if top:
+        lines.append(f"Top-level keys {top[:FEEDBACK_MAX_LINES]} are not allowed and were "
+                     "ignored, with everything inside them. A field's rule goes inside "
+                     "row_fields (or doc_fields), under the field key.")  # fmt: skip
+    if ignored:
+        lines.append(f"Keys ignored inside otherwise valid entries: "
+                     f"{', '.join(ignored[:FEEDBACK_MAX_LINES])[:600]}.")  # fmt: skip
+    lines.append(ALLOWED_TEXT)
+    fields = row_level_fields(field_list)
+    entries = before["ex"].entries if before else []
+    unfilled = [k for k in fields if not any(e.get(k, {}).get("value") is not None
+                                             for e in entries)]  # fmt: skip
+    fill = before["filled"] if before else 0.0
+    if fill < E0_MIN_FILL and unfilled:
+        lines.append(f"Only {len(fields) - len(unfilled)} of {len(fields)} row-level fields "
+                     f"were filled. Unfilled: {', '.join(unfilled)}. Give each one a row_fields "
+                     "rule, or null if the sheet does not hold it.")  # fmt: skip
+    else:
+        unfilled = []
+    counts = {"problems": len(problems), "ignored": len(ignored), "top_unknown": len(top),
+              "unfilled": len(unfilled)}  # fmt: skip
+    return "\n".join(lines), counts
+
+
 def _e0_retry(
     llm: LLMClient,
     ctx: CallContext,
@@ -477,22 +581,31 @@ def _e0_retry(
     cands: dict[str, dict[str, Any]],
     chosen: str | None,
     ai_info: dict[str, Any],
+    notes: dict[str, Any] | None = None,
 ) -> str | None:
     """E0: one fresh spec call; the result with the higher row-level fill is kept (ties keep
-    the first choice). Metadata `e0` holds counts and reason codes only."""
+    the first choice). Metadata `e0` holds counts and reason codes only.
+    P9g (`notes` given, SPEC_RETRY_FEEDBACK): the retry prompt carries feedback_block and the
+    retry's own answer is read with lenient entry keys."""
     why = e0_needs_retry(chosen, cands, field_list, ai_info)
     if why is None:
         return chosen
     before_name = chosen
     before = cands.get(chosen) if chosen else None
+    e0: dict[str, Any] = {"why": why, "fill_before": round(before["filled"], 4) if before else None}
+    fb_text, r_notes = None, None
+    if notes is not None:
+        fb_text, e0["feedback"] = feedback_block(notes, field_list, before)
+        r_notes = {}
     r_info: dict[str, Any] = {"calls": 0}
     r_spec = ask_spec(
-        llm, ctx, model, field_list, wp, file_type, r_info, purpose="table_spec_e0", repairs=0
-    )
+        llm, ctx, model, field_list, wp, file_type, r_info, purpose="table_spec_e0", repairs=0,
+        notes=r_notes, feedback=fb_text,
+    )  # fmt: skip
     table["calls"] += r_info.pop("calls")
     table["retry"] = {"valid": r_spec is not None, **r_info}
-    e0: dict[str, Any] = {"why": why, "fill_before": round(before["filled"], 4) if before else None}
-    log.info("job %s e0 spec retry why=%s", ctx.job_id, why)
+    log.info("job %s e0 spec retry why=%s feedback=%s", ctx.job_id, why,
+             "yes" if fb_text else "no")  # fmt: skip
     if r_spec is not None:
         cands["retry"] = run_candidate(r_spec, wp, field_list)
         after = select(cands, wp, field_list)
@@ -521,12 +634,16 @@ def _spec_path(
     robust: bool = False,
     keep: dict[str, Any] | None = None,
     cleanup: bool = False,
+    feedback: bool = False,
 ) -> list[dict[str, Any]] | None:
     """`keep` (P9c grid only): receives the candidates, the chosen name and the model's call
     status, so the grid checks can run on them; None (every other caller) changes nothing.
-    `cleanup` (P9c Z-51, TABLE_CLEANUP): the two cleanup rules on the chosen entries."""
+    `cleanup` (P9c Z-51, TABLE_CLEANUP): the two cleanup rules on the chosen entries.
+    `feedback` (P9g, SPEC_RETRY_FEEDBACK): lenient entry keys on every spec answer, and the
+    E0 retry is told what was wrong; False = the lab path unchanged."""
     ai_info: dict[str, Any] = {"calls": 0}
-    ai_spec = ask_spec(llm, ctx, model, field_list, wp, file_type, ai_info)
+    notes: dict[str, Any] | None = {} if feedback else None
+    ai_spec = ask_spec(llm, ctx, model, field_list, wp, file_type, ai_info, notes=notes)
     table["calls"] = ai_info.pop("calls")
     table["ai_spec"] = {"valid": ai_spec is not None, **ai_info}
     cands, info = candidates(field_list, wp, ai_spec)
@@ -534,7 +651,7 @@ def _spec_path(
     chosen = select(cands, wp, field_list)
     if robust:  # P9b E0: replaces B-5 (its fill == 0 case is inside fill < 0.5)
         chosen = _e0_retry(
-            llm, ctx, model, field_list, wp, file_type, table, cands, chosen, ai_info
+            llm, ctx, model, field_list, wp, file_type, table, cands, chosen, ai_info, notes
         )
     elif needs_retry(chosen, cands, field_list, ai_info):  # B-5: once, no repair history
         r_info: dict[str, Any] = {"calls": 0}
@@ -684,16 +801,18 @@ def _grid_path(
     table: dict[str, Any],
     robust: bool,
     cleanup: bool = False,
+    feedback: bool = False,
 ) -> list[dict[str, Any]] | None:
     """Spec path on the virtual sheet, then the Z-45 checks: chosen spec -> another candidate
-    that passes -> one E0 spec retry (only if E0 has not already made its call) -> None."""
+    that passes -> one E0 spec retry (only if E0 has not already made its call) -> None.
+    `feedback` (P9g): as in _spec_path; the grid's own check retry gets lenient keys only."""
     wp = profile_blocks(grid.blocks)
     table["data_lines"] = wp.data_line_count()
     if wp.data_line_count() == 0:
         table["grid_result"] = "no_table"
         return None
     keep: dict[str, Any] = {}
-    _spec_path(llm, ctx, field_list, wp, "pdf", model, table, robust, keep=keep)
+    _spec_path(llm, ctx, field_list, wp, "pdf", model, table, robust, keep=keep, feedback=feedback)
     table.pop("cleanup", None)  # counted again on the entries actually returned
     cands: dict[str, dict[str, Any]] = keep.get("cands", {})
     pick = _grid_pick(cands, keep.get("chosen"), wp, field_list, grid, table)
@@ -701,8 +820,9 @@ def _grid_path(
     if pick is None and reachable and "e0" not in table:
         r_info: dict[str, Any] = {"calls": 0}
         r_spec = ask_spec(
-            llm, ctx, model, field_list, wp, "pdf", r_info, purpose="table_spec_e0", repairs=0
-        )
+            llm, ctx, model, field_list, wp, "pdf", r_info, purpose="table_spec_e0", repairs=0,
+            notes={} if feedback else None,
+        )  # fmt: skip
         table["calls"] = table.get("calls", 0) + r_info.pop("calls")
         table["grid_retry"] = {"valid": r_spec is not None, **r_info}
         log.info("job %s pdf grid: checks failed, e0 spec retry", ctx.job_id)
@@ -738,6 +858,7 @@ def extract_grid(
     robust: bool,
     pdf_grid_result: GridResult,
     cleanup: bool = False,
+    feedback: bool = False,
 ) -> baseline.BaselineOutcome:
     """P9c: a table field list on a text-layer PDF. Any grid or check failure -> the v1.0 call
     (`single`) for this job, so the job is never worse than v1.0. Metadata: counts only."""
@@ -754,7 +875,7 @@ def extract_grid(
         try:
             entries = _grid_path(
                 llm, ctx, field_list, pdf_grid_result.grid, model or llm.catalog.baseline,
-                table, robust, cleanup,
+                table, robust, cleanup, feedback,
             )  # fmt: skip
         except Exception as exc:  # surfaced (type + code location, no text, R23), then v1.0
             tb = exc.__traceback__
@@ -796,14 +917,16 @@ def extract(
     robust: bool = False,
     pdf_grid: GridResult | None = None,
     cleanup: bool = False,
+    feedback: bool = False,
 ) -> baseline.BaselineOutcome:
     """robust (P9b E0, E0_ROBUST): one more spec call on low fill or dropped spec entries.
     pdf_grid (P9c, PDF_TABLE_METHOD): the worker's grid for a table field list on a
     text-layer PDF; None = the v1.0 path. cleanup (P9c Z-51, TABLE_CLEANUP): the two
-    cleanup rules on code-copied rows (spec path only; the v1.0 call is untouched)."""
+    cleanup rules on code-copied rows (spec path only; the v1.0 call is untouched).
+    feedback (P9g, SPEC_RETRY_FEEDBACK): lenient entry keys + the E0 retry told what failed."""
     if pdf_grid is not None and file_type == "pdf":
         return extract_grid(
-            llm, ctx, field_list, blocks, file_type, model, robust, pdf_grid, cleanup
+            llm, ctx, field_list, blocks, file_type, model, robust, pdf_grid, cleanup, feedback
         )
     ok, why, wp = applies(field_list, blocks, file_type)
     if not ok or wp is None:  # T-3/T-4: the current path, unchanged
@@ -815,8 +938,9 @@ def extract(
     entries: list[dict[str, Any]] | None = None
     try:
         entries = _spec_path(
-            llm, ctx, field_list, wp, file_type, model, table, robust, cleanup=cleanup
-        )
+            llm, ctx, field_list, wp, file_type, model, table, robust, cleanup=cleanup,
+            feedback=feedback,
+        )  # fmt: skip
     except Exception as exc:  # surfaced (type + code location, no text, R23), then fallback
         tb = exc.__traceback__
         while tb and tb.tb_next:

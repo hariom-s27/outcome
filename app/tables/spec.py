@@ -1,4 +1,5 @@
-"""Table spec grammar (P6 T-7): a closed JSON recipe, validated by code. Unknown keys -> invalid.
+"""Table spec grammar (P6 T-7): a closed JSON recipe, validated by code. Unknown keys -> invalid
+(P9g SPEC_RETRY_FEEDBACK: unknown extra keys inside an otherwise valid entry are ignored).
 
 {
   "sheet": "<sheet name>",
@@ -76,6 +77,17 @@ PARSE_TYPES = {
     "number": ("number", "integer", "percent"),
     "text": ("text", "free_text", "code"),
 }
+COL_KEYS = frozenset({"col", "fold", "except_label", "parse"})
+EXCEPT_KEYS = frozenset({"label_col", "labels"})
+PICK_KEYS = frozenset({"label_col", "label_text", "value_col"})
+DERIVED_KEYS = frozenset({"op", "cols"})
+MAP_KEYS = frozenset({"from", "map"})
+# P9g: words of the grammar itself; an unknown key outside these (and the field keys) is
+# reported in metadata as "other", never by name (a model-made key could echo document text)
+GRAMMAR_WORDS = (
+    SPEC_KEYS | COL_KEYS | EXCEPT_KEYS | PICK_KEYS | DERIVED_KEYS | MAP_KEYS
+    | set(RULES) | {"cell", "spec", "fields", "row_field", "doc_field"}
+)  # fmt: skip
 _LETTER = re.compile(r"^[A-Z]{1,3}$")
 _ONE_OF = re.compile(r"\bone of\s*:?\s*([^.;]+)", re.IGNORECASE)
 MAX_BLANK_RUN = 50
@@ -126,13 +138,30 @@ def check_parse(where: str, parse: Any, ftype: str | None, errors: list[str]) ->
     return parse
 
 
+def _keys_ok(
+    body: dict[str, Any], need: frozenset[str], where: str, ignored: list[str] | None
+) -> bool:
+    """Exactly the `need` keys; or (P9g lenient, `ignored` given) at least them, with every
+    extra key ignored and recorded as '<where>.<key>'."""
+    have = set(body)
+    if have == need:
+        return True
+    if ignored is not None and need <= have:
+        ignored.extend(f"{where}.{k}" for k in sorted(have - need))
+        return True
+    return False
+
+
 def _check_rule(
     key: str,
     rule: Any,
     fields: dict[str, Any],
     errors: list[str],
     ftype: str | None = None,
+    ignored: list[str] | None = None,
 ) -> dict[str, Any] | None:
+    """`ignored` None = strict (v1.0); a list = P9g lenient: unknown extra keys are ignored
+    (recorded there), every required key and value check is unchanged."""
     where = f"row_fields.{key}"
     if not isinstance(rule, dict) or not rule:
         errors.append(f"{where}: must be an object")
@@ -151,10 +180,12 @@ def _check_rule(
         if parse is None:
             return None
     if kind == "col":
-        extra = set(rule) - {"col", "fold", "except_label", "parse"}
-        if extra:
+        extra = set(rule) - COL_KEYS
+        if extra and ignored is None:
             errors.append(f"{where}: unknown keys {sorted(extra)}")
             return None
+        if extra and ignored is not None:
+            ignored.extend(f"{where}.{k}" for k in sorted(extra))
         fold = rule.get("fold", "first_nonempty")
         if not _letter(rule["col"]) or fold not in FOLDS:
             errors.append(f"{where}: col must be a column letter and fold one of {FOLDS}")
@@ -167,7 +198,7 @@ def _check_rule(
             ok = (
                 fold == "sum"
                 and isinstance(ex, dict)
-                and set(ex) == {"label_col", "labels"}
+                and _keys_ok(ex, EXCEPT_KEYS, f"{where}.except_label", ignored)
                 and _letter(ex.get("label_col"))
                 and isinstance(ex.get("labels"), list)
                 and all(isinstance(x, str) for x in ex["labels"])
@@ -178,8 +209,11 @@ def _check_rule(
             out["except_label"] = {"label_col": ex["label_col"], "labels": list(ex["labels"])}
         return out
     if len(rule) != 1 + (parse is not None):
-        errors.append(f"{where}: unknown keys {sorted(set(rule) - {kind, 'parse'})}")
-        return None
+        extra = set(rule) - {kind, "parse"}
+        if ignored is None:
+            errors.append(f"{where}: unknown keys {sorted(extra)}")
+            return None
+        ignored.extend(f"{where}.{k}" for k in sorted(extra))
     body = rule[kind]
     if kind == "section_context":
         if body is not True:
@@ -189,7 +223,7 @@ def _check_rule(
     if kind == "pick_by_label":
         ok = (
             isinstance(body, dict)
-            and set(body) == {"label_col", "label_text", "value_col"}
+            and _keys_ok(body, PICK_KEYS, f"{where}.pick_by_label", ignored)
             and _letter(body.get("label_col"))
             and _letter(body.get("value_col"))
             and isinstance(body.get("label_text"), str)
@@ -198,11 +232,12 @@ def _check_rule(
         if not ok:
             errors.append(f"{where}: pick_by_label needs label_col, label_text, value_col")
             return None
-        return {"pick_by_label": dict(body), **({"parse": parse} if parse else {})}
+        pick = {k: body[k] for k in ("label_col", "label_text", "value_col")}
+        return {"pick_by_label": pick, **({"parse": parse} if parse else {})}
     if kind == "derived":
         ok = (
             isinstance(body, dict)
-            and set(body) == {"op", "cols"}
+            and _keys_ok(body, DERIVED_KEYS, f"{where}.derived", ignored)
             and body.get("op") in DERIVED_OPS
             and isinstance(body.get("cols"), list)
             and body["cols"]
@@ -219,7 +254,7 @@ def _check_rule(
         return None
     ok = (
         isinstance(body, dict)
-        and set(body) == {"from", "map"}
+        and _keys_ok(body, MAP_KEYS, f"{where}.map_distinct", ignored)
         and (_letter(body.get("from")) or body.get("from") == "section_context")
         and isinstance(body.get("map"), dict)
     )
@@ -247,14 +282,24 @@ def validate_spec(
 
 
 def salvage_spec(
-    raw: Any, field_list: dict[str, Any], wp: WorkbookProfile, source: str = "ai"
+    raw: Any,
+    field_list: dict[str, Any],
+    wp: WorkbookProfile,
+    source: str = "ai",
+    *,
+    report: dict[str, list[str]] | None = None,
 ) -> tuple[Spec | None, list[str], list[str]]:
     """P6b B-3 per-entry salvage: (spec, core errors, dropped-entry errors).
 
     The core (sheet, header_row, data rows, until_blank_run, key_column, record_start, skip)
     must be valid, else spec is None. Each row_fields / doc_fields entry is checked on its
     own; a bad entry is dropped with its reason and the rest of the spec is kept. Unknown
-    top-level keys are dropped too (reported with the entries)."""
+    top-level keys are dropped too (reported with the entries).
+
+    `report` (P9g SPEC_RETRY_FEEDBACK; None = v1.0 strict): lenient entry keys. An unknown
+    extra key inside an entry is ignored and the entry kept when every other check passes;
+    report["ignored"] gets '<entry>.<key>' and report["top_unknown"] the unknown top-level
+    key names (top-level handling itself is unchanged). For the retry prompt only."""
     if not isinstance(raw, dict):
         return None, ["spec must be a JSON object"], []
     if "spec" in raw and isinstance(raw["spec"], dict) and len(raw) == 1:
@@ -264,8 +309,14 @@ def salvage_spec(
     unknown = set(raw) - SPEC_KEYS
     if unknown:
         errors.append(f"unknown keys: {sorted(unknown)}")
+    ignored: list[str] | None = None
+    if report is not None:
+        ignored = report.setdefault("ignored", [])
+        report.setdefault("top_unknown", []).extend(sorted(unknown))
     key_col = raw.get("key_column")
-    row_fields, doc_fields, doc_parse = _check_entries(raw, field_list, wp, key_col, errors)
+    row_fields, doc_fields, doc_parse = _check_entries(
+        raw, field_list, wp, key_col, errors, ignored
+    )
     if core.errors:
         return None, core.errors, errors
     return (
@@ -339,8 +390,10 @@ def _check_entries(
     wp: WorkbookProfile,
     key_col: Any,
     errors: list[str],
+    ignored: list[str] | None = None,
 ) -> tuple[dict[str, dict[str, Any]], dict[str, str | None], dict[str, str]]:
-    """Each row_fields / doc_fields entry on its own; bad ones go to `errors` and are left out."""
+    """Each row_fields / doc_fields entry on its own; bad ones go to `errors` and are left out.
+    `ignored` given = P9g lenient entry keys (see salvage_spec)."""
     fields: dict[str, Any] = field_list.get("fields") or {}
     types = {k: fs.type for k, fs in compile_fields(field_list).items()}
     primary = next(
@@ -359,13 +412,16 @@ def _check_entries(
             continue
         if rule is None:
             continue
-        checked = _check_rule(key, rule, fields, errors, types.get(key))
+        local: list[str] | None = None if ignored is None else []
+        checked = _check_rule(key, rule, fields, errors, types.get(key), local)
         if checked is None:
             continue
         if key == primary and checked.get("col") != key_col:
             errors.append("row_fields: the primary field can only be the key_column")
             continue
         row_fields[key] = checked
+        if ignored is not None and local:  # counted only for entries actually kept
+            ignored.extend(local)
     doc_fields: dict[str, str | None] = {}
     doc_parse: dict[str, str] = {}
     df = raw.get("doc_fields", {})
@@ -388,6 +444,10 @@ def _check_entries(
             doc_fields[key] = None
             continue
         shape_ok = isinstance(ref, dict) and set(ref) in ({"cell"}, {"cell", "parse"})
+        extra_ref: list[str] = []
+        if not shape_ok and ignored is not None and isinstance(ref, dict) and "cell" in ref:
+            extra_ref = [f"doc_fields.{key}.{k}" for k in sorted(set(ref) - {"cell", "parse"})]
+            shape_ok = True  # P9g lenient: extra keys ignored, cell (+ parse) still checked
         cell = ref.get("cell") if shape_ok else None
         if not isinstance(cell, str) or "!" not in cell:
             errors.append(f'doc_fields.{key}: {{"cell": "<Sheet>!<A1>"[, "parse": ...]}} or null')
@@ -403,4 +463,6 @@ def _check_entries(
                 continue
             doc_parse[key] = parse
         doc_fields[key] = f"{sh}!{a1.strip().upper().replace('$', '')}"
+        if ignored is not None and extra_ref:
+            ignored.extend(extra_ref)
     return row_fields, doc_fields, doc_parse
