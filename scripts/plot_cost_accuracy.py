@@ -9,8 +9,9 @@ One point per config, every number computed from committed sources, never typed 
   hybrid sim P5c   logs/P5c_hybrid_sim.md "Hybrid mean" column (offline re-score of the P5b
                    runs + P2 baseline; both calls are paid, so $ = P5b + P2 per doc)
   table recipe P6b the 3 live runs (3 table docs)
-  final            the sealed final run (`final: true`): score over the 6 DEV docs; $/doc is
-                   the run's mean over all 8 docs (history keeps no per-doc $)
+  sealed v1.0      the sealed v1.0 final run 90 (`final: true`): score over the 6 DEV docs;
+                   $/doc is the run's mean over all 8 docs (history keeps no per-doc $).
+                   P9f: labelled v1.0, not "shipped" (v1.1 ships; see README v11 block)
 A config measured on k < 6 DEV docs is completed with the P2 baseline for the other docs
 (score per doc; $ as P2's mean $/doc), so every point is a 6-doc DEV mean. Held-out docs are
 never in the chart. $ = uncached $/doc (what a grader pays).
@@ -30,6 +31,7 @@ HISTORY = ROOT / "eval" / "history.jsonl"
 HYBRID_LOG = ROOT / "logs" / "P5c_hybrid_sim.md"
 PNG = ROOT / "docs" / "cost_vs_accuracy.png"
 HELD_OUT = frozenset({"lease_003", "budget_001"})  # D03; never plotted
+FINAL_LABEL = "sealed v1.0 (run 90)"  # P9f: was "final (shipped)"; v1.1 is what ships now
 
 # label -> predicate over a history line (selection by recorded labels, not by values)
 CONFIGS: list[tuple[str, object]] = [
@@ -37,7 +39,7 @@ CONFIGS: list[tuple[str, object]] = [
     ("smart P5", lambda r: str(r.get("label")).startswith("P5 S3 run")),
     ("smart P5b", lambda r: str(r.get("label")).startswith("P5b run")),
     ("table recipe P6b", lambda r: str(r.get("label")).startswith("p6b-spec-r")),
-    ("final (shipped)", lambda r: r.get("final") is True),
+    (FINAL_LABEL, lambda r: r.get("final") is True),
 ]
 
 
@@ -141,7 +143,7 @@ def draw(pts: list[dict], path: Path = PNG) -> None:
     g.text((w // 2 - 120, h - 35), "$ per document (uncached, mean)", "black", font)
     for p in pts:
         x, y = xy(p["usd"], p["score"])
-        final = p["label"].startswith("final")
+        final = p["label"] == FINAL_LABEL
         color = (200, 60, 30) if final else (40, 90, 170)
         g.ellipse([x - 6, y - 6, x + 6, y + 6], color)
         text = f"{p['label']} ({p['score']:.3f})"

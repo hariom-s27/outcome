@@ -33,8 +33,9 @@ ROOT = Path(__file__).resolve().parent.parent
 HISTORY = ROOT / "eval" / "history.jsonl"
 LOAD = ROOT / "eval" / "load.jsonl"
 DOCS = (ROOT / "README.md", ROOT / "DESIGN.md")
-BLOCK_RE = re.compile(r"(<!-- AUTO:([a-z_]+) -->)(.*?)(<!-- /AUTO:\2 -->)", re.DOTALL)
-START_RE = re.compile(r"<!-- AUTO:([a-z_]+) -->")
+# P9f: names may hold digits (`v11`); the old [a-z_]+ skipped such a block silently
+BLOCK_RE = re.compile(r"(<!-- AUTO:([a-z0-9_]+) -->)(.*?)(<!-- /AUTO:\2 -->)", re.DOTALL)
+START_RE = re.compile(r"<!-- AUTO:([a-z0-9_]+) -->")
 
 SCORE_DEF = (
     "Score = `tools/validate.py` `score()`: mean over documents of each document's mean of "
@@ -195,7 +196,8 @@ def render_cost(history: list[dict], load: list[dict]) -> str:
     if final:
         total = sum(float(r.get("cost_usd") or 0.0) for r in history)
         return (
-            f"Final run: **${float(final.get('usd_per_doc') or 0.0):.5f} per document** "
+            f"Sealed v1.0 run {final.get('run_index')}: "
+            f"**${float(final.get('usd_per_doc') or 0.0):.5f} per document** "
             f"(uncached, mean over {final.get('n_docs')} documents), "
             f"${float(final.get('cost_usd') or 0.0):.5f} for the whole run. "
             f"Total spend of the {len(history)} eval runs in `eval/history.jsonl`: "
@@ -289,7 +291,8 @@ def render_chart(history: list[dict], load: list[dict]) -> str:
         + "\n\nEach point is a 6-document DEV mean: a config measured on fewer DEV documents "
         "is completed with the P2 baseline's score (and $) for the others. Hybrid sim = an "
         "offline re-score of the P5b runs (`logs/P5c_hybrid_sim.md`); its $ is both calls. "
-        "The final point's $ is the sealed run's mean over all 8 documents. Held-out "
+        "The sealed v1.0 point's $ is run 90's mean over all 8 documents; v1.1 is in the "
+        "v11 table (README). Held-out "
         "documents are not in the chart. Source: `scripts/plot_cost_accuracy.py`."
     )
 
