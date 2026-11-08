@@ -15,14 +15,16 @@ import socket
 import threading
 import time
 import uuid
+from types import ModuleType
 from typing import Any
 
 import psycopg
 
 from app import db, queue
 from app.config import Settings
+from app.extract.compile_fields import is_single_value
 from app.llm import CallContext, LLMClient, LLMSettings
-from app.pipeline import baseline
+from app.pipeline import baseline, single_value
 from app.readers import ReaderError, read_document
 from app.results import stub_result
 
@@ -76,6 +78,20 @@ class Heartbeat:
             raise LeaseLost(str(self.job_id))
 
 
+def choose_pipeline(settings: Settings, field_list: dict[str, Any]) -> ModuleType:
+    """P5-03/P5-04: smart path only when switched on AND the field list is single-value."""
+    if settings.single_value_path == "smart" and is_single_value(field_list):
+        return single_value
+    return baseline
+
+
+def doc_call_cap(llm: LLMClient, file_type: str, blocks: list) -> int:
+    """P5 D-4: PDFs max(LLM_MAX_CALLS_PER_DOC, base + per_batch x ceil(pages / 8)); other
+    file types LLM_MAX_CALLS_PER_DOC. The $ fuse is unchanged."""
+    pages = len({b.page for b in blocks if b.page is not None})
+    return llm.catalog.call_cap.for_doc(file_type, pages, llm.settings.max_calls_per_doc)
+
+
 def process(
     job: queue.Claim, settings: Settings, hb: Heartbeat, llm: LLMClient | None = None
 ) -> tuple[str, dict[str, Any]]:
@@ -108,12 +124,27 @@ def process(
         )
     del content
     hb.check()
-    ctx = CallContext(job_id=str(job.id), deadline=job.deadline_at.timestamp())
-    out = baseline.extract(llm, ctx, job.field_list, docmap.blocks, file_type)
+    ctx = CallContext(
+        job_id=str(job.id),
+        deadline=job.deadline_at.timestamp(),
+        max_calls=doc_call_cap(llm, file_type, docmap.blocks),
+    )
+    out = choose_pipeline(settings, job.field_list).extract(
+        llm, ctx, job.field_list, docmap.blocks, file_type
+    )
     hb.check()
     meta = llm.store.job_metadata(str(job.id), queue.latency_ms(job.created_at))
     meta.update(docmap.result_metadata())
     meta.update(out.notes)
+    # P5 D-1: every job says whether the dev cache could replay, and how many calls did
+    meta["cache_mode"] = llm.cache_mode
+    meta["call_cap"] = ctx.max_calls
+    if isinstance(meta.get("extraction"), dict):  # P5: spend beside the per-field diagnostics
+        meta["extraction"]["usage"] = {
+            k: meta[k] for k in ("model_calls", "tokens_in", "tokens_out", "cost_usd")
+        }
+        meta["extraction"]["cache_mode"] = llm.cache_mode
+        meta["extraction"]["cache_replays"] = int(meta.get("cache_hits", 0))
     if out.entries is not None:
         return "SUCCESS", {"entries": out.entries, "metadata": meta}
     result = stub_result(job.field_list, meta["latency_ms"], out.reason or "llm_unusable")
@@ -213,7 +244,13 @@ def main() -> None:  # pragma: no cover - container entry point
         llm = LLMClient.from_env(settings.database_url)
     else:
         log.warning("LLM_API_KEY not set: jobs get the P1 skeleton (PARTIAL), R17")
-    log.info("worker %s started (pipeline=%s)", wid, baseline.PIPELINE if llm else "stub")
+    log.info(
+        "worker %s started (pipeline=%s, single_value_path=%s, cache_mode=%s)",
+        wid,
+        baseline.PIPELINE if llm else "stub",
+        settings.single_value_path,
+        llm.cache_mode if llm else "off",
+    )
     threading.Thread(target=_sweep_loop, args=(settings, wid), name="sweeper", daemon=True).start()
     backoff = settings.worker_poll_s
     while not _stop.is_set():

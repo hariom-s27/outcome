@@ -6,6 +6,7 @@ import os
 from dataclasses import dataclass
 
 DEFAULT_DATABASE_URL = "postgresql://docextract:docextract@db:5432/docextract"
+SINGLE_VALUE_PATHS = ("baseline", "smart")
 
 
 @dataclass(frozen=True)
@@ -21,8 +22,16 @@ class Settings:
     worker_poll_s: float = 1.0
     fake_work_s: float = 0.0  # dev/chaos only: simulated processing time; never set in compose
     version: str = "dev"
+    # P5-03/P5-04: single-value field lists go to the smart path only when "smart";
+    # table field lists always keep the baseline. env EXTRACT_SINGLE_VALUE_PATH.
+    single_value_path: str = "baseline"
 
     def __post_init__(self) -> None:
+        if self.single_value_path not in SINGLE_VALUE_PATHS:
+            raise ValueError(
+                f"EXTRACT_SINGLE_VALUE_PATH must be one of {SINGLE_VALUE_PATHS}, "
+                f"got {self.single_value_path!r}"
+            )
         if not 0 < self.heartbeat_s < self.lease_s:
             raise ValueError(
                 f"need 0 < HEARTBEAT_S < LEASE_S, got {self.heartbeat_s} and {self.lease_s}"
@@ -43,4 +52,5 @@ class Settings:
             fake_work_s=float(env.get("WORKER_FAKE_WORK_S") or 0.0),
             worker_poll_s=float(env.get("WORKER_POLL_S") or 1.0),
             version=env.get("APP_VERSION") or "dev",
+            single_value_path=(env.get("EXTRACT_SINGLE_VALUE_PATH") or "baseline").strip().lower(),
         )
