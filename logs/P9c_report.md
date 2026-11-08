@@ -5,6 +5,22 @@ Branch `lab`. Stack: lab defaults, E0 on, `LAB_MODE=1`, `LLM_CACHE_MODE=off`, `P
 
 ## PLAIN SUMMARY
 
+**Final state on lab (after Z-50, Z-59, Z-60):**
+- **`PDF_TABLE_METHOD` default `grid`.**
+  - Gate passed with Z-50: hallucinations counted on paired cells.
+  - Full-set run 144 passed.
+- **`TABLE_CLEANUP` default on.**
+  - Targeted-fix gate passed (runs 154–156).
+  - Z-60 cleared the run-157 t12 collapse: it happened before the cleanup ran (cleanup changed 0
+    cells), and the same collapse occurs with cleanup off (run 164).
+- **Results.** syn_budget_pdf and syn_rentroll_pdf both reach 1.000 with both switches on.
+- **Residual risks.**
+  - t12_001's recipe can collapse when E0's retry also fails.
+  - The cleanup has one false-positive cell per t12 run.
+- P9c spend $0.0884; lab ≈ $0.488.
+
+The sections below record each step in order.
+
 - **What changed.** A text-layer PDF table is now turned into a grid of lines and columns, a "virtual
   spreadsheet". It goes through the existing spreadsheet recipe path. The model names the columns
   once; code copies every row and writes every citation and page number. The switch is
@@ -297,6 +313,75 @@ Base per doc (mean over 104–106): budget 0.016, rent roll 0.044.
 - **Sanity run** of the script on the old runs 151–153 (unfixed rule; not the gate's runs): 29.0
   vs 37.0, verdict PASS on the section fix alone. The gate applies only to runs 154–156.
 
+### Z-59 live runs 154–156 (TABLE_CLEANUP=1, fixed rule; targeted-fix gate)
+
+- Stack: `pdf_table=grid, table_cleanup=on`, code `cf62be9`. Workers started 17:17 UTC, after the
+  fix commit.
+- 12 jobs, all SUCCESS and VALID, 1 LLM call each; $0.00364 per run.
+- Command: `scripts/gate_cleanup.py --cand 154 155 156`.
+
+| doc | base score | 154–156 score | targeted cells before → after | halluc paired before → after | halluc total before → after |
+|---|---|---|---|---|---|
+| syn_budget_pdf | 0.987 | **1.000** | 8.0 → 0.0 | 0.0 → 0.0 | 0.0 → 0.0 |
+| syn_rentroll_pdf | 0.986 | **1.000** | 7.0 → 0.0 | 7.0 → 0.0 | 7.0 → 0.0 |
+| rentroll_001 | 0.989 | 0.989 | 22.0 → 22.0 | 44.0 → 44.0 | 44.0 → 44.0 |
+| syn_rentroll_xlsx | 1.000 | 1.000 | 0.0 → 0.0 | 0.0 → 0.0 | 0.0 → 0.0 |
+
+- (i) no doc below its base: pass. (ii) targeted 22.0 vs 37.0: pass. (iii) paired halluc 44.0 vs
+  51.0: pass. All VALID. **Gate (i)–(iii): PASS.**
+- **Counter caveat.** rentroll_001's 22 targeted cells are hallucinated `resident_name` cells
+  (truth null) whose text ends in a continued-marker. Shown by field name and counts only.
+  - The script counts any mismatched text with that marker as a "wrong section label", which is
+    broader than the pre-registered wording.
+  - They are 22 on both sides. Counted on section-label fields only, (ii) is 15 → 0, still a
+    pass.
+  - The cleanup correctly leaves them alone: they are not whole-cell placeholders and not
+    section labels.
+
+### Run 157: full set, must-not-error (iv)
+
+- Command: `eval_dev.py --set all --expect-live --run-index 157`, cleanup on; $0.02615. All 14
+  jobs SUCCESS and VALID.
+- 13 docs were within 0.05 of their base mean. **t12_001 scored 0.094** against a base mean of
+  0.521 (1,186 missed cells, 2 calls). **(iv) FAIL.**
+- A metadata check via a scratch script reading `cache/` was blocked by the classifier → full
+  STOP. Hariom then ruled `cache/` is never read (Z-60).
+- Z-60 diagnosis from API job metadata (`GET /jobs/{id}`, whitelisted counts and reason codes):
+  run 157's t12 job dropped a recipe entry (fill 0.2857). The E0 spec retry also gave fill
+  0.2857, so the first recipe was kept.
+  - **The cleanup changed 0 cells in that job.** The collapse happened before the cleanup ran.
+
+### Z-60 (d): t12_001 on/off test (pre-registered rule; cap $0.015)
+
+- **Rule:** cleanup is cleared if t12 collapses (score < half its base median = 0.5 × 0.548 =
+  0.274) no more often with cleanup on than off, AND every on-collapse shows the low-fill recipe
+  before cleanup ran.
+- Metadata comes from the API job record, never `cache/`. Job ids come from worker logs (one t12
+  job per run).
+
+| run | cleanup | score | LLM calls | E0 reason | fill before → after | recipe used | cleanup counts (nulls / suffixes) | missed cells |
+|---|---|---|---|---|---|---|---|---|
+| 157 | on | **0.094** (collapse) | 2 | entries_dropped | 0.2857 → 0.2857 | LLM first recipe (kept) | 0 / 0 | 1186 |
+| 161 | on | 0.548 | 2 | entries_dropped | 0.2857 → 1.0 | E0 retry | 1 / 0 | 473 |
+| 162 | on | 0.548 | 1 | none | — (fill 1.0) | LLM first recipe | 1 / 0 | 473 |
+| 163 | on | 0.548 | 1 | none | — (fill 1.0) | LLM first recipe | 1 / 0 | 473 |
+| 164 | off | **0.080** (collapse) | 2 | entries_dropped | 0.2857 → 0.2857 | LLM first recipe (kept) | — | 1186 |
+| 165 | off | 0.548 | 2 | entries_dropped | 0.2857 → 1.0 | E0 retry | — | 472 |
+| 166 | off | 0.548 | 1 | none | — (fill 1.0) | LLM first recipe | — | 472 |
+
+- Collapses: cleanup on 0/3 in this test (1/4 counting run 157); cleanup off 1/3. Not more
+  often with cleanup on.
+- The only on-collapse (157) shows the low-fill recipe chosen before the cleanup ran (cleanup
+  changed 0 cells). The off-collapse (164) has the same signature.
+- **Rule met → cleared.** `TABLE_CLEANUP` default **on (lab)**: `app/config.py` (default True;
+  0/false/no/off turns it off), compose.yaml `${TABLE_CLEANUP:-1}`, shipped-config test, and the
+  switch test in `tests/test_p9c_cleanup.py`.
+- **Cleanup false positive on t12:** the placeholder rule nulls 1 t12 cell per run whose truth
+  is not null (missed 472 → 473 with cleanup on, every run). Score unchanged to 3 dp.
+- **Net effect per run:** on the declared docs, +15 cells fixed (8 section labels + 7
+  placeholder hallucinations); on t12, −1 cell.
+- Spend: $0.01059 (cap $0.015).
+
 ## Decision (before Z-50)
 
 - As pre-registered: the full `--set all` must-not-error run was **not** made (Part B step 3 needs
@@ -331,6 +416,17 @@ Base per doc (mean over 104–106): budget 0.016, rent roll 0.044.
   - several different tables in one PDF: only one header signature is used
   - rotated pages
   - document-level fields read only from the first table page's lines above the header
+- **t12_001 residual collapse risk (spreadsheet path, independent of the grid and the
+  cleanup).** In 2 of 7 t12 jobs here (157, 164), the model's first recipe dropped an entry
+  (fill 0.2857), and **E0's spec retry also failed** (fill 0.2857 again), so the low-fill recipe
+  was kept: score ≈ 0.08–0.09. In 2 other jobs E0's retry rescued it (fill 1.0). E0 lowers the
+  risk but does not remove it.
+- **Cleanup false positive.** On t12 the placeholder rule nulls 1 cell per run whose truth is
+  not null (−1 cell per run, score unchanged to 3 dp), against +15 cells fixed per run on the
+  declared docs.
+- **Hallucinations the cleanup does not touch.** rentroll_001 keeps 44 per run:
+  - 22 `resident_name` cells ending in a continued-marker (not whole-cell placeholders)
+  - 22 `balance` cells (numeric)
 - **Scanned PDF tables** (Z-48): out of scope. Any page image keeps the v1.0 path, so hidden
   scanned tables still score about as v1.0 does.
 
@@ -344,8 +440,11 @@ Base per doc (mean over 104–106): budget 0.016, rent roll 0.044.
 | run 143 | 0.001642 |
 | run 144 (full set, grid) | 0.02482 |
 | runs 151–153 (Part C, cleanup) | 0.01092 (cap $0.05) |
-| **P9c total** | **0.04070** (cap $0.15 + Part C $0.05) |
-| lab running total | ≈ 0.441 ($0.40 before P9c, per Z-49; cap $3) |
+| runs 154–156 (Z-59, fixed rule) | 0.01092 (cap $0.03) |
+| run 157 (full set, cleanup on) | 0.02615 |
+| runs 161–166 (Z-60, t12 on/off) | 0.01059 (cap $0.015) |
+| **P9c total** | **0.08836** |
+| lab running total | ≈ 0.488 ($0.40 before P9c, per Z-49; cap $3) |
 
 ## Deviations
 
