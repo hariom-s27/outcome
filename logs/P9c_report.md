@@ -154,6 +154,65 @@ Base per doc (mean over 104–106): budget 0.016, rent roll 0.044.
 - Next per Z-50: one full `--set all` run with grid on (must-not-error). It waits for a clean tree:
   the Z-50 code must be committed first (PR-09).
 
+### Full-set must-not-error run 144 (Z-50 step 2)
+
+- Command: `eval_dev.py --set all --expect-live --run-index 144`. Grid on, cache off; 14 docs;
+  $0.02482 ($0.00177/doc).
+- All 14 jobs SUCCESS and VALID.
+- Against the base mean (104–106), no doc dropped more than 0.05. Per-doc deltas:
+
+| doc | base mean | 144 | delta |
+|---|---|---|---|
+| boxscore_001 | 0.927 | 0.880 | −0.047 |
+| lease_001 | 0.642 | 0.625 | −0.017 |
+| lease_002 | 0.775 | 0.750 | −0.025 |
+| om_001 | 0.966 | 0.966 | 0.000 |
+| rentroll_001 | 0.989 | 0.989 | 0.000 |
+| t12_001 | 0.521 | 0.548 | +0.027 |
+| syn_boxscore_csv | 0.950 | 0.950 | 0.000 |
+| syn_budget_pdf | 0.016 | 0.987 | +0.971 |
+| syn_lease_docx | 0.900 | 0.900 | 0.000 |
+| syn_lease_scan | 0.150 | 0.150 | 0.000 |
+| syn_lease_text | 0.867 | 0.850 | −0.017 |
+| syn_loan_unseen | 1.000 | 1.000 | 0.000 |
+| syn_rentroll_pdf | 0.044 | 0.986 | +0.943 |
+| syn_rentroll_xlsx | 1.000 | 1.000 | 0.000 |
+
+- Only the two PDF tables took the grid route.
+- The largest drop, boxscore_001 (−0.047), is a CSV the grid cannot touch, and 0.880 equals that
+  doc's own base minimum. Run-to-run noise.
+- **Result: pass.** `PDF_TABLE_METHOD` default set to **`grid` on lab**: `app/config.py`,
+  `compose.yaml` (`${PDF_TABLE_METHOD:-grid}`), shipped-config test, and the switch test in
+  `tests/test_p9c.py`. `single` still gives the v1.0 call.
+
+## Part C build — TABLE_CLEANUP (Z-51; $0, default off)
+
+- `app/tables/cleanup.py` holds two general rules, applied to the spec path's final entries
+  (XLSX/CSV and the PDF grid) after the recipe is chosen, so recipe choice and checks are
+  unchanged:
+  1. A non-key text field (text / free_text / code) whose **whole** cell is vacant, vacancy,
+     unoccupied, n/a, none, tbd or a lone dash (any case) becomes null (citation "", null
+     confidence). The row key is never nulled.
+  2. A field filled by the `section_context` rule loses a trailing "(continued)" / "(cont.)" /
+     "continued". The citation snippet stays verbatim.
+- Switch: `TABLE_CLEANUP` (default off; 1/true/yes/on turns it on). Wired through config, the
+  worker start line (`table_cleanup=`), compose.yaml (`${TABLE_CLEANUP:-0}`) and the
+  shipped-config test.
+- Off → the worker passes no kwarg and the entries are unchanged (tested). The v1.0 single-call
+  path is never touched.
+- Metadata `extraction.table.cleanup`: counts only (`placeholder_nulls`, `section_suffixes`).
+- Tests: `tests/test_p9c_cleanup.py`, 40 tests on invented data:
+  - whole-cell matching, including "Vacant since May" kept
+  - marker stripping, including a leading "Continued …" kept
+  - row key exempt
+  - section rule only on section-label fields
+  - spreadsheet path on and off
+  - PDF grid path on and off
+  - switch parsing
+  - worker passes `cleanup` only when on
+- Live runs (3 × rentroll_001, syn_rentroll_pdf, syn_rentroll_xlsx, syn_budget_pdf; cap $0.05)
+  wait for the restart with `TABLE_CLEANUP=1`.
+
 ## Decision (before Z-50)
 
 - As pre-registered: the full `--set all` must-not-error run was **not** made (Part B step 3 needs
