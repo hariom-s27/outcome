@@ -18,7 +18,7 @@ Held-out documents are refused unless --final-sealed (P8 only).
 
 Prints/writes: doc ids, field names, scores, counts, $ and latency. Never row labels, primary
 keys or any cell value (D04, R31): the row labels validate.py builds are used in memory only.
-Raw job results go to cache/eval_runs/<run_id>/ (git-ignored).
+Raw job results go to cache/eval_runs/<run_id>/run<run_index>/ (git-ignored; P5b F-8).
 """
 
 from __future__ import annotations
@@ -176,6 +176,13 @@ def run_id() -> str:
     sha = git("rev-parse", "--short", "HEAD").strip() or "nogit"
     dirty = "-dirty" if git("status", "--porcelain", "--untracked-files=no").strip() else ""
     return f"{sha}{dirty}"
+
+
+def run_folder(rid: str, run_index: int) -> Path:
+    """P5b F-8: one raw folder per run, <RUNS>/<sha>[-dirty]/run<index>/, so runs of the same
+    commit never overwrite each other. --reuse / --reuse-from take '<sha>[-dirty]/run<n>'
+    (or an older flat '<sha>' folder)."""
+    return RUNS / rid / f"run{int(run_index)}"
 
 
 def submit_and_wait(base: str, doc_id: str, row: dict[str, str]) -> dict:
@@ -428,7 +435,7 @@ def main() -> int:
             return 2
 
     rid = args.reuse or run_id()
-    run_dir = RUNS / rid
+    run_dir = RUNS / rid if args.reuse else run_folder(rid, args.run_index)
     run_dir.mkdir(parents=True, exist_ok=True)
     if not args.reuse and call(args.base_url, "GET", "/health")[0] != 200:
         print("service not healthy; start the dev stack first")
@@ -488,6 +495,7 @@ def main() -> int:
             )
 
     summary = summarise(records, rid, args.label, aborted, gates, args.run_index)
+    summary["raw_dir"] = run_dir.relative_to(RUNS).as_posix()
     print(
         f"\nMEAN {summary['mean_score']:.3f} n={summary['n_docs']} "
         f"all_valid={summary['all_valid']} "
