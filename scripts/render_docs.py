@@ -8,6 +8,9 @@ else is left byte for byte. Blocks:
   scores / results  latest run series per (pipeline, path) from eval/history.jsonl
   cost              $/doc of the same series + total eval spend recorded in history
   load              latest line per (scenario, workers) from eval/load.jsonl
+  chart             the points of docs/cost_vs_accuracy.png (scripts/plot_cost_accuracy.py)
+Once a sealed final run exists (`final: true`, P8b), scores/results show that run (DEV and
+held-out apart) and cost shows its $/doc; the final line is never part of a series.
 A "run series" is the latest line of a group plus the lines just before it in that group that
 continue its run_index count down to 1 with the same documents and prompt version (P5b's
 3 live runs). The output has no clock time in it, so a second run changes nothing.
@@ -37,6 +40,15 @@ SCORE_DEF = (
     "documents are not scored until the final run. Runs = live runs in the series (a doc's "
     "score is the mean over runs). Source: `eval/history.jsonl`, latest series per "
     "pipeline + path. Shipped default path: `baseline`."
+)
+FINAL_DEF = (
+    "The sealed final run (P8b): all 8 sample documents, once, on the shipped settings "
+    "(`EXTRACT_TABLE_PATH=spec`, `SCAN_PAGE_METHOD=first`, single-value path `baseline`), "
+    "response cache off; these are the files in `outputs/`. Score = `tools/validate.py` "
+    "`score()`: a document's mean of per-field means (strict match after normalisation). "
+    "Held-out documents were run and scored once, inside this run; nothing was changed "
+    "after. n = 1 run per document; run-to-run spread from earlier repeats is in DESIGN "
+    "(Where it fails). Source: the `final: true` line in `eval/history.jsonl`."
 )
 LOAD_DEF = (
     "Throwaway stack with a fake LLM (seeded 1-6 s latency, ~8 % 429 with Retry-After), so "
@@ -71,7 +83,7 @@ def latest_series(rows: list[dict]) -> dict[tuple[str, str], list[dict]]:
     """Per (pipeline, path): the latest line plus its earlier runs, oldest first."""
     groups: dict[tuple[str, str], list[dict]] = {}
     for row in rows:
-        if row.get("aborted") or not row.get("n_docs"):
+        if row.get("aborted") or not row.get("n_docs") or row.get("final"):
             continue
         groups.setdefault(group_key(row), []).append(row)
     out = {}
@@ -111,8 +123,43 @@ def series_stats(series: list[dict]) -> dict:
     }
 
 
+def final_run(history: list[dict]) -> dict | None:
+    """The latest sealed final run (P8b Z-7: `final: true`, not aborted), if any."""
+    rows = [r for r in history if r.get("final") and not r.get("aborted")]
+    return rows[-1] if rows else None
+
+
+def render_final(row: dict) -> str:
+    held = row.get("held_out_per_doc") or {}
+    paths = row.get("path_per_doc") or {}
+    per_doc = row.get("per_doc") or {}
+    dev = [d for d in per_doc if d not in held]
+    lines = ["| Document | Set | Path | Score |", "|---|---|---|---|"]
+    for d in dev:
+        lines.append(f"| {d} | DEV | {paths.get(d, '-')} | {per_doc[d]:.3f} |")
+    for d in held:
+        lines.append(f"| {d} | held-out, scored once | {paths.get(d, '-')} | {held[d]:.3f} |")
+    held_txt = ", ".join(f"{d} {v:.3f}" for d, v in held.items()) or "none"
+    lines += [
+        "",
+        f"**DEV mean {float(row.get('dev_mean_score') or 0.0):.3f} (n = {row.get('n_dev')} "
+        f"documents, 1 run)** · held-out (n = {len(held)}, scored once): {held_txt} · "
+        f"all VALID: {'yes' if row.get('all_valid') else 'no'} · all calls live: "
+        f"{'yes' if row.get('all_live') else 'no'} · "
+        f"${float(row.get('usd_per_doc') or 0.0):.5f}/document uncached "
+        f"(mean over the {row.get('n_docs')} documents) · run `{row.get('run_id')}` "
+        f"run {row.get('run_index')}, {str(row.get('date') or '')[:10]}",
+        "",
+        FINAL_DEF,
+    ]
+    return "\n".join(lines)
+
+
 def render_scores(history: list[dict], load: list[dict]) -> str:
     del load
+    final = final_run(history)
+    if final:
+        return render_final(final)
     series = latest_series(history)
     if not series:
         return "_No eval runs recorded yet._"
@@ -133,6 +180,18 @@ def render_scores(history: list[dict], load: list[dict]) -> str:
 
 def render_cost(history: list[dict], load: list[dict]) -> str:
     del load
+    final = final_run(history)
+    if final:
+        total = sum(float(r.get("cost_usd") or 0.0) for r in history)
+        return (
+            f"Final run: **${float(final.get('usd_per_doc') or 0.0):.5f} per document** "
+            f"(uncached, mean over {final.get('n_docs')} documents), "
+            f"${float(final.get('cost_usd') or 0.0):.5f} for the whole run. "
+            f"Total spend of the {len(history)} eval runs in `eval/history.jsonl`: "
+            f"${total:.4f} (cost as the gateway billed it; spikes and pilots outside the eval "
+            "script are in the phase reports). Uncached = a cached answer priced at the call "
+            "that filled the cache, as a grader's run has no cache."
+        )
     series = latest_series(history)
     if not series:
         return "_No eval runs recorded yet._"
@@ -204,11 +263,32 @@ def render_load(history: list[dict], load: list[dict]) -> str:
     return "\n".join(lines)
 
 
+def render_chart(history: list[dict], load: list[dict]) -> str:
+    """The points of docs/cost_vs_accuracy.png (scripts/plot_cost_accuracy.py)."""
+    del load
+    if str(ROOT / "scripts") not in sys.path:
+        sys.path.insert(0, str(ROOT / "scripts"))
+    import plot_cost_accuracy as pca
+
+    pts = pca.points(history, pca.hybrid_means())
+    if not pts:
+        return "_No baseline run recorded yet._"
+    return (
+        pca.markdown(pts)
+        + "\n\nEach point is a 6-document DEV mean: a config measured on fewer DEV documents "
+        "is completed with the P2 baseline's score (and $) for the others. Hybrid sim = an "
+        "offline re-score of the P5b runs (`logs/P5c_hybrid_sim.md`); its $ is both calls. "
+        "The final point's $ is the sealed run's mean over all 8 documents. Held-out "
+        "documents are not in the chart. Source: `scripts/plot_cost_accuracy.py`."
+    )
+
+
 RENDERERS: dict[str, Callable[[list[dict], list[dict]], str]] = {
     "scores": render_scores,
     "results": render_scores,
     "cost": render_cost,
     "load": render_load,
+    "chart": render_chart,
 }
 
 
