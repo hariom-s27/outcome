@@ -16,7 +16,9 @@ Gate (D49, fixed before any experiment). The candidate passes only if ALL hold:
   1. mean score over DEV+SYN docs (per-doc mean over the runs given, then mean over docs)
      >= base mean + 0.025
   2. no DEV doc's mean score drops by more than 0.05
-  3. total hallucinations (sum over docs of mean hallucinated cells per run) <= base total
+  3. hallucinations (sum over docs of mean hallucinated cells per run) <= base, counted in
+     PAIRED cells only (P9c Z-50): cells of matched rows that both sides returned (rows
+     matched in any base run and in any candidate run). Totals are printed beside it.
   4. candidate mean $/doc (uncached, over every candidate run x doc) <= $0.01
   5. every candidate output VALID
   plus: both sides cover the same documents (else the verdict is FAIL: incomplete).
@@ -96,8 +98,57 @@ def run_records(entry: dict, rows: dict[str, dict], runs_dir: Path) -> list[dict
         own = {"row": row} if "truth_path" in row else {}
         rec = eval_dev.score_doc(doc_id, row["schema_name"], job, **own)
         rec["set"] = doc_sets.set_of(doc_id)
+        rec["cells"] = cell_outcomes(doc_id, row, job)
         recs.append(rec)
     return recs
+
+
+def cell_outcomes(doc_id: str, row: dict, job: dict) -> dict[str, Any]:
+    """P9c Z-50: which truth rows this run matched and its hallucinated cells per matched row,
+    by truth-row index (an opaque position; no key or value is kept). Same outcome rule as
+    eval_dev.taxonomy: a cell that does not match and whose truth is null."""
+    v = eval_dev.validator()
+    own = row if "truth_path" in row else None
+    schema = json.loads(eval_dev._schema_file(row["schema_name"], own).read_text(encoding="utf-8"))
+    truth = json.loads(eval_dev._truth_file(doc_id, own).read_text(encoding="utf-8"))
+    fields, primary = v.schema_fields(schema)
+    truth_entries = truth.get("entries", truth if isinstance(truth, list) else [truth])
+    pred = (job.get("result") or {}).get("entries", [])
+    index = {id(te): i for i, te in enumerate(truth_entries)}
+    matched: set[int] = set()
+    halluc: dict[int, int] = {}
+    for pe, te, _label in v.align_rows(pred, truth_entries, primary):  # label never kept
+        if pe is None or te is None:
+            continue
+        i = index[id(te)]
+        matched.add(i)
+        n = sum(
+            1
+            for k in fields
+            if v.cell_match(v.value_of(pe, k), v.value_of(te, k)) != 1.0
+            and eval_dev.value_type(v.value_of(te, k)) == "null"
+        )
+        if n:
+            halluc[i] = n
+    return {"matched": frozenset(matched), "halluc": halluc}
+
+
+def paired_halluc(b: dict, c: dict) -> tuple[float, float, int | None]:
+    """P9c Z-50: mean hallucinated cells per run counted only in PAIRED cells, i.e. matched
+    rows both sides returned (rows matched in any base run AND in any candidate run).
+    -> (base, cand, paired rows). Without per-run cell data: the totals (paired rows None)."""
+    if not b.get("cells") or not c.get("cells"):
+        return b["halluc"], c["halluc"], None
+    paired = frozenset().union(*(r["matched"] for r in b["cells"])) & frozenset().union(
+        *(r["matched"] for r in c["cells"])
+    )
+
+    def mean(side: dict) -> float:
+        return statistics.fmean(
+            sum(n for i, n in r["halluc"].items() if i in paired) for r in side["cells"]
+        )
+
+    return mean(b), mean(c), len(paired)
 
 
 def aggregate(records: list[dict]) -> dict[str, dict[str, Any]]:
@@ -121,6 +172,8 @@ def aggregate(records: list[dict]) -> dict[str, dict[str, Any]]:
             "rows_truth": statistics.fmean(r.get("rows_truth", 0) or 0 for r in rs),
             "usd": statistics.fmean(r.get("cost_uncached_usd", 0.0) for r in rs),
             "valid": all(r.get("valid") for r in rs),
+            # P9c Z-50: per-run matched rows + halluc cells per row (None when not scored here)
+            "cells": [r["cells"] for r in rs] if all("cells" in r for r in rs) else None,
         }
     return out
 
@@ -157,8 +210,12 @@ def gate(
     mc = statistics.fmean(cand[d]["score"] for d in common) if common else 0.0
     drops = [d for d in common if cand[d]["set"] == "dev"
              and cand[d]["score"] - base[d]["score"] < -GATE_MAX_DEV_DROP]  # fmt: skip
-    hb = sum(base[d]["halluc"] for d in common)
-    hc = sum(cand[d]["halluc"] for d in common)
+    # P9c Z-50: the check counts paired cells only; totals are reported beside it
+    paired = {d: paired_halluc(base[d], cand[d]) for d in common}
+    hb = sum(p[0] for p in paired.values())
+    hc = sum(p[1] for p in paired.values())
+    hb_total = sum(base[d]["halluc"] for d in common)
+    hc_total = sum(cand[d]["halluc"] for d in common)
     n_c = sum(cand[d]["n"] for d in common)
     usd_c = sum(cand[d]["usd"] * cand[d]["n"] for d in common) / n_c if n_c else 0.0
     invalid = [d for d in common if not cand[d]["valid"]]
@@ -170,7 +227,8 @@ def gate(
                       f"delta {mc - mb:+.4f})"),
         "no_dev_drop": (not drops, f"{len(drops)} DEV docs drop > {GATE_MAX_DEV_DROP}"
                         + (f": {', '.join(drops)}" if drops else "")),
-        "halluc": (hc <= hb + 1e-9, f"cand {hc:.1f} vs base {hb:.1f}"),
+        "halluc": (hc <= hb + 1e-9, f"paired cells: cand {hc:.1f} vs base {hb:.1f} "
+                   f"(total: cand {hc_total:.1f} vs base {hb_total:.1f})"),
         "usd_per_doc": (usd_c <= GATE_MAX_USD_PER_DOC,
                         f"cand ${usd_c:.5f}/doc (max ${GATE_MAX_USD_PER_DOC})"),
         "all_valid": (not invalid, f"{len(invalid)} invalid"
@@ -187,6 +245,8 @@ def gate(
         "mean_cand": mc,
         "collapses_base": cb,
         "collapses_cand": cc,
+        "halluc_paired": paired,  # doc -> (base, cand, paired rows | None)
+        "halluc_total": (hb_total, hc_total),
     }
 
 
@@ -268,6 +328,12 @@ def main(argv: list[str] | None = None) -> int:
     print(f"\nGATE (D49 + Z-24) on {scope}")
     for name, (ok, msg) in g["checks"].items():
         print(f"  {'pass' if ok else 'FAIL'}  {name:12s} {msg}")
+    print("  halluc per doc (mean per run; paired cells | total):")
+    for d, (pb, pc, rows_p) in g["halluc_paired"].items():
+        rows_txt = "-" if rows_p is None else str(rows_p)
+        tb, tc = base[d]["halluc"], cand[d]["halluc"]
+        print(f"    {d:18s} paired rows {rows_txt:>4}: base {pb:.1f} cand {pc:.1f} | "
+              f"total base {tb:.1f} cand {tc:.1f}")  # fmt: skip
     print(f"VERDICT: {g['verdict']}")
     return 0 if g["verdict"] == "PASS" else 1
 
