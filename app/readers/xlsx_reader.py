@@ -5,6 +5,8 @@ cached value stays null and is flagged formula_no_cache=<ref> (no recalculation,
 sheets/rows/columns are kept and flagged; merged ranges keep the value at the top-left cell
 and record the range as a flag on that row. Number formats render keys and dates as Excel
 displays them (leading zeros kept); everything else is the plain value.
+A cell holding a vertical SUM/SUBTOTAL formula with a cached value is flagged
+sum_formula=<ref> (P6: totals found by formula; flags are never shown to a model).
 """
 
 from __future__ import annotations
@@ -132,6 +134,22 @@ def _is_formula(cell) -> bool:
     )
 
 
+_VSUM = re.compile(
+    r"^=\s*(?:SUM|SUBTOTAL\(\s*\d+\s*,)\s*\(?"
+    r"\s*\$?([A-Z]{1,3})\$?(\d+)\s*:\s*\$?([A-Z]{1,3})\$?(\d+)\s*\)\s*$",
+    re.IGNORECASE,
+)
+
+
+def vertical_sum(formula: object) -> bool:
+    """P6: '=SUM(C3:C11)' / '=SUBTOTAL(9,C3:C11)' over ONE column and several rows. A row-wise
+    SUM (a line's own total across months) is not a total line, so it is not flagged."""
+    if not isinstance(formula, str):
+        return False
+    m = _VSUM.match(formula.strip())
+    return bool(m) and m[1].upper() == m[3].upper() and m[2] != m[4]
+
+
 def read_xlsx(content: bytes) -> DocMap:
     import openpyxl  # heavy import, only in the worker path
 
@@ -168,6 +186,8 @@ def read_xlsx(content: bytes) -> DocMap:
                         cells.append((i, ""))
                         continue
                     text = display_text(cv.value, cv.number_format)
+                    if text and _is_formula(cf) and vertical_sum(cf.value):
+                        flags.append(f"sum_formula={cf.coordinate}")  # P6: total by formula
                     if text and i in hidden_cols and "hidden_column" not in flags:
                         flags.append("hidden_column")
                     cells.append((i, text))
