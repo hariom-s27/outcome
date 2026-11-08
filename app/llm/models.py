@@ -12,7 +12,9 @@ import yaml
 
 DEFAULT_MODELS_PATH = Path(__file__).resolve().parents[2] / "config" / "models.yaml"
 SNAPSHOT_NAME = "models_snapshot.json"  # next to models.yaml (P2-14)
-REASONING_SETTINGS = ("default", "none")  # P2-31
+REASONING_SETTINGS = ("default", "none", "lowest")  # P2-31; P9b Z-29: lowest
+# P9b: effort names from least to most reasoning; "lowest" picks the first the snapshot lists
+EFFORT_ORDER = ("none", "minimal", "low", "medium", "high", "xhigh", "max")
 
 # ASSIGNMENT §3, byte-for-byte. The YAML may not add anything outside this set.
 ALLOWED_MODEL_IDS: frozenset[str] = frozenset(
@@ -46,11 +48,17 @@ class ModelSpec:
     cliff_tokens: int | None = None
     cliff_multiplier: float = 1.0
     reasoning_none_ok: bool = False  # snapshot lists reasoning, not mandatory, "none" allowed
+    lowest_effort: str | None = None  # P9b: "none" if allowed, else the least listed effort
 
     def reasoning_param(self, setting: str | None = None) -> dict[str, str] | None:
-        """P2-31: {"effort": "none"} only when asked for and the snapshot allows it."""
-        if (setting or self.reasoning) == "none" and self.reasoning_none_ok:
+        """P2-31: {"effort": "none"} only when asked for and the snapshot allows it.
+        P9b "lowest": reasoning off where the snapshot allows it, else its lowest effort;
+        nothing when the snapshot lists no reasoning (the model has none to turn down)."""
+        chosen = setting or self.reasoning
+        if chosen == "none" and self.reasoning_none_ok:
             return {"effort": "none"}
+        if chosen == "lowest" and self.lowest_effort:
+            return {"effort": self.lowest_effort}
         return None
 
     def cost(self, tokens_in: int, tokens_out: int) -> float:
@@ -184,6 +192,7 @@ class ModelCatalog:
                 cliff_tokens=int(cliff["prompt_tokens"]) if cliff else None,
                 cliff_multiplier=float(cliff.get("multiplier", 1.0)) if cliff else 1.0,
                 reasoning_none_ok=_none_allowed(snap_models.get(mid)),
+                lowest_effort=_lowest_effort(snap_models.get(mid)),
             )
         catalog = cls(specs, raw["baseline"], raw.get("fallback_order") or [])
         est = raw.get("estimate") or {}
@@ -236,3 +245,17 @@ def _none_allowed(snap: dict[str, Any] | None) -> bool:
         return False
     efforts = r.get("supported_efforts")
     return efforts is None or "none" in efforts
+
+
+def _lowest_effort(snap: dict[str, Any] | None) -> str | None:
+    """P9b: "none" when the snapshot allows it, else the least effort it lists; None when the
+    snapshot lists no reasoning block or no known effort (then nothing is sent)."""
+    if _none_allowed(snap):
+        r = (snap or {}).get("reasoning") or {}
+        if r.get("supported_efforts") is not None or r.get("default_enabled") is not False:
+            return "none"
+        return None  # reasoning off by default and no efforts listed: send nothing
+    r = (snap or {}).get("reasoning")
+    efforts = r.get("supported_efforts") if isinstance(r, dict) else None
+    known = [e for e in EFFORT_ORDER if e in (efforts or [])]
+    return known[0] if known else None

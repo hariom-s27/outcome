@@ -4,6 +4,8 @@
 # reasoning (P2-31): "default" = send no parameter; "none" = send reasoning {"effort": "none"}
 #   only when the snapshot lists reasoning for the model and it is not mandatory (else nothing).
 #   A 400 to it -> one retry without, ledger flag reasoning_param_dropped.
+#   "lowest" (P9b Z-29, lab bake-off): "none" where the snapshot allows it, else the lowest
+#   effort it lists. Only models v1.0 never calls carry it (v1.0 calls Haiku only).
 # response_format: true only when the /models snapshot lists it (P2-05 ladder).
 # price_cliff: whole request billed at multiplier x when prompt tokens >= threshold (R22).
 # estimate (P2-36): high-side input-token estimate before every call, for the per-doc $ fuse.
@@ -59,7 +61,7 @@ models:
     price_in: 0.1
     price_out: 0.5
     price_source: snapshot
-    reasoning: default
+    reasoning: lowest
     response_format: true
     max_tokens: 4096
   z-ai/glm-5.3-flash:
@@ -67,7 +69,7 @@ models:
     price_in: 0.15
     price_out: 0.5
     price_source: snapshot
-    reasoning: default
+    reasoning: lowest
     response_format: true
     max_tokens: 4096
   qwen/qwen3-vl-235b-a22b-instruct:
@@ -91,7 +93,7 @@ models:
     price_in: 0.75
     price_out: 3.75
     price_source: snapshot
-    reasoning: default
+    reasoning: lowest
     response_format: true
     max_tokens: 4096
   google/gemini-3.1-pro-preview:
@@ -108,7 +110,7 @@ models:
     price_in: 2
     price_out: 10
     price_source: snapshot
-    reasoning: default
+    reasoning: lowest
     response_format: true
     max_tokens: 4096
   openai/gpt-6.1-sol:
