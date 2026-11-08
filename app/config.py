@@ -5,6 +5,8 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass
 
+from app.llm.models import ALLOWED_MODEL_IDS
+
 DEFAULT_DATABASE_URL = "postgresql://docextract:docextract@db:5432/docextract"
 SINGLE_VALUE_PATHS = ("baseline", "smart")
 TABLE_PATHS = ("baseline", "spec")
@@ -34,8 +36,20 @@ class Settings:
     # send: "first" = the first pages (as before), "locate" = the P5 locator picks them.
     # env SCAN_PAGE_METHOD.
     scan_page_method: str = "first"
+    # P9b Z-29: the model for single-value field lists; None = config/models.yaml `baseline`
+    # (v1.0). Table field lists keep the baseline. env SV_MODEL (lab only, never in compose.yaml).
+    sv_model: str | None = None
+    # P9b: LAB_MODE=1 lets POST /jobs carry a `debug_model` form part (one job, one model).
+    # Off in the shipped config; when off the part is ignored. env LAB_MODE.
+    lab_mode: bool = False
+    # P9b E0 (Z-33): robust parsing. Single-value: per-field salvage of a broken answer, then
+    # one fresh extraction call if still unusable. Table spec: one more spec call when row
+    # fill < 0.5 or a spec entry was dropped, higher fill kept. Off = v1.0. env E0_ROBUST.
+    e0_robust: bool = False
 
     def __post_init__(self) -> None:
+        if self.sv_model is not None and self.sv_model not in ALLOWED_MODEL_IDS:
+            raise ValueError(f"SV_MODEL must be an allowed model id, got {self.sv_model!r}")
         if self.scan_page_method not in SCAN_PAGE_METHODS:
             raise ValueError(
                 f"SCAN_PAGE_METHOD must be one of {SCAN_PAGE_METHODS}, "
@@ -73,4 +87,7 @@ class Settings:
             single_value_path=(env.get("EXTRACT_SINGLE_VALUE_PATH") or "baseline").strip().lower(),
             table_path=(env.get("EXTRACT_TABLE_PATH") or "spec").strip().lower(),
             scan_page_method=(env.get("SCAN_PAGE_METHOD") or "first").strip().lower(),
+            sv_model=(env.get("SV_MODEL") or "").strip() or None,
+            lab_mode=(env.get("LAB_MODE") or "").strip().lower() in ("1", "true", "yes"),
+            e0_robust=(env.get("E0_ROBUST") or "").strip().lower() in ("1", "true", "yes"),
         )

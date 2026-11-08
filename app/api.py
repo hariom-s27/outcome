@@ -20,7 +20,7 @@ from starlette.datastructures import UploadFile
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.formparsers import MultiPartException
 
-from app import db, filetypes
+from app import db, filetypes, lab
 from app.config import Settings
 
 log = logging.getLogger("app.api")
@@ -153,6 +153,8 @@ def create_app(settings: Settings | None = None, *, migrate_on_start: bool = Fal
             upload = form.get("file")
             schema_raw = form.get("schema")
             webhook_raw = form.get("webhook_url")
+            # P9b: read only in LAB_MODE; the shipped service never looks at this part
+            debug_raw = form.get("debug_model") if settings.lab_mode else None
             if not isinstance(upload, UploadFile):
                 raise ApiError(400, "missing_file", "multipart part `file` is required")
             if not isinstance(schema_raw, str) or not schema_raw.strip():
@@ -173,6 +175,10 @@ def create_app(settings: Settings | None = None, *, migrate_on_start: bool = Fal
         if org and len(org) > MAX_ORG_ID_LEN:
             raise ApiError(400, "invalid_org", "X-Organization-Id is too long")
         field_list = parse_field_list(schema_raw)
+        try:
+            field_list = lab.attach_debug_model(settings, field_list, debug_raw)
+        except lab.BadDebugModel as exc:
+            raise ApiError(400, "invalid_debug_model", str(exc)) from None
         webhook_url = parse_webhook(webhook_raw)
         file_type = filetypes.detect(filename, content)
         if file_type is None:

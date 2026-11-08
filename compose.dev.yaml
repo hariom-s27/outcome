@@ -11,5 +11,14 @@ services:
       # P5 D-1: readwrite | off (off = no cache read, no cache write). Set it explicitly;
       # never rely on an empty LLM_CACHE_DIR (PowerShell drops empty env vars).
       LLM_CACHE_MODE: ${LLM_CACHE_MODE:-readwrite}
+      # P9b Z-29 lab only: empty = v1.0 (YAML baseline model, no per-job debug_model)
+      SV_MODEL: ${SV_MODEL:-}
+      LAB_MODE: ${LAB_MODE:-}
+      # P9b E0 (Z-33): robust parsing; empty = v1.0
+      E0_ROBUST: ${E0_ROBUST:-}
     volumes:
       - ./cache:/cache
+  api:
+    environment:
+      # P9b: POST /jobs accepts a `debug_model` part only when LAB_MODE=1
+      LAB_MODE: ${LAB_MODE:-}

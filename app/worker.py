@@ -20,7 +20,7 @@ from typing import Any
 
 import psycopg
 
-from app import db, queue
+from app import db, lab, queue
 from app.config import Settings
 from app.extract.compile_fields import is_single_value
 from app.llm import CallContext, LLMClient, LLMSettings
@@ -138,9 +138,17 @@ def process(
         deadline=job.deadline_at.timestamp(),
         max_calls=doc_call_cap(llm, file_type, docmap.blocks),
     )
-    out = choose_pipeline(settings, job.field_list).extract(
-        llm, ctx, job.field_list, docmap.blocks, file_type
-    )
+    # P9b: LAB_MODE off -> field list as stored and no override, the v1.0 call exactly
+    field_list, debug_model = lab.split_debug_model(settings, job.field_list)
+    model = lab.sv_model_for(settings, field_list, debug_model)
+    pipeline = choose_pipeline(settings, field_list)
+    # P9b E0: only these two pipelines take `robust`; off -> the v1.0 call exactly
+    extra = {"robust": True} if settings.e0_robust and pipeline in (baseline, table_spec) else {}
+    if model is None:
+        out = pipeline.extract(llm, ctx, field_list, docmap.blocks, file_type, **extra)
+    else:
+        out = pipeline.extract(llm, ctx, field_list, docmap.blocks, file_type, model, **extra)
+        out.notes["sv_model"] = model
     hb.check()
     meta = llm.store.job_metadata(str(job.id), queue.latency_ms(job.created_at))
     meta.update(docmap.result_metadata())
@@ -156,7 +164,7 @@ def process(
         meta["extraction"]["cache_replays"] = int(meta.get("cache_hits", 0))
     if out.entries is not None:
         return "SUCCESS", {"entries": out.entries, "metadata": meta}
-    result = stub_result(job.field_list, meta["latency_ms"], out.reason or "llm_unusable")
+    result = stub_result(field_list, meta["latency_ms"], out.reason or "llm_unusable")
     result["metadata"] = {**meta, "terminal_reason": out.reason or "llm_unusable"}
     return "PARTIAL", result
 
@@ -255,13 +263,16 @@ def main() -> None:  # pragma: no cover - container entry point
         log.warning("LLM_API_KEY not set: jobs get the P1 skeleton (PARTIAL), R17")
     log.info(
         "worker %s started (pipeline=%s, single_value_path=%s, table_path=%s, scan_pages=%s, "
-        "cache_mode=%s)",
+        "cache_mode=%s, sv_model=%s, lab_mode=%s, e0_robust=%s)",
         wid,
         baseline.PIPELINE if llm else "stub",
         settings.single_value_path,
         settings.table_path,
         settings.scan_page_method,
         llm.cache_mode if llm else "off",
+        settings.sv_model or (llm.catalog.baseline if llm else "-"),
+        "on" if settings.lab_mode else "off",
+        "on" if settings.e0_robust else "off",
     )
     threading.Thread(target=_sweep_loop, args=(settings, wid), name="sweeper", daemon=True).start()
     backoff = settings.worker_poll_s
