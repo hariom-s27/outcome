@@ -17,7 +17,15 @@ from app.llm.settings import LLMSettings
 
 ROOT = Path(__file__).resolve().parent.parent
 VAR_RE = re.compile(r"\$\{([A-Z0-9_]+)(?::?-([^}]*))?\}")
-DEV_ONLY = ("DEV_BUDGET_USD", "LLM_CACHE_DIR", "LLM_CACHE_MODE", "LLM_REASONING_OVERRIDE")
+DEV_ONLY = (
+    "DEV_BUDGET_USD",
+    "LLM_CACHE_DIR",
+    "LLM_CACHE_MODE",
+    "LLM_REASONING_OVERRIDE",
+    "SV_MODEL",  # P9b: lab only; shipped = the YAML baseline model
+    "LAB_MODE",  # P9b: lab only; shipped = no per-job debug_model
+    "E0_ROBUST",  # P9b E0: off until its gate passes
+)
 
 
 @pytest.fixture(scope="module")
@@ -102,3 +110,7 @@ def test_settings_from_shipped_env(compose, monkeypatch):
     assert Settings.from_env().single_value_path == "baseline"
     assert Settings.from_env().table_path == "spec"
     assert Settings.from_env().scan_page_method == "first"
+    # P9b: the model switch is off in the shipped config
+    assert Settings.from_env().sv_model is None
+    assert Settings.from_env().lab_mode is False
+    assert Settings.from_env().e0_robust is False
