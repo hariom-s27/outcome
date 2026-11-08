@@ -114,3 +114,82 @@ def test_score_doc_reads_the_uncached_cost(monkeypatch, tmp_path):
     monkeypatch.setattr(eval_dev, "TRUTH", tmp_path)
     rec = eval_dev.score_doc("d", "s", job)
     assert rec["cost_usd"] == 0.0 and rec["cost_uncached_usd"] == 0.0123
+    assert rec["replays"] == 2 and rec["path"] == "baseline"
+
+
+# --- P5 D-1 / D-2: --expect-live and the new history fields ------------------------------------
+
+
+def _job(cache_hits=0, path="smart", cost=0.001):
+    meta = {"cost_usd": cost, "model_calls": 1, "cache_hits": cache_hits,
+            "cache_mode": "off", "pipeline": "single-value-v1"}  # fmt: skip
+    if path == "smart":
+        meta["extraction"] = {"path": "smart", "cache_mode": "off", "cache_replays": cache_hits}
+    return {"status": "SUCCESS", "result": {"entries": [], "metadata": meta}}
+
+
+def _fake_run(monkeypatch, tmp_path, jobs: dict, argv: list[str]):
+    rows = {d: {"schema_name": "s", "file": "x"} for d in jobs}
+    (tmp_path / "s.json").write_text(json.dumps({"fields": SCHEMA["fields"]}), encoding="utf-8")
+    for d in jobs:
+        (tmp_path / f"{d}.json").write_text(json.dumps({"entries": []}), encoding="utf-8")
+    scored: list[str] = []
+    real_score = eval_dev.score_doc
+
+    def score(doc_id, schema_name, job):
+        scored.append(doc_id)
+        return real_score(doc_id, schema_name, job)
+
+    monkeypatch.setattr(eval_dev, "manifest", lambda: rows)
+    monkeypatch.setattr(eval_dev, "paid_run_gates", lambda *a, **k: (True, {"dry_run": "passed"}))
+    monkeypatch.setattr(eval_dev, "call", lambda *a, **k: (200, {}))
+    monkeypatch.setattr(eval_dev, "submit_and_wait", lambda base, d, row: jobs[d])
+    monkeypatch.setattr(eval_dev, "run_id", lambda: "abc1234")
+    monkeypatch.setattr(eval_dev, "RUNS", tmp_path / "runs")
+    monkeypatch.setattr(eval_dev, "HISTORY", tmp_path / "history.jsonl")
+    monkeypatch.setattr(eval_dev, "ROOT", tmp_path)  # the script prints HISTORY relative to it
+    monkeypatch.setattr(eval_dev, "SCHEMAS", tmp_path)
+    monkeypatch.setattr(eval_dev, "TRUTH", tmp_path)
+    monkeypatch.setattr(eval_dev, "score_doc", score)
+    report = tmp_path / "report.md"
+    monkeypatch.setattr(sys, "argv", ["eval_dev.py", "--docs", *jobs, "--report", str(report),
+                                      *argv])  # fmt: skip
+    return scored
+
+
+def test_expect_live_refuses_to_score_a_replay(monkeypatch, tmp_path, capsys):
+    jobs = {"d1": _job(), "d2": _job(cache_hits=1)}
+    scored = _fake_run(monkeypatch, tmp_path, jobs, ["--expect-live"])
+    assert eval_dev.main() == 3
+    out = capsys.readouterr().out
+    assert "refused" in out and "score=" not in out
+    assert scored == [] and not (tmp_path / "history.jsonl").exists()
+
+
+def test_live_run_records_path_cache_mode_run_index_prompt_version(monkeypatch, tmp_path):
+    from app.pipeline.single_value import PROMPT_VERSION
+
+    jobs = {"d1": _job(), "d2": _job(path="baseline")}
+    scored = _fake_run(monkeypatch, tmp_path, jobs, ["--expect-live", "--run-index", "2"])
+    assert eval_dev.main() == 0 and scored == ["d1", "d2"]
+    lines = (tmp_path / "history.jsonl").read_text(encoding="utf-8").splitlines()
+    h = json.loads(lines[-1])
+    assert h["path"] == "baseline+smart" and h["path_per_doc"] == {"d1": "smart", "d2": "baseline"}
+    assert h["cache_mode"] == "off" and h["run_index"] == 2 and h["all_live"] is True
+    assert h["prompt_version"] == PROMPT_VERSION and len(PROMPT_VERSION) == 12
+
+
+def test_without_expect_live_a_replay_is_scored_but_not_all_live(monkeypatch, tmp_path):
+    jobs = {"d1": _job(cache_hits=1)}
+    scored = _fake_run(monkeypatch, tmp_path, jobs, [])
+    assert eval_dev.main() == 0 and scored == ["d1"]
+    h = json.loads((tmp_path / "history.jsonl").read_text(encoding="utf-8").splitlines()[-1])
+    assert h["all_live"] is False and h["run_index"] == 1
+
+
+def test_history_is_append_only(monkeypatch, tmp_path):
+    (tmp_path / "history.jsonl").write_text('{"old": 1}\n', encoding="utf-8")
+    _fake_run(monkeypatch, tmp_path, {"d1": _job()}, [])
+    assert eval_dev.main() == 0
+    lines = (tmp_path / "history.jsonl").read_text(encoding="utf-8").splitlines()
+    assert lines[0] == '{"old": 1}' and len(lines) == 2

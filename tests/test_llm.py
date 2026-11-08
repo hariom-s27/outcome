@@ -464,6 +464,42 @@ def test_no_cache_unless_configured(make_client, ctx):
     client.complete_json(ctx, HAIKU, MSGS)
     client.complete_json(ctx, HAIKU, MSGS)
     assert len(fake.requests) == 2
+    assert client.cache_mode == "off"
+
+
+def test_cache_mode_off_neither_reads_nor_writes(make_client, ctx, tmp_path, database_url):
+    # P5 D-1: a filled cache is ignored, and nothing new is written
+    cache = tmp_path / "llm"
+    warm = make_client(FakeLLM(j(ok_body())), cache_dir=str(cache))
+    warm.complete_json(ctx, HAIKU, MSGS)
+    assert warm.cache_mode == "readwrite"
+    files_before = sorted(p.name for p in cache.rglob("*") if p.is_file())
+    assert files_before
+    fake = FakeLLM(j(ok_body()), j(ok_body()))
+    off = make_client(fake, cache_dir=str(cache), cache_mode="off")
+    off.complete_json(ctx, HAIKU, [{"role": "user", "content": "a different invented prompt"}])
+    off.complete_json(ctx, HAIKU, MSGS)  # the warm entry exists, but is not read
+    assert len(fake.requests) == 2 and off.cache_mode == "off"
+    assert sorted(p.name for p in cache.rglob("*") if p.is_file()) == files_before
+    assert [r[3] for r in ledger(database_url)] == [False, False, False]  # no replay
+
+
+def test_cache_mode_is_validated_and_read_from_env(monkeypatch):
+    with pytest.raises(ValueError):
+        LLMSettings(cache_mode="sometimes")
+    monkeypatch.setenv("LLM_CACHE_MODE", "OFF")
+    assert LLMSettings.from_env().cache_mode == "off"
+    monkeypatch.delenv("LLM_CACHE_MODE")
+    assert LLMSettings.from_env().cache_mode == "readwrite"
+
+
+def test_context_call_cap_overrides_the_default(make_client, clock):
+    # P5 D-4: a 25-page PDF gets 12 calls even though LLM_MAX_CALLS_PER_DOC is 2 here
+    fake = FakeLLM(j({}, 500), repeat_last=True)
+    big = CallContext(job_id=JOB, deadline=clock() + 1000, max_calls=3)
+    out = make_client(fake, max_calls_per_doc=2).complete_json(big, HAIKU, MSGS)
+    assert out.status == "stopped" and out.reason == "doc_llm_cap"
+    assert len(fake.requests) == 3
 
 
 def test_crashed_holders_slot_frees_itself(make_client, ctx, store, database_url):
