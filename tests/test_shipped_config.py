@@ -66,12 +66,24 @@ def test_single_value_path_defaults_to_baseline(compose):
     assert env["EXTRACT_SINGLE_VALUE_PATH"] == "${EXTRACT_SINGLE_VALUE_PATH:-baseline}"
 
 
+def test_table_path_defaults_to_baseline(compose):
+    # P6 T-15: shipped = baseline until P6 ships
+    env = _env(compose["services"]["worker"])
+    assert env["EXTRACT_TABLE_PATH"] == "${EXTRACT_TABLE_PATH:-baseline}"
+
+
 def test_two_worker_replicas_by_default(compose):
     assert compose["services"]["worker"]["deploy"]["replicas"] == 2
 
 
 def test_settings_from_shipped_env(compose, monkeypatch):
-    for var in (*DEV_ONLY, "LLM_BASE_URL", "LLM_API_KEY", "EXTRACT_SINGLE_VALUE_PATH"):
+    for var in (
+        *DEV_ONLY,
+        "LLM_BASE_URL",
+        "LLM_API_KEY",
+        "EXTRACT_SINGLE_VALUE_PATH",
+        "EXTRACT_TABLE_PATH",
+    ):
         monkeypatch.delenv(var, raising=False)
     for k, v in _resolve_empty_shell(_env(compose["services"]["worker"])).items():
         monkeypatch.setenv(k, v)
@@ -81,3 +93,4 @@ def test_settings_from_shipped_env(compose, monkeypatch):
     assert llm.reasoning_override is None
     assert llm.api_key == ""
     assert Settings.from_env().single_value_path == "baseline"
+    assert Settings.from_env().table_path == "baseline"
