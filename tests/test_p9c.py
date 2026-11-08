@@ -8,6 +8,7 @@ from __future__ import annotations
 import json
 
 import pytest
+from test_p9a import compare_runs
 from test_readers import _image, make_pdf
 from test_tables import CTX, FakeLLM, ok
 
@@ -349,3 +350,73 @@ def test_worker_passes_the_grid_only_when_switched_on(settings, client, monkeypa
     else:
         assert isinstance(seen[0]["pdf_grid"], pdf_grid.GridResult)
         assert seen[0]["pdf_grid"].reason == "ok"
+
+
+# --- Z-50: the gate's hallucination check counts paired cells only -----------------------------
+
+
+def _side(score: float, cells: list[dict] | None, halluc: float) -> dict:
+    n = len(cells) if cells else 3
+    return {"set": "syn", "n": n, "score": score, "scores": [score] * n, "min": score,
+            "halluc": halluc, "missed": 0.0, "rows_pred": 1, "rows_truth": 1, "usd": 0.001,
+            "valid": True, "cells": cells}  # fmt: skip
+
+
+def _cells_run(matched: set[int], halluc: dict[int, int]) -> dict:
+    return {"matched": frozenset(matched), "halluc": halluc}
+
+
+def test_paired_halluc_ignores_rows_only_the_candidate_returned():
+    base = _side(0.05, [_cells_run({0}, {})] * 3, 0.0)  # v1.0: one row back
+    cand = _side(0.95, [_cells_run(set(range(6)), {2: 1, 4: 1})] * 3, 2.0)  # all rows, 2 null cells
+    assert compare_runs.paired_halluc(base, cand) == (0.0, 0.0, 1)
+    g = compare_runs.gate({"syn_t": base}, {"syn_t": cand}, ["syn_t"])
+    ok, msg = g["checks"]["halluc"]
+    assert ok and g["verdict"] == "PASS"
+    assert "paired cells: cand 0.0 vs base 0.0" in msg and "total: cand 2.0 vs base 0.0" in msg
+    assert g["halluc_total"] == (0.0, 2.0)
+
+
+def test_paired_halluc_still_fails_on_a_row_both_sides_returned():
+    base = _side(0.05, [_cells_run({0}, {})] * 3, 0.0)
+    cand = _side(0.95, [_cells_run(set(range(6)), {0: 1})] * 3, 1.0)  # new error in the shared row
+    assert compare_runs.paired_halluc(base, cand) == (0.0, 1.0, 1)
+    g = compare_runs.gate({"syn_t": base}, {"syn_t": cand}, ["syn_t"])
+    assert not g["checks"]["halluc"][0] and g["verdict"] == "FAIL"
+
+
+def test_paired_rows_are_the_union_over_runs_and_halluc_is_a_mean_per_run():
+    base = _side(0.5, [_cells_run({0}, {0: 2}), _cells_run({1}, {}), _cells_run(set(), {})], 2 / 3)
+    cand = _side(0.9, [_cells_run({0, 1, 2}, {0: 1, 2: 5}), _cells_run({0, 1}, {1: 1})], 3.5)
+    pb, pc, rows = compare_runs.paired_halluc(base, cand)
+    assert rows == 2 and abs(pb - 2 / 3) < 1e-9 and pc == 1.0  # row 2 is unpaired
+
+
+def test_without_cell_data_the_check_uses_totals():
+    base, cand = _side(0.5, None, 1.0), _side(0.9, None, 2.0)
+    assert compare_runs.paired_halluc(base, cand) == (1.0, 2.0, None)
+    assert not compare_runs.gate({"syn_t": base}, {"syn_t": cand}, ["syn_t"])["checks"]["halluc"][0]
+
+
+def test_cell_outcomes_match_rows_by_key_and_count_null_truth_cells(tmp_path):
+    schema = {"name": "widget_stock", "fields": {
+        "sku": {"name": "SKU", "description": "Code.", "primary": True},
+        "note": {"name": "Note", "description": "Note."}}}  # fmt: skip
+    truth = {"schema": "widget_stock", "entries": [
+        {"sku": "WX-1", "note": None}, {"sku": "WX-2", "note": "ok"},
+        {"sku": "WX-3", "note": None}]}  # fmt: skip
+    (tmp_path / "s.json").write_text(json.dumps(schema), encoding="utf-8")
+    (tmp_path / "t.json").write_text(json.dumps(truth), encoding="utf-8")
+    row = {"schema_name": "widget_stock", "schema_path": str(tmp_path / "s.json"),
+           "truth_path": str(tmp_path / "t.json")}  # fmt: skip
+
+    def cell(v):
+        return {"value": v, "citation": "", "confidence": 0.5}
+
+    job = {"result": {"entries": [
+        {"sku": cell("WX-3"), "note": cell("placeholder")},  # hallucinated (truth null)
+        {"sku": cell("WX-2"), "note": cell("ok")},
+        {"sku": cell("WX-9"), "note": cell("extra row")}]}}  # fmt: skip
+    out = compare_runs.cell_outcomes("syn_t", row, job)
+    assert out == {"matched": frozenset({1, 2}), "halluc": {2: 1}}
+    assert compare_runs.cell_outcomes("syn_t", row, {"status": "PARTIAL"})["matched"] == frozenset()
