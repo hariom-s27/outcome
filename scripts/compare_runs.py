@@ -21,6 +21,13 @@ Gate (D49, fixed before any experiment). The candidate passes only if ALL hold:
   5. every candidate output VALID
   plus: both sides cover the same documents (else the verdict is FAIL: incomplete).
 
+P9b Z-24 (noise-proof gate, thresholds above unchanged):
+  --docs D1 D2 ...  the docs the switch can affect, declared before the run; every check is
+                    computed on these docs only (other docs: a separate must-not-error run)
+  6. collapses: candidate collapses <= base collapses, where a collapse is one run's doc score
+     < half of that doc's v1.0 median (the base side is v1.0: median over its runs)
+  The table also shows each side's per-doc min over its runs. Means are over all runs given.
+
 Prints doc ids, field-free counts, scores and $ only (D04, R31). Exit 0 = PASS (or base-only
 table), 1 = FAIL, 2 = bad selector or missing raw run.
 """
@@ -43,6 +50,7 @@ import eval_dev
 GATE_MIN_GAIN = 0.025
 GATE_MAX_DEV_DROP = 0.05
 GATE_MAX_USD_PER_DOC = 0.01
+COLLAPSE_SHARE = 0.5  # P9b Z-24: a run collapses on a doc below half the doc's v1.0 median
 
 
 class SelectorError(Exception):
@@ -100,10 +108,13 @@ def aggregate(records: list[dict]) -> dict[str, dict[str, Any]]:
     out = {}
     for doc, rs in by_doc.items():
         tot = [r.get("totals", {}) for r in rs]
+        scores = [r.get("score", 0.0) for r in rs]
         out[doc] = {
             "set": doc_sets.set_of(doc),
             "n": len(rs),
-            "score": statistics.fmean(r.get("score", 0.0) for r in rs),
+            "score": statistics.fmean(scores),
+            "scores": scores,  # P9b: per run, for the min and the collapse rule
+            "min": min(scores),
             "halluc": statistics.fmean(t.get("hallucinated", 0) for t in tot),
             "missed": statistics.fmean(t.get("missed", 0) for t in tot),
             "rows_pred": statistics.fmean(r.get("rows_predicted", 0) or 0 for r in rs),
@@ -114,9 +125,34 @@ def aggregate(records: list[dict]) -> dict[str, dict[str, Any]]:
     return out
 
 
-def gate(base: dict[str, dict], cand: dict[str, dict]) -> dict[str, Any]:
+def _scores(a: dict) -> list[float]:
+    return list(a.get("scores") or [a["score"]] * int(a.get("n", 1)))
+
+
+def collapses(side: dict[str, dict], base: dict[str, dict], docs: list[str]) -> int:
+    """P9b Z-24: runs whose doc score < COLLAPSE_SHARE x that doc's v1.0 (base) median."""
+    n = 0
+    for d in docs:
+        floor = COLLAPSE_SHARE * statistics.median(_scores(base[d]))
+        n += sum(1 for s in _scores(side[d]) if s < floor)
+    return n
+
+
+def restrict(agg: dict[str, dict], docs: list[str] | None) -> dict[str, dict]:
+    """P9b --docs: keep only the declared affected docs (all docs when None)."""
+    return agg if docs is None else {d: a for d, a in agg.items() if d in set(docs)}
+
+
+def gate(
+    base: dict[str, dict], cand: dict[str, dict], docs: list[str] | None = None
+) -> dict[str, Any]:
+    if docs is not None:  # P9b Z-24: judged only where the switch can act
+        missing = sorted(set(docs) - (set(base) & set(cand)))
+        base, cand = restrict(base, docs), restrict(cand, docs)
+    else:
+        missing = []
     common = sorted(set(base) & set(cand))
-    only = sorted(set(base) ^ set(cand))
+    only = sorted((set(base) ^ set(cand)) | set(missing))
     mb = statistics.fmean(base[d]["score"] for d in common) if common else 0.0
     mc = statistics.fmean(cand[d]["score"] for d in common) if common else 0.0
     drops = [d for d in common if cand[d]["set"] == "dev"
@@ -126,6 +162,7 @@ def gate(base: dict[str, dict], cand: dict[str, dict]) -> dict[str, Any]:
     n_c = sum(cand[d]["n"] for d in common)
     usd_c = sum(cand[d]["usd"] * cand[d]["n"] for d in common) / n_c if n_c else 0.0
     invalid = [d for d in common if not cand[d]["valid"]]
+    cb, cc = collapses(base, base, common), collapses(cand, base, common)
     checks = {
         "same_docs": (not only and bool(common), f"{len(common)} common, {len(only)} one-sided"),
         "mean_gain": (mc >= mb + GATE_MIN_GAIN - 1e-9,
@@ -138,6 +175,8 @@ def gate(base: dict[str, dict], cand: dict[str, dict]) -> dict[str, Any]:
                         f"cand ${usd_c:.5f}/doc (max ${GATE_MAX_USD_PER_DOC})"),
         "all_valid": (not invalid, f"{len(invalid)} invalid"
                       + (f": {', '.join(invalid)}" if invalid else "")),
+        "collapses": (cc <= cb, f"cand {cc} vs base {cb} runs below {COLLAPSE_SHARE} x "
+                      "the doc's v1.0 median"),
     }  # fmt: skip
     return {
         "verdict": "PASS" if all(ok for ok, _ in checks.values()) else "FAIL",
@@ -146,21 +185,27 @@ def gate(base: dict[str, dict], cand: dict[str, dict]) -> dict[str, Any]:
         "one_sided": only,
         "mean_base": mb,
         "mean_cand": mc,
+        "collapses_base": cb,
+        "collapses_cand": cc,
     }
 
 
 def fmt_side(a: dict | None) -> str:
     if not a:
-        return f"{'-':>6} {'-':>6} {'-':>6} {'-':>9} {'-':>9} {'-':>4}"
+        return f"{'-':>6} {'-':>6} {'-':>6} {'-':>6} {'-':>9} {'-':>9} {'-':>4}"
     rows = f"{a['rows_pred']:.0f}/{a['rows_truth']:.0f}"
+    low = a.get("min", a["score"])
     return (
-        f"{a['score']:6.3f} {a['halluc']:6.1f} {a['missed']:6.1f} {rows:>9} "
+        f"{a['score']:6.3f} {low:6.3f} {a['halluc']:6.1f} {a['missed']:6.1f} {rows:>9} "
         f"{a['usd']:9.5f} {'yes' if a['valid'] else 'NO':>4}"
     )
 
 
 def print_table(base: dict, cand: dict | None) -> None:
-    head = f"{'score':>6} {'halluc':>6} {'missed':>6} {'rows p/t':>9} {'$/doc':>9} {'ok':>4}"
+    head = (
+        f"{'score':>6} {'min':>6} {'halluc':>6} {'missed':>6} {'rows p/t':>9} {'$/doc':>9} "
+        f"{'ok':>4}"
+    )
     print(
         f"{'doc':18s} {'set':4s} {'n':>3} | BASE {head}"
         + (f" | CAND {head} | delta" if cand is not None else "")
@@ -198,20 +243,29 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--base", nargs="+", required=True, help="run_index or raw_dir selectors")
     ap.add_argument("--cand", nargs="+", help="run_index or raw_dir selectors")
+    ap.add_argument(
+        "--docs", nargs="+", help="P9b Z-24: declared affected docs; the gate uses only these"
+    )
     args = ap.parse_args(argv)
     history = load_history(eval_dev.HISTORY)
     rows = doc_sets.rows_for("all")
+    if args.docs:
+        unknown = [d for d in args.docs if d not in rows or d in eval_dev.HELD_OUT]
+        if unknown:
+            print(f"error: --docs not in the DEV/SYN manifests: {len(unknown)} id(s)")
+            return 2
     try:
         base = side(args.base, history, rows, eval_dev.RUNS)
         cand = side(args.cand, history, rows, eval_dev.RUNS) if args.cand else None
     except SelectorError as exc:
         print(f"error: {exc}")
         return 2
-    print_table(base, cand)
+    print_table(restrict(base, args.docs), restrict(cand, args.docs) if cand else cand)
     if cand is None:
         return 0
-    g = gate(base, cand)
-    print("\nGATE (D49)")
+    g = gate(base, cand, args.docs)
+    scope = f"declared docs ({len(args.docs)})" if args.docs else "all common docs"
+    print(f"\nGATE (D49 + Z-24) on {scope}")
     for name, (ok, msg) in g["checks"].items():
         print(f"  {'pass' if ok else 'FAIL'}  {name:12s} {msg}")
     print(f"VERDICT: {g['verdict']}")

@@ -37,21 +37,27 @@ def manifest() -> dict[str, dict[str, str]]:
         return {row["document_id"]: row for row in csv.DictReader(f)}
 
 
-def multipart(file_path: Path, schema_text: str) -> tuple[bytes, str]:
+def multipart(
+    file_path: Path, schema_text: str, extra: dict[str, str] | None = None
+) -> tuple[bytes, str]:
+    """`extra` (P9b): more text parts, e.g. {"debug_model": id}; None = the v1.0 body."""
     boundary = uuid.uuid4().hex
-    body = b"".join(
-        [
-            f'--{boundary}\r\nContent-Disposition: form-data; name="file"; '
-            f'filename="{file_path.name}"\r\n'
-            "Content-Type: application/octet-stream\r\n\r\n".encode(),
-            file_path.read_bytes(),
-            b"\r\n",
-            f'--{boundary}\r\nContent-Disposition: form-data; name="schema"\r\n\r\n'.encode(),
-            schema_text.encode("utf-8"),
-            f"\r\n--{boundary}--\r\n".encode(),
+    parts = [
+        f'--{boundary}\r\nContent-Disposition: form-data; name="file"; '
+        f'filename="{file_path.name}"\r\n'
+        "Content-Type: application/octet-stream\r\n\r\n".encode(),
+        file_path.read_bytes(),
+        b"\r\n",
+        f'--{boundary}\r\nContent-Disposition: form-data; name="schema"\r\n\r\n'.encode(),
+        schema_text.encode("utf-8"),
+    ]
+    for name, value in (extra or {}).items():
+        parts += [
+            f'\r\n--{boundary}\r\nContent-Disposition: form-data; name="{name}"\r\n\r\n'.encode(),
+            value.encode("utf-8"),
         ]
-    )
-    return body, f"multipart/form-data; boundary={boundary}"
+    parts.append(f"\r\n--{boundary}--\r\n".encode())
+    return b"".join(parts), f"multipart/form-data; boundary={boundary}"
 
 
 def call(base: str, method: str, path: str, body=None, headers=None) -> tuple[int, dict]:

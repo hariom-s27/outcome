@@ -191,6 +191,17 @@ def replays(job: dict) -> int:
     return max(int(meta.get("cache_hits", 0) or 0), int(ext.get("cache_replays", 0) or 0))
 
 
+def debug_model_honoured(job: dict, row: dict, model: str) -> bool:
+    """P9b: a single-value job sent with debug_model must report it as its sv_model (else the
+    stack ignored it: LAB_MODE off). Table field lists keep the baseline, so always True."""
+    schema = json.loads(_schema_file(row["schema_name"], row).read_text(encoding="utf-8"))
+    from app.extract.compile_fields import is_single_value
+
+    if not is_single_value(schema):
+        return True
+    return _meta(job).get("sv_model") == model
+
+
 def doc_path(job: dict) -> str:
     """'smart' when the single-value smart path ran (even if it fell back); P6: 'table:<ai|
     heuristic|fallback>' when the long-table spec path ran; else 'baseline'."""
@@ -221,9 +232,12 @@ def run_folder(rid: str, run_index: int) -> Path:
     return RUNS / rid / f"run{int(run_index)}"
 
 
-def submit_and_wait(base: str, doc_id: str, row: dict[str, str]) -> dict:
+def submit_and_wait(
+    base: str, doc_id: str, row: dict[str, str], debug_model: str | None = None
+) -> dict:
     schema_text = _schema_file(row["schema_name"], row).read_text(encoding="utf-8")
-    body, ctype = multipart(_doc_file(row), schema_text)
+    extra = {"debug_model": debug_model} if debug_model else None  # P9b, LAB_MODE stack only
+    body, ctype = multipart(_doc_file(row), schema_text, extra)
     t0 = time.monotonic()
     status, job = call(base, "POST", "/jobs", body, {"Content-Type": ctype})
     while status == 429:
@@ -502,6 +516,11 @@ def main() -> int:
         default="dev",
         help="P9a: dev (sample manifest, default), syn (invented SYN set) or all",
     )
+    ap.add_argument(
+        "--debug-model",
+        help="P9b: model id sent as the debug_model part (honoured only on a LAB_MODE=1 stack; "
+        "single-value docs only); every scored job must report this model or the run stops",
+    )
     args = ap.parse_args()
     if args.reuse_from and (args.reuse or not args.docs):
         ap.error("--reuse-from needs --docs and cannot be combined with --reuse")
@@ -509,6 +528,13 @@ def main() -> int:
 
     if args.set != "dev" and (args.write_outputs or args.final_sealed):
         ap.error("--write-outputs and --final-sealed are DEV-only (--set dev)")
+    if args.debug_model:
+        from app.llm.models import ALLOWED_MODEL_IDS
+
+        if args.debug_model not in ALLOWED_MODEL_IDS:
+            ap.error("--debug-model must be one of the allowed model ids")
+        if args.write_outputs or args.final_sealed or args.reuse:
+            ap.error("--debug-model is for live lab runs only")
     rows = manifest() if args.set == "dev" else doc_sets.rows_for(args.set)
     docs = args.docs or default_docs(rows, args.final_sealed)
     sealed = [d for d in docs if d in HELD_OUT]
@@ -555,9 +581,14 @@ def main() -> int:
             job = json.loads(src.read_text(encoding="utf-8"))
             raw_path.write_text(json.dumps(job, indent=1), encoding="utf-8", newline="\n")
         else:
-            job = submit_and_wait(args.base_url, doc_id, rows[doc_id])
+            lab_arg = (args.debug_model,) if args.debug_model else ()  # default: the v1.0 call
+            job = submit_and_wait(args.base_url, doc_id, rows[doc_id], *lab_arg)
             raw_path.write_text(json.dumps(job, indent=1), encoding="utf-8", newline="\n")
         meta = _meta(job)
+        if args.debug_model and not debug_model_honoured(job, rows[doc_id], args.debug_model):
+            print(f"refused: {doc_id} did not run on --debug-model (is the stack LAB_MODE=1?); "
+                  "no scores computed or recorded")  # fmt: skip
+            return 3
         spent += float(meta.get("cost_usd", 0.0) or 0.0)
         if args.expect_live:  # P5 D-1: no score is computed until every job is known live
             print(
@@ -600,6 +631,8 @@ def main() -> int:
         set_name=args.set,
     )
     summary["raw_dir"] = run_dir.relative_to(RUNS).as_posix()
+    if args.debug_model:  # P9b: only on lab runs, so default history lines keep v1.0's keys
+        summary["debug_model"] = args.debug_model
     print(
         f"\nMEAN {summary['mean_score']:.3f} n={summary['n_docs']} "
         f"all_valid={summary['all_valid']} "
