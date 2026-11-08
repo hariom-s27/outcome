@@ -19,9 +19,11 @@ import email.utils
 import logging
 import os
 import random
+import re
 import socket
 import time
 import uuid
+from collections import Counter
 from collections.abc import Callable
 from dataclasses import dataclass, replace
 from typing import Any
@@ -44,6 +46,22 @@ TRUNCATED_FINISH = frozenset({"length", "max_tokens", "max_output_tokens"})
 
 def is_truncated(finish_reason: str | None) -> bool:
     return (finish_reason or "").lower() in TRUNCATED_FINISH
+
+
+NGRAM = 5  # P6b B-6: a repetition loop repeats one short n-gram over and over
+_TOKEN = re.compile(r"\w+|[^\w\s]")
+
+
+def repetition_share(text: str | None, n: int = NGRAM) -> float:
+    """Occurrences of the most frequent n-gram / tokens (words and punctuation marks).
+    A model stuck in a loop repeats a short fragment until max_tokens: share near 1/period.
+    Ordinary JSON (field names, values, citations) stays far lower: each cell is > 20
+    tokens, so even its structural n-grams recur at most once per cell."""
+    toks = _TOKEN.findall(text or "")
+    if len(toks) < n * 4:
+        return 0.0
+    grams = Counter(tuple(toks[i : i + n]) for i in range(len(toks) - n + 1))
+    return grams.most_common(1)[0][1] / len(toks)
 
 
 def _parse_or_none(text: str | None) -> dict[str, Any] | None:
@@ -104,6 +122,7 @@ class JSONOutcome:
     model_mismatch: bool = False
     salvaged: tuple[str, ...] = ()  # PR-72: members that could not be parsed (dropped)
     finish_reason: str | None = None
+    repetition: float = 0.0  # P6b B-6: repetition_share of the model's answer text
 
 
 @dataclass(frozen=True)
@@ -263,13 +282,21 @@ class LLMClient:
                 )
                 mismatch |= res.model_mismatch
                 if is_truncated(res.finish_reason) and _parse_or_none(res.text) is None:
-                    return JSONOutcome("unusable", reason="llm_truncated", model_mismatch=mismatch)
+                    return JSONOutcome(
+                        "unusable",
+                        reason="llm_truncated",
+                        model_mismatch=mismatch,
+                        finish_reason=res.finish_reason,
+                        repetition=repetition_share(res.text),
+                    )
+            rep_share = repetition_share(res.text)
             try:
                 return JSONOutcome(
                     "ok",
                     data=parse_json_object(res.text),
                     model_mismatch=mismatch,
                     finish_reason=res.finish_reason,
+                    repetition=rep_share,
                 )
             except JSONParseError as exc:
                 parse_error = str(exc)
@@ -282,6 +309,7 @@ class LLMClient:
                         model_mismatch=mismatch,
                         salvaged=tuple(bad),
                         finish_reason=res.finish_reason,
+                        repetition=rep_share,
                     )
             repair = self.catalog.cheapest_text_model()
             rep = self.chat(
@@ -294,10 +322,23 @@ class LLMClient:
             if rep.finish_reason != "length":
                 try:
                     data = parse_json_object(rep.text)
-                    return JSONOutcome("ok", data=data, repaired=True, model_mismatch=mismatch)
+                    return JSONOutcome(
+                        "ok",
+                        data=data,
+                        repaired=True,
+                        model_mismatch=mismatch,
+                        finish_reason=res.finish_reason,
+                        repetition=rep_share,
+                    )
                 except JSONParseError:
                     pass
-            return JSONOutcome("unusable", reason="llm_unusable", model_mismatch=mismatch)
+            return JSONOutcome(
+                "unusable",
+                reason="llm_unusable",
+                model_mismatch=mismatch,
+                finish_reason=res.finish_reason,
+                repetition=rep_share,
+            )
         except LLMStopped as exc:
             return JSONOutcome("stopped", reason=exc.reason, model_mismatch=mismatch)
         except LLMCallFailed as exc:

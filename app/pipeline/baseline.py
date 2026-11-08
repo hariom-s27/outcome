@@ -16,7 +16,8 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from app.contract_check import contract_errors, validator
-from app.llm import CallContext, LLMClient
+from app.llm import CallContext, JSONOutcome, LLMClient
+from app.llm.client import is_truncated
 from app.llm.models import Estimate
 from app.readers import Block
 
@@ -277,6 +278,19 @@ def check_answer(
 
 # --- run ---------------------------------------------------------------------------------------
 
+REPETITION_MAX = 0.10  # P6b B-6: most frequent 5-gram in > 10% of the answer's tokens
+
+
+def output_flags(out: JSONOutcome) -> list[str]:
+    """P6b B-6: metadata reason codes for a cut-off answer (finish_reason = length) and for a
+    repetition loop. Flags only: the answer is still checked and used as before."""
+    flags = []
+    if is_truncated(out.finish_reason):
+        flags.append("truncated_output")
+    if out.repetition > REPETITION_MAX:
+        flags.append("repetition_loop")
+    return flags
+
 
 def extract(
     llm: LLMClient,
@@ -305,6 +319,10 @@ def extract(
     out = llm.complete_json(ctx, model, messages, max_tokens=MAX_TOKENS, kind_chars=kind_chars)
     if out.repaired:
         notes["json_repaired"] = True
+    flags = output_flags(out)
+    if flags:  # P6b B-6: a cut-off or looping answer never passes quietly (no retry: cost)
+        notes["output_flags"] = flags
+        notes["repetition_share"] = round(out.repetition, 4)
     if out.status != "ok":
         return BaselineOutcome(None, out.reason or out.status, notes)
     entries, checks = check_answer(out.data, field_list)
