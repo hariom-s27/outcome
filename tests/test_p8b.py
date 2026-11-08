@@ -350,8 +350,9 @@ def image_pages(messages) -> list[int]:
 def test_switch_defaults_to_first_and_validates():
     assert Settings().scan_page_method == "first"
     assert Settings(scan_page_method="locate").scan_page_method == "locate"
+    assert Settings(scan_page_method="all").scan_page_method == "all"  # P9e Z-53
     with pytest.raises(ValueError):
-        Settings(scan_page_method="all")
+        Settings(scan_page_method="every")
 
 
 def test_switch_from_env(monkeypatch):
