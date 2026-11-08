@@ -9,6 +9,8 @@ cache/
 _freshclone/
 # submission zip built by scripts/make_zip.py
 dist/
+# P9b Z-27: agent scratch / preview files (workspace only, never committed)
+.scratch/
 
 # process files stay on disk for the agent to read but are not committed (replaces D04);
 # logs/ IS committed
