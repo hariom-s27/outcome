@@ -10,16 +10,20 @@ Code then checks the answer: parse -> known keys only -> every key present -> va
 from __future__ import annotations
 
 import base64
+import logging
 import math
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Any
 
 from app.contract_check import contract_errors, validator
 from app.llm import CallContext, JSONOutcome, LLMClient
 from app.llm.client import is_truncated
+from app.llm.jsonparse import salvage_object
 from app.llm.models import Estimate
 from app.readers import Block
+
+log = logging.getLogger("app.pipeline.baseline")
 
 PIPELINE = "baseline-v1"
 MAX_TOKENS = 8192  # output; the wrapper retries once with 2x on finish_reason=length
@@ -299,12 +303,22 @@ def extract(
     blocks: list[Block],
     file_type: str,
     model: str | None = None,
+    robust: bool = False,
 ) -> BaselineOutcome:
+    """robust (P9b E0, E0_ROBUST): single-value lists get per-field salvage and one re-call."""
     model = model or llm.catalog.baseline
     notes: dict[str, Any] = {"pipeline": PIPELINE}
     if not blocks:
         notes["blocks_read"] = 0
         return BaselineOutcome(None, "no_content", notes)
+    has_images = any(b.kind == "image" for b in blocks)
+    if has_images and model != llm.catalog.baseline and not llm.catalog.get(model).vision:
+        # P9b Z-29: a text-only model gets the text blocks; page images are left out (counted).
+        # Nothing but images -> n/a for this model: the skeleton, never a failed job.
+        notes["images_skipped_no_vision"] = sum(1 for b in blocks if b.kind == "image")
+        blocks = [b for b in blocks if b.kind != "image"]
+        if not blocks:
+            return BaselineOutcome(None, "model_no_vision", notes)
     est = llm.catalog.estimate
     messages, cut = build_messages(field_list, blocks, file_type, est=est)
     fitted = fit_to_doc_budget(llm, ctx, model, field_list, blocks, file_type, messages, cut)
@@ -316,7 +330,14 @@ def extract(
     messages, cut = fitted
     kind_chars = cut.pop(KIND_CHARS, None)
     notes.update(cut)
+    if robust and _primary(field_list["fields"]) is None:  # P9b E0: single-value lists only
+        return _extract_robust(llm, ctx, model, field_list, messages, kind_chars, notes)
     out = llm.complete_json(ctx, model, messages, max_tokens=MAX_TOKENS, kind_chars=kind_chars)
+    return _finish(out, field_list, notes)
+
+
+def _finish(out: JSONOutcome, field_list: dict[str, Any], notes: dict[str, Any]) -> BaselineOutcome:
+    """The answer check after the call (v1.0 logic, shared with the E0 path)."""
     if out.repaired:
         notes["json_repaired"] = True
     flags = output_flags(out)
@@ -335,6 +356,81 @@ def extract(
         notes["contract_errors"] = len(errors)
         return BaselineOutcome(None, "llm_unusable", notes)
     return BaselineOutcome(entries, None, notes)
+
+
+# --- P9b E0: robust single-value answers -------------------------------------------------------
+
+_ENTRIES_OPEN = re.compile(r'"entries"\s*:\s*\[\s*(?=\{)')
+RECALL_REASONS = frozenset({"llm_unusable"})  # parse / check failures; not caps, outages, cut-offs
+
+
+def salvage_entries(text: str | None) -> tuple[dict[str, Any] | None, list[str]]:
+    """E0 forgiving parse for the one-entry answer: the client's per-member salvage on the
+    whole object; when that loses the `entries` member, the same salvage on the first entry
+    object itself, so one broken field costs that field only (it comes back null)."""
+    data, bad = salvage_object(text)
+    if isinstance(data, dict) and isinstance(data.get("entries"), list) and data["entries"]:
+        return data, bad
+    m = _ENTRIES_OPEN.search(text or "")
+    if m:
+        inner, inner_bad = salvage_object((text or "")[m.end() :])
+        if inner:
+            return {"entries": [inner]}, [f"entries.{k}" for k in inner_bad]
+    return data, bad
+
+
+def _extract_robust(
+    llm: LLMClient,
+    ctx: CallContext,
+    model: str,
+    field_list: dict[str, Any],
+    messages: list[dict[str, Any]],
+    kind_chars: dict[str, int] | None,
+    notes: dict[str, Any],
+) -> BaselineOutcome:
+    """E0: call with per-field salvage (before the repair call); still unusable -> one fresh
+    extraction call; the first usable result is kept. Metadata `e0` holds counts only."""
+    e0: dict[str, Any] = {"calls": 0, "salvage_used": 0, "fields_salvaged_away": 0}
+    used: list[int] = []
+
+    def salvage(text: str | None) -> tuple[dict[str, Any] | None, list[str]]:
+        data, bad = salvage_entries(text)
+        if data:
+            used.append(len(bad))
+        return data, bad
+
+    result = None
+    for attempt in range(2):
+        call_ctx = ctx if attempt == 0 else replace(ctx, purpose="e0_recall")
+        out = llm.complete_json(
+            call_ctx,
+            model,
+            messages,
+            max_tokens=MAX_TOKENS,
+            kind_chars=kind_chars,
+            salvage_fn=salvage,
+        )
+        e0["calls"] += 1
+        result = _finish(out, field_list, dict(notes))
+        if used:
+            e0["salvage_used"] += 1
+            e0["fields_salvaged_away"] += used[-1]
+            log.info("job %s e0 salvage used attempt=%d fields_lost=%d", ctx.job_id, attempt,
+                     used[-1])  # fmt: skip
+            used.clear()
+        if result.entries is not None:
+            e0["rescued_by"] = (
+                "recall" if attempt else ("salvage" if e0["salvage_used"] else "none_needed")
+            )
+            break
+        e0.setdefault("first_reason", result.reason)
+        if result.reason not in RECALL_REASONS or attempt == 1:
+            e0["rescued_by"] = None
+            break
+        log.info("job %s e0 recall after reason=%s", ctx.job_id, result.reason)
+    assert result is not None
+    result.notes["e0"] = e0
+    return result
 
 
 def fit_to_doc_budget(

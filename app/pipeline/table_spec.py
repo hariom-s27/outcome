@@ -437,6 +437,67 @@ def _zero_meta() -> dict[str, Any]:
     return {"model_calls": 0, "tokens_in": 0, "tokens_out": 0, "cost_usd": 0.0, "latency_ms": 0}
 
 
+E0_MIN_FILL = 0.5  # P9b E0: below this row-level fill the spec is asked for once more
+
+
+def e0_needs_retry(
+    chosen: str | None,
+    cands: dict[str, dict[str, Any]],
+    field_list: dict[str, Any],
+    ai_info: dict[str, Any],
+) -> str | None:
+    """E0: the reason for one more spec call ('low_fill' / 'entries_dropped'), or None. Not
+    when the model was stopped or failed, or the field list has no row-level field."""
+    if ai_info.get("llm_status") in ("stopped", "failed") or not row_level_fields(field_list):
+        return None
+    if ai_info.get("entries_dropped"):
+        return "entries_dropped"
+    if chosen is None or cands[chosen]["filled"] < E0_MIN_FILL:
+        return "low_fill"
+    return None
+
+
+def _e0_retry(
+    llm: LLMClient,
+    ctx: CallContext,
+    model: str,
+    field_list: dict[str, Any],
+    wp: WorkbookProfile,
+    file_type: str,
+    table: dict[str, Any],
+    cands: dict[str, dict[str, Any]],
+    chosen: str | None,
+    ai_info: dict[str, Any],
+) -> str | None:
+    """E0: one fresh spec call; the result with the higher row-level fill is kept (ties keep
+    the first choice). Metadata `e0` holds counts and reason codes only."""
+    why = e0_needs_retry(chosen, cands, field_list, ai_info)
+    if why is None:
+        return chosen
+    before_name = chosen
+    before = cands.get(chosen) if chosen else None
+    r_info: dict[str, Any] = {"calls": 0}
+    r_spec = ask_spec(
+        llm, ctx, model, field_list, wp, file_type, r_info, purpose="table_spec_e0", repairs=0
+    )
+    table["calls"] += r_info.pop("calls")
+    table["retry"] = {"valid": r_spec is not None, **r_info}
+    e0: dict[str, Any] = {"why": why, "fill_before": round(before["filled"], 4) if before else None}
+    log.info("job %s e0 spec retry why=%s", ctx.job_id, why)
+    if r_spec is not None:
+        cands["retry"] = run_candidate(r_spec, wp, field_list)
+        after = select(cands, wp, field_list)
+        fill_after = cands[after]["filled"] if after else -1.0
+        if before is None or fill_after > before["filled"]:
+            chosen = after
+        else:  # keep the first choice (select may have rebuilt the merge)
+            cands[before_name] = before
+        e0["fill_after"] = round(max(fill_after, 0.0), 4)
+    e0["kept"] = "retry_result" if chosen != before_name else "first"
+    table["e0"] = e0
+    return chosen
+
+
 # --- run ---------------------------------------------------------------------------------------
 
 
@@ -448,6 +509,7 @@ def _spec_path(
     file_type: str,
     model: str,
     table: dict[str, Any],
+    robust: bool = False,
 ) -> list[dict[str, Any]] | None:
     ai_info: dict[str, Any] = {"calls": 0}
     ai_spec = ask_spec(llm, ctx, model, field_list, wp, file_type, ai_info)
@@ -456,7 +518,11 @@ def _spec_path(
     cands, info = candidates(field_list, wp, ai_spec)
     table.update(info)
     chosen = select(cands, wp, field_list)
-    if needs_retry(chosen, cands, field_list, ai_info):  # B-5: once, no repair history
+    if robust:  # P9b E0: replaces B-5 (its fill == 0 case is inside fill < 0.5)
+        chosen = _e0_retry(
+            llm, ctx, model, field_list, wp, file_type, table, cands, chosen, ai_info
+        )
+    elif needs_retry(chosen, cands, field_list, ai_info):  # B-5: once, no repair history
         r_info: dict[str, Any] = {"calls": 0}
         r_spec = ask_spec(
             llm, ctx, model, field_list, wp, file_type, r_info,
@@ -491,15 +557,19 @@ def extract(
     blocks: list[Block],
     file_type: str,
     model: str | None = None,
+    robust: bool = False,
 ) -> baseline.BaselineOutcome:
+    """robust (P9b E0, E0_ROBUST): one more spec call on low fill or dropped spec entries."""
     ok, why, wp = applies(field_list, blocks, file_type)
     if not ok or wp is None:  # T-3/T-4: the current path, unchanged
+        if robust:
+            return baseline.extract(llm, ctx, field_list, blocks, file_type, model, robust=True)
         return baseline.extract(llm, ctx, field_list, blocks, file_type, model)
     model = model or llm.catalog.baseline
     table: dict[str, Any] = {"data_lines": wp.data_line_count(), "why": why}
     entries: list[dict[str, Any]] | None = None
     try:
-        entries = _spec_path(llm, ctx, field_list, wp, file_type, model, table)
+        entries = _spec_path(llm, ctx, field_list, wp, file_type, model, table, robust)
     except Exception as exc:  # surfaced (type + code location, no text, R23), then fallback
         tb = exc.__traceback__
         while tb and tb.tb_next:

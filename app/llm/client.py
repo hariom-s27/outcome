@@ -258,10 +258,13 @@ class LLMClient:
         max_tokens: int | None = None,
         kind_chars: dict[str, int] | None = None,
         salvage: bool = False,
+        salvage_fn: Callable[[str | None], tuple[dict[str, Any] | None, list[str]]] | None = None,
     ) -> JSONOutcome:
         """The JSON ladder. Never raises for LLM trouble; the caller maps the outcome.
         salvage=True (PR-72): before the repair call, try the forgiving per-member parse;
-        members that do not parse are listed in `salvaged`, the others are kept."""
+        members that do not parse are listed in `salvaged`, the others are kept.
+        salvage_fn (P9b E0): the caller's own forgiving parse, used the same way (implies
+        salvage); e.g. per field inside a wrapper object."""
         spec = self.catalog.get(model)
         check_messages(messages, spec)
         mismatch = False
@@ -300,8 +303,8 @@ class LLMClient:
                 )
             except JSONParseError as exc:
                 parse_error = str(exc)
-            if salvage:
-                data, bad = salvage_object(res.text)
+            if salvage or salvage_fn is not None:
+                data, bad = (salvage_fn or salvage_object)(res.text)
                 if data:
                     return JSONOutcome(
                         "ok",
