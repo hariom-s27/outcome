@@ -72,6 +72,12 @@ def test_table_path_defaults_to_baseline(compose):
     assert env["EXTRACT_TABLE_PATH"] == "${EXTRACT_TABLE_PATH:-baseline}"
 
 
+def test_scan_page_method_defaults_to_first(compose):
+    # P8b Z-13: shipped = first pages until Z-14 says otherwise
+    env = _env(compose["services"]["worker"])
+    assert env["SCAN_PAGE_METHOD"] == "${SCAN_PAGE_METHOD:-first}"
+
+
 def test_two_worker_replicas_by_default(compose):
     assert compose["services"]["worker"]["deploy"]["replicas"] == 2
 
@@ -83,6 +89,7 @@ def test_settings_from_shipped_env(compose, monkeypatch):
         "LLM_API_KEY",
         "EXTRACT_SINGLE_VALUE_PATH",
         "EXTRACT_TABLE_PATH",
+        "SCAN_PAGE_METHOD",
     ):
         monkeypatch.delenv(var, raising=False)
     for k, v in _resolve_empty_shell(_env(compose["services"]["worker"])).items():
@@ -94,3 +101,4 @@ def test_settings_from_shipped_env(compose, monkeypatch):
     assert llm.api_key == ""
     assert Settings.from_env().single_value_path == "baseline"
     assert Settings.from_env().table_path == "baseline"
+    assert Settings.from_env().scan_page_method == "first"

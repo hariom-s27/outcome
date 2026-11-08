@@ -413,7 +413,8 @@ def test_parameters_sheet_label_value_and_heuristic_doc_fields():
     assert wp.main == "Stock" and wp.sheets["Params"].is_parameters
     assert 'PARAMETERS "Params"' in preview(wp)
     raw = heuristic.build(PARAM_FIELDS, wp)
-    assert raw["doc_fields"]["report_month"] == {"cell": "Params!B1"}
+    # P8b Z-2: a date cell gets a parse (the field's own role here); the value is unchanged
+    assert raw["doc_fields"]["report_month"] == {"cell": "Params!B1", "parse": "date"}
     assert raw["doc_fields"]["depot"] == {"cell": "Stock!B2"}
     spec, errors = validate_spec(raw, PARAM_FIELDS, wp, "heuristic")
     assert errors == []
@@ -844,9 +845,9 @@ def test_merge_needs_the_same_sheet_and_key_column():
     other_key = spec(key_column="B", row_fields={"qty": {"col": "C"}})
     same = spec(record_start="key_nonempty", row_fields={"qty": {"col": "C"}})
     col = spec(record_start="column_nonempty:C", row_fields={"qty": {"col": "C"}})
-    assert table_spec.merge_spec(win, [other_key]) == (None, 0)
-    assert table_spec.merge_spec(win, [col]) == (None, 0)
-    merged, added = table_spec.merge_spec(win, [same])
+    assert table_spec.merge_spec(win, [other_key], wp, FLAT_FIELDS) == (None, 0)
+    assert table_spec.merge_spec(win, [col], wp, FLAT_FIELDS) == (None, 0)
+    merged, added = table_spec.merge_spec(win, [same], wp, FLAT_FIELDS)
     assert added == 1 and set(merged.row_fields) == {"item_name", "qty"}
     assert merged.record_start == win.record_start  # the winner's core is kept
 
@@ -855,7 +856,7 @@ def test_merge_never_overrides_a_winner_entry():
     wp = profile_blocks(blocks_of(LONG))
     win = validate_spec(flat_spec(), FLAT_FIELDS, wp)[0]
     other = validate_spec(flat_spec(row_fields={"qty": {"col": "D"}}), FLAT_FIELDS, wp)[0]
-    assert table_spec.merge_spec(win, [other]) == (None, 0)
+    assert table_spec.merge_spec(win, [other], wp, FLAT_FIELDS) == (None, 0)
 
 
 # --- P6b B-5: fresh retry when the chosen spec is key-only -------------------------------------
