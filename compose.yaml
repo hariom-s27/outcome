@@ -63,6 +63,10 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    # W-1: 2 workers by default (P8a L3: 11.3 -> 23.4 jobs/min, eval/load.jsonl);
+    # `docker compose up -d --scale worker=N` still overrides it.
+    deploy:
+      replicas: 2
     stop_grace_period: 30s
     restart: unless-stopped
 
