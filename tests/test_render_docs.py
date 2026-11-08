@@ -142,3 +142,62 @@ def test_main_check_and_write(tmp_path):
     assert rd.main(args) == 0 and doc.read_bytes() == first
     assert rd.main(["--check", *args]) == 0
     assert b"\r\n" not in first
+
+
+# --- P8b: the sealed final run and the cost-vs-accuracy chart -------------------------------------
+
+FINAL = _hist(
+    "pipe-a,pipe-c",
+    "baseline+table:ai",
+    90,
+    {"doc_x": 0.9, "doc_h": 0.3},
+    final=True,
+    n_dev=1,
+    dev_mean_score=0.9,
+    held_out_per_doc={"doc_h": 0.3},
+    path_per_doc={"doc_x": "table:ai", "doc_h": "baseline"},
+    all_live=True,
+    run_id="abc1234",
+)
+
+
+def test_final_run_is_never_part_of_a_series():
+    series = rd.latest_series([*HISTORY, FINAL])
+    assert all(not r.get("final") for s in series.values() for r in s)
+    assert rd.latest_series([*HISTORY, FINAL]) == rd.latest_series(HISTORY)
+
+
+def test_scores_and_cost_show_the_final_run_with_held_out_apart():
+    text = rd.render_scores([*HISTORY, FINAL], [])
+    assert "| doc_x | DEV | table:ai | 0.900 |" in text
+    assert "| doc_h | held-out, scored once | baseline | 0.300 |" in text
+    assert "DEV mean 0.900 (n = 1 documents, 1 run)" in text and "doc_h 0.300" in text
+    assert "per document** (uncached, mean over 2 documents)" in rd.render_cost([FINAL], [])
+    assert "Shipped default path" in rd.render_scores(HISTORY, [])  # no final: old table
+
+
+def test_chart_points_complete_partial_configs_with_the_p2_baseline():
+    from scripts import plot_cost_accuracy as pca
+
+    hist = [
+        _hist("b", "baseline", None, {"d1": 0.4, "d2": 0.6}, label="P2-36 x", usd_per_doc=0.004),
+        _hist("s", "smart", 1, {"d1": 0.8}, label="P5b run1", usd_per_doc=0.002),
+        _hist("s", "smart", 2, {"d1": 0.6}, label="P5b run2", usd_per_doc=0.002),
+        {**FINAL, "per_doc": {"d1": 1.0, "d2": 0.8, "doc_h": 0.3}, "usd_per_doc": 0.001},
+    ]
+    pts = {p["label"]: p for p in pca.points(hist, {"d1": 0.5})}
+    assert pts["baseline P2"]["score"] == pytest.approx(0.5)
+    p5b = pts["smart P5b"]  # d1 = mean(0.8, 0.6), d2 from the baseline
+    assert p5b["score"] == pytest.approx(0.65) and p5b["usd"] == pytest.approx(0.003)
+    assert pts["hybrid sim P5c"]["usd"] == pytest.approx((0.006 + 0.004) / 2)
+    assert pts["final (shipped)"]["score"] == pytest.approx(0.9)  # held-out never plotted
+
+
+def test_hybrid_means_reads_the_bold_column(tmp_path):
+    from scripts import plot_cost_accuracy as pca
+
+    log = tmp_path / "sim.md"
+    log.write_text(
+        "| doc_001 | 0.1 | 0.2 | 0.3 | **0.2000** | 0.5 |\n| x | y |\n", encoding="utf-8"
+    )
+    assert pca.hybrid_means(log) == {"doc_001": 0.2}
