@@ -46,6 +46,8 @@ computed from verified parts 0.80 · read from a page image 0.70 · null 0.60; t
 **P5 built (not shipped):** a "smart" path for single-value field lists, behind `EXTRACT_SINGLE_VALUE_PATH` (default `baseline`). The model quotes evidence for each field, code checks the quote and normalises the value, and anything unproven becomes null. Scans use locate-then-read.
 **Ship rule (written before the paid runs):** switch only if the 3-doc mean of 3-run means is ≥ old mean + 0.025, and no doc's mean is more than 0.025 below its old score.
 **Numbers:** score = validate.py doc score, 3 live runs per doc, old = P2 outputs. lease_001 0.342 vs 0.700, lease_002 0.700 vs 0.775, om_001 0.908 vs 0.966. Mean 0.650 vs the 0.8385 bar, so the default stays `baseline`. The main cause is that scan answers whose page reference could not be matched were nulled (`loc_unknown`: 25 of 40 lease_001 fields in run 1). $0.0446 for 10 doc-runs (`logs/P5_report.md`).
+**P5b checker fix (not shipped):** the checker now compares meaning, not spelling: a page named in any form (must be a sent page), free text taken from the source span it found, list items checked one by one, numbers and dates parsed (the quoted number wins). Same ship rule, unchanged.
+**Numbers:** 3 new live runs per doc, same definition. lease_001 0.593 (P5 0.342, old 0.700), lease_002 0.708 (0.700, 0.775), om_001 0.920 (0.908, 0.966). Mean 0.740 vs the 0.8385 bar, so the default stays `baseline`. `loc_unknown` is now 0 in every run. What remains is mostly the model returning null and short-text / date values not in their quote. 0 hallucinations, $0.0403 for 9 doc-runs (`logs/P5b_report.md`).
 
 ## Evaluation honesty
 
