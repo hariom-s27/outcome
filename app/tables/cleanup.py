@@ -3,9 +3,11 @@
 Applied to the spec path's final entries (spreadsheets and the PDF grid) after the recipe is
 chosen, so recipe choice and checks are unchanged.
 
-1. placeholder -> null: a non-key text field (text / free_text / code) whose WHOLE cell is a
-   generic placeholder (vacant, vacancy, unoccupied, n/a, none, tbd, a lone dash; any case)
-   becomes null. Only whole cells: "Vacant since May" stays as printed.
+1. placeholder -> null: a non-key field whose WHOLE cell is a generic placeholder (vacant,
+   vacancy, unoccupied, n/a, none, tbd, a lone dash; any case) becomes null, when the field is
+   text-typed (text / free_text / code) or weakly typed (its type comes only from a noun in its
+   description, so the executor keeps a text cell as text; P9c Z-59). Only whole text cells:
+   "Vacant since May" stays as printed, and a number is never touched.
 2. continued section labels: a field filled from the nearest section label (the
    `section_context` rule) loses a trailing "(continued)" / "(cont.)" / "continued", the
    marker a label carries when it is repeated at the top of a new page.
@@ -19,6 +21,7 @@ import re
 from typing import Any
 
 from app.extract.compile_fields import compile_fields
+from app.tables.execute import weak_type
 
 TEXT_TYPES = ("text", "free_text", "code")
 PLACEHOLDERS = frozenset({"vacant", "vacancy", "unoccupied", "n/a", "none", "tbd"})
@@ -49,7 +52,9 @@ def clean_entries(
 ) -> tuple[list[dict[str, Any]], dict[str, int]]:
     """-> (cleaned entries, counts). field_sources: field -> rule kind of the chosen spec."""
     specs = compile_fields(field_list)
-    text_keys = {k for k, fs in specs.items() if not fs.primary and fs.type in TEXT_TYPES}
+    text_keys = {
+        k for k, fs in specs.items() if not fs.primary and (fs.type in TEXT_TYPES or weak_type(fs))
+    }
     section_keys = {k for k, src in field_sources.items() if src == "section_context"}
     counts = {"placeholder_nulls": 0, "section_suffixes": 0}
     out = []
