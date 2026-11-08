@@ -239,11 +239,12 @@ def test_heuristic_adds_a_parse_for_a_labelled_date_range():
     assert execute(spec, wp, fields).entries[0]["week_end"]["value"] == "2031-03-08"
 
 
-def test_spec_prompt_teaches_parse_with_an_invented_example():
+def test_spec_prompt_keeps_the_p6b_wording():
+    # Z-17: the parse explanation was reverted (t12 recipe shifted live); the grammar still
+    # accepts parse, and the heuristic still uses it
     s = table_spec.SYSTEM
-    for word in ('"parse"', "date_start", "date_end", '"number"', '"text"'):
-        assert word in s
-    assert '"count_date": {"cell": "Ledger!A2", "parse": "date_end"}' in s
+    assert "parse" not in s and "date_start" not in s
+    assert '"count_date": null' in s
 
 
 # --- Z-3: merge document-field guard --------------------------------------------------------------

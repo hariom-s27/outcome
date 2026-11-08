@@ -72,8 +72,7 @@ Reply with ONE JSON object, the spec, and nothing else:
  "skip": [any of "total_like", "header_repeat", "blank", "formula_sum_rows", "section_header",
           "no_amount"],
  "row_fields": {"<field key>": <rule>, ...},
- "doc_fields": {"<field key>": {"cell": "<Sheet>!<A1>"} or {"cell": "<Sheet>!<A1>", "parse": \
-"<parse>"} or null, ...}}
+ "doc_fields": {"<field key>": {"cell": "<Sheet>!<A1>"} or null, ...}}
 
 record_start: key_nonempty = a record starts at every line whose key cell is filled;
 key_matches_shape = only where the key cell has the usual shape of the keys (use it when
@@ -101,17 +100,9 @@ Rules for row_fields (one per field):
   "<allowed value>"}}}  only for a field whose description lists its allowed values; map
   every distinct source text you can see
 
-parse (optional) reads a value out of a cell's text, e.g. a title or header cell that says
-"Count week 2 Mar - 8 Mar 2031": "date_start" = the first date of a range, "date_end" = the
-last date, "date" = the one date in the text, "number" / "text" = the cell read as that type.
-Use it on a doc_fields entry, or on a {"col"} / {"pick_by_label"} rule whose cell holds the
-value inside other words or a date range: {"col": "B", "parse": "date_end"}. A date or
-period field whose value sits inside a header or title cell gets {"cell": ..., "parse": ...}.
-
 Example (invented): a parts ledger; a part number in column A starts each block, child lines
 carry a cost type in column C and an amount in column F, a "Part total" line closes each
-block, bins are label-only lines, the warehouse name sits in B1, A2 reads
-"Stock count 1 Mar - 7 Mar 2031" and the field count_date asks for the last day counted:
+block, bins are label-only lines, the warehouse name sits in B1:
 {"sheet": "Ledger", "header_row": 3, "data_first_row": 4, "data_last_row": null,
  "until_blank_run": null, "key_column": "A", "record_start": "key_matches_shape",
  "skip": ["total_like", "header_repeat", "blank", "section_header"],
@@ -124,8 +115,7 @@ block, bins are label-only lines, the warehouse name sits in B1, A2 reads
   "bin": {"section_context": true},
   "cost_class": {"map_distinct": {"from": "section_context",
                                   "map": {"Bin 4 fasteners": "Hardware"}}}},
- "doc_fields": {"warehouse": {"cell": "Ledger!B1"},
-                "count_date": {"cell": "Ledger!A2", "parse": "date_end"}}}
+ "doc_fields": {"warehouse": {"cell": "Ledger!B1"}, "count_date": null}}
 
 Use only sheets, columns, rows and labels you can see in the preview. Every field key goes
 in row_fields or doc_fields (null when the sheet does not hold it). Do not list the
