@@ -213,6 +213,63 @@ Base per doc (mean over 104–106): budget 0.016, rent roll 0.044.
 - Live runs (3 × rentroll_001, syn_rentroll_pdf, syn_rentroll_xlsx, syn_budget_pdf; cap $0.05)
   wait for the restart with `TABLE_CLEANUP=1`.
 
+### Part C live runs 151–153 (TABLE_CLEANUP=1; Z-24 + Z-50 gate)
+
+- Stack: `cache_mode=off, lab_mode=on, e0_robust=on, pdf_table=grid, table_cleanup=on`, code
+  `6126ef4`.
+- Command: `eval_dev.py --set all --docs rentroll_001 syn_rentroll_pdf syn_rentroll_xlsx
+  syn_budget_pdf --expect-live --run-index 151|152|153`.
+- All 12 jobs SUCCESS and VALID, 1 LLM call each, $0.00364 per run. All three runs gave
+  identical scores.
+- Base per doc (approved): grid runs 141–143 for syn_budget_pdf and syn_rentroll_pdf; runs
+  104–106 for rentroll_001 and syn_rentroll_xlsx.
+- compare_runs has no per-doc base selector, so the gate was computed by calling the unchanged
+  `compare_runs.gate()` on that per-doc base (`.scratch/p9c_gate_mixed.py`).
+
+| doc | base score | cand score | halluc before → after (mean/run) | paired halluc before → after |
+|---|---|---|---|---|
+| rentroll_001 | 0.989 | 0.989 | 44.0 → 44.0 | 44.0 → 44.0 (325 rows) |
+| syn_budget_pdf | 0.987 | **1.000** | 0.0 → 0.0 (wrong `section` 8 → 0) | 0.0 → 0.0 (43 rows) |
+| syn_rentroll_pdf | 0.986 | 0.986 | 7.0 → 7.0 | 7.0 → 7.0 (30 rows) |
+| syn_rentroll_xlsx | 1.000 | 1.000 | 0.0 → 0.0 | 0.0 → 0.0 (24 rows) |
+
+| check | result |
+|---|---|
+| mean_gain | **FAIL**: cand 0.9937 vs base 0.9904 (delta +0.0033; +0.025 needed) |
+| no_dev_drop | pass (0) |
+| halluc | pass: paired 51.0 vs 51.0 (total 51.0 vs 51.0) |
+| usd_per_doc | pass ($0.00091) |
+| all_valid / collapses / same_docs | pass |
+
+**VERDICT: FAIL.** Per Z-52: no full-set run, `TABLE_CLEANUP` stays **off** (default unchanged).
+
+**What happened per rule**
+
+- **Rule 2 (continued labels) works.** On syn_budget_pdf, all 8 wrong `section` cells are fixed
+  in every run (0.987 → 1.000).
+- **Rule 1 (placeholders) never fired, because of an implementation gap.** The hallucinated cells
+  are in `resident_name`.
+  - That field compiles to type `integer`: its type comes only from a noun in its description (a
+    weak type).
+  - For weak types, the executor keeps a text cell as text (an existing, documented rule).
+  - The cleanup only considered text-typed fields, so it skipped these cells.
+  - Fix (not made; needs a yes): also apply rule 1 to weak-typed fields whose value is a string
+    (`execute.weak_type`). It's a few lines plus a test.
+- rentroll_001's other 22 hallucinated cells per run are in `balance` (numeric). Neither rule
+  covers them.
+- **The gate cannot pass for this kind of fix.** Even with rule 1 fixed, these near-ceiling docs
+  gain about +0.01 on average (estimate):
+  - syn_rentroll_pdf → ≈ 1.000
+  - rentroll_001 → ≈ +0.004
+  - syn_budget_pdf +0.013
+
+  That is under the +0.025 mean_gain bar.
+- Choices for Hariom:
+  - (a) Keep off.
+  - (b) A gate variant for cleanup-type switches, e.g. no score drop on any doc plus paired
+    hallucinations strictly fewer, instead of +0.025.
+  - (c) Fix rule 1, rerun, and accept the gate result whatever it is.
+
 ## Decision (before Z-50)
 
 - As pre-registered: the full `--set all` must-not-error run was **not** made (Part B step 3 needs
@@ -258,8 +315,10 @@ Base per doc (mean over 104–106): budget 0.016, rent roll 0.044.
 | run 141 | 0.001675 |
 | run 142 | 0.001645 |
 | run 143 | 0.001642 |
-| **P9c total** | **0.004962** (cap $0.15) |
-| lab running total | ≈ 0.405 ($0.40 before P9c, per Z-49; cap $3) |
+| run 144 (full set, grid) | 0.02482 |
+| runs 151–153 (Part C, cleanup) | 0.01092 (cap $0.05) |
+| **P9c total** | **0.04070** (cap $0.15 + Part C $0.05) |
+| lab running total | ≈ 0.441 ($0.40 before P9c, per Z-49; cap $3) |
 
 ## Deviations
 
