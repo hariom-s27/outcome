@@ -20,12 +20,18 @@
     "<field>": {"map_distinct": {"from": "<letter>" | "section_context",
                                  "map": {"<distinct value>": "<allowed value>"}}}
   },
-  "doc_fields": {"<field>": {"cell": "<Sheet>!B2"} | null}
+  "doc_fields": {"<field>": {"cell": "<Sheet>!B2"} | {"cell": "<Sheet>!B2", "parse": "<p>"} | null}
 }
 
 `except_label` (fold "sum" only) sums the block's labelled lines whose label is not listed.
 `map_distinct` is accepted only for a field whose description lists its allowed values
 ("One of: A, B, C"); every mapped value must be one of them.
+`parse` (P8b Z-2) reads a value out of a cell's text through the normaliser: date_start /
+date_end take the first / last date of a range ("Week of <d1> - <d2>"), date uses the field's
+own date role, number / text read the cell as that type. Allowed on doc_fields entries and on
+row rules that read one cell (col with a first/last fold, pick_by_label); the parse must fit
+the field's compiled type (date_* and date: date or month fields; number: numeric fields;
+text: text fields). An unparseable cell gives null, never a guess.
 """
 
 from __future__ import annotations
@@ -34,6 +40,7 @@ import re
 from dataclasses import dataclass, field
 from typing import Any
 
+from app.extract.compile_fields import compile_fields
 from app.tables.profile import WorkbookProfile, split_ref
 
 SPEC_KEYS = frozenset(
@@ -61,6 +68,14 @@ SKIPS = (
 FOLDS = ("first_nonempty", "sum", "last_nonempty")
 DERIVED_OPS = ("count_nonzero", "sum")
 RULES = ("col", "pick_by_label", "section_context", "derived", "map_distinct")
+PARSES = ("date_start", "date_end", "date", "number", "text")
+PARSE_TYPES = {
+    "date_start": ("date", "month"),
+    "date_end": ("date", "month"),
+    "date": ("date", "month"),
+    "number": ("number", "integer", "percent"),
+    "text": ("text", "free_text", "code"),
+}
 _LETTER = re.compile(r"^[A-Z]{1,3}$")
 _ONE_OF = re.compile(r"\bone of\s*:?\s*([^.;]+)", re.IGNORECASE)
 MAX_BLANK_RUN = 50
@@ -80,6 +95,7 @@ class Spec:
     row_fields: dict[str, dict[str, Any]] = field(default_factory=dict)
     doc_fields: dict[str, str | None] = field(default_factory=dict)  # field -> "Sheet!B2"
     source: str = "ai"  # ai | heuristic
+    doc_parse: dict[str, str] = field(default_factory=dict)  # field -> PARSES (Z-2)
 
 
 def allowed_values(description: str) -> list[str]:
@@ -99,8 +115,23 @@ def _int(v: Any) -> bool:
     return isinstance(v, int) and not isinstance(v, bool)
 
 
+def check_parse(where: str, parse: Any, ftype: str | None, errors: list[str]) -> str | None:
+    """Z-2: a parse kind that fits the field's compiled type, else an error (entry dropped)."""
+    if parse not in PARSES:
+        errors.append(f"{where}: parse must be one of {PARSES}")
+        return None
+    if ftype not in PARSE_TYPES[parse]:
+        errors.append(f"{where}: parse {parse} does not fit the field's type")
+        return None
+    return parse
+
+
 def _check_rule(
-    key: str, rule: Any, fields: dict[str, Any], errors: list[str]
+    key: str,
+    rule: Any,
+    fields: dict[str, Any],
+    errors: list[str],
+    ftype: str | None = None,
 ) -> dict[str, Any] | None:
     where = f"row_fields.{key}"
     if not isinstance(rule, dict) or not rule:
@@ -111,8 +142,16 @@ def _check_rule(
         errors.append(f"{where}: needs exactly one of {', '.join(RULES)}")
         return None
     kind = kinds[0]
+    parse = None
+    if "parse" in rule:
+        if kind not in ("col", "pick_by_label") or rule.get("fold") == "sum":
+            errors.append(f"{where}: parse only on col (first/last fold) or pick_by_label")
+            return None
+        parse = check_parse(where, rule["parse"], ftype, errors)
+        if parse is None:
+            return None
     if kind == "col":
-        extra = set(rule) - {"col", "fold", "except_label"}
+        extra = set(rule) - {"col", "fold", "except_label", "parse"}
         if extra:
             errors.append(f"{where}: unknown keys {sorted(extra)}")
             return None
@@ -121,6 +160,8 @@ def _check_rule(
             errors.append(f"{where}: col must be a column letter and fold one of {FOLDS}")
             return None
         out: dict[str, Any] = {"col": rule["col"], "fold": fold}
+        if parse:
+            out["parse"] = parse
         if "except_label" in rule:
             ex = rule["except_label"]
             ok = (
@@ -136,8 +177,8 @@ def _check_rule(
                 return None
             out["except_label"] = {"label_col": ex["label_col"], "labels": list(ex["labels"])}
         return out
-    if len(rule) != 1:
-        errors.append(f"{where}: unknown keys {sorted(set(rule) - {kind})}")
+    if len(rule) != 1 + (parse is not None):
+        errors.append(f"{where}: unknown keys {sorted(set(rule) - {kind, 'parse'})}")
         return None
     body = rule[kind]
     if kind == "section_context":
@@ -157,7 +198,7 @@ def _check_rule(
         if not ok:
             errors.append(f"{where}: pick_by_label needs label_col, label_text, value_col")
             return None
-        return {"pick_by_label": dict(body)}
+        return {"pick_by_label": dict(body), **({"parse": parse} if parse else {})}
     if kind == "derived":
         ok = (
             isinstance(body, dict)
@@ -224,7 +265,7 @@ def salvage_spec(
     if unknown:
         errors.append(f"unknown keys: {sorted(unknown)}")
     key_col = raw.get("key_column")
-    row_fields, doc_fields = _check_entries(raw, field_list, wp, key_col, errors)
+    row_fields, doc_fields, doc_parse = _check_entries(raw, field_list, wp, key_col, errors)
     if core.errors:
         return None, core.errors, errors
     return (
@@ -241,6 +282,7 @@ def salvage_spec(
             row_fields=row_fields,
             doc_fields=doc_fields,
             source=source,
+            doc_parse=doc_parse,
         ),
         [],
         errors,
@@ -297,9 +339,10 @@ def _check_entries(
     wp: WorkbookProfile,
     key_col: Any,
     errors: list[str],
-) -> tuple[dict[str, dict[str, Any]], dict[str, str | None]]:
+) -> tuple[dict[str, dict[str, Any]], dict[str, str | None], dict[str, str]]:
     """Each row_fields / doc_fields entry on its own; bad ones go to `errors` and are left out."""
     fields: dict[str, Any] = field_list.get("fields") or {}
+    types = {k: fs.type for k, fs in compile_fields(field_list).items()}
     primary = next(
         (k for k, v in fields.items() if isinstance(v, dict) and v.get("primary") is True), None
     )
@@ -316,7 +359,7 @@ def _check_entries(
             continue
         if rule is None:
             continue
-        checked = _check_rule(key, rule, fields, errors)
+        checked = _check_rule(key, rule, fields, errors, types.get(key))
         if checked is None:
             continue
         if key == primary and checked.get("col") != key_col:
@@ -324,6 +367,7 @@ def _check_entries(
             continue
         row_fields[key] = checked
     doc_fields: dict[str, str | None] = {}
+    doc_parse: dict[str, str] = {}
     df = raw.get("doc_fields", {})
     if df is None:
         df = {}
@@ -343,14 +387,20 @@ def _check_entries(
         if ref is None:
             doc_fields[key] = None
             continue
-        cell = ref.get("cell") if isinstance(ref, dict) and set(ref) == {"cell"} else None
+        shape_ok = isinstance(ref, dict) and set(ref) in ({"cell"}, {"cell", "parse"})
+        cell = ref.get("cell") if shape_ok else None
         if not isinstance(cell, str) or "!" not in cell:
-            errors.append(f'doc_fields.{key}: {{"cell": "<Sheet>!<A1>"}} or null')
+            errors.append(f'doc_fields.{key}: {{"cell": "<Sheet>!<A1>"[, "parse": ...]}} or null')
             continue
         sh, a1 = cell.rsplit("!", 1)
         sh = sh.strip("'")
         if sh not in wp.sheets or split_ref(a1) is None:
             errors.append(f"doc_fields.{key}: unknown sheet or bad cell reference")
             continue
+        if "parse" in ref:
+            parse = check_parse(f"doc_fields.{key}", ref["parse"], types.get(key), errors)
+            if parse is None:
+                continue
+            doc_parse[key] = parse
         doc_fields[key] = f"{sh}!{a1.strip().upper().replace('$', '')}"
-    return row_fields, doc_fields
+    return row_fields, doc_fields, doc_parse

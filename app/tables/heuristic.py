@@ -9,7 +9,7 @@
 - document-level fields (description says the value is the same for every row / the whole
   document / the report header): label match in a parameters sheet or the header block
   above the table; the value is the cell after the label (or the label cell's own text
-  after a colon)
+  after a colon); a date field whose cell text holds a date or range gets a parse (P8b Z-2)
 - no pick_by_label / map_distinct / derived: those fields stay null
 Output is plain spec JSON, validated by the same grammar as a model's spec.
 """
@@ -22,6 +22,7 @@ from typing import Any
 from rapidfuzz import fuzz
 
 from app.extract.compile_fields import FieldSpec, compile_fields
+from app.extract.normalise import extract_dates
 from app.tables.profile import (
     ColumnProfile,
     Line,
@@ -29,6 +30,7 @@ from app.tables.profile import (
     WorkbookProfile,
     cell_kind,
     letter_index,
+    split_ref,
 )
 
 MATCH_MIN = 75
@@ -168,6 +170,24 @@ def find_doc_cell(fs: FieldSpec, wp: WorkbookProfile) -> str | None:
     return best[1] if best else None
 
 
+def date_parse(fs: FieldSpec, ref: str, wp: WorkbookProfile) -> dict[str, str]:
+    """P8b Z-2: a date field whose label-matched cell text holds a date or a date range gets a
+    parse (start / end role -> date_start / date_end, else date); otherwise nothing."""
+    if fs.type not in ("date", "month"):
+        return {}
+    sheet, a1 = ref.rsplit("!", 1)
+    col, row = split_ref(a1) or ("", 0)
+    sp = wp.sheets.get(sheet)
+    text = sp.cell(col, row) if sp is not None else ""
+    if not text or not extract_dates(text):
+        return {}
+    if fs.date_role == "start":
+        return {"parse": "date_start"}
+    if fs.date_role in ("end", "period_end"):
+        return {"parse": "date_end"}
+    return {"parse": "date"}
+
+
 def build(field_list: dict[str, Any], wp: WorkbookProfile) -> dict[str, Any] | None:
     sp = wp.sheet()
     if sp is None:
@@ -197,7 +217,8 @@ def build(field_list: dict[str, Any], wp: WorkbookProfile) -> dict[str, Any] | N
         used_cols.add(col)
     for key, fs in specs.items():
         if is_doc_level(fs):
-            doc_fields[key] = {"cell": ref} if (ref := find_doc_cell(fs, wp)) is not None else None
+            ref = find_doc_cell(fs, wp)
+            doc_fields[key] = None if ref is None else {"cell": ref, **date_parse(fs, ref, wp)}
     return {
         "sheet": sp.name,
         "header_row": sp.header_row,

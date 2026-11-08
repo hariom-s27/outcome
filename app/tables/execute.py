@@ -309,6 +309,24 @@ def _cite(refs: list[str], texts: list[str]) -> str:
     return " + ".join(parts) + more
 
 
+def parse_text(fs: FieldSpec, text: str, parse: str, hints: DocHints = NO_HINTS) -> Any:
+    """Z-2: a value read out of a cell's text by the normaliser, or None (never a guess).
+    date_start / date_end pick the first / last date of a range (date_end keeps a
+    period_end field's month-end reading); date uses the field's own role."""
+    if parse == "text":
+        return normalise(text, "text")[0]
+    if parse == "number":
+        return normalise(text, fs.type if fs.type in NUMERIC_TYPES else "number", hints=hints)[0]
+    if parse == "date_start":
+        role = "start"
+    elif parse == "date_end":
+        role = "period_end" if fs.date_role == "period_end" else "end"
+    else:
+        role = fs.date_role
+    type_ = fs.type if fs.type in ("date", "month") else "date"
+    return normalise(text, type_, hints=hints, role=role, year_range=fs.year_range)[0]
+
+
 def finish(
     fs: FieldSpec,
     got: Got,
@@ -317,8 +335,11 @@ def finish(
     key_text: str,
     doc: bool = False,
     hints: DocHints = NO_HINTS,
+    parse: str | None = None,
+    strict: bool = False,
 ) -> tuple[dict[str, Any], bool | None]:
-    """-> (field cell without confidence, parsed?) ; parsed None when there was nothing to try."""
+    """-> (field cell without confidence, parsed?) ; parsed None when there was nothing to try.
+    strict (Z-3 merge guard): no weak-type text fallback, only values of the field's type."""
     null = {"value": None, "citation": ""}
     if got.empty:
         if not doc and is_money(fs) and rule_kind in ("col", "pick_by_label"):
@@ -326,6 +347,15 @@ def finish(
                 key_ref]}, None  # fmt: skip
         return null, None
     refs = [r for r in got.refs if r][:MAX_LOCATIONS]
+    if parse and got.number is None:
+        parsed = parse_text(fs, got.text or "", parse, hints)
+        if parsed is None:
+            return null, False
+        return {
+            "value": parsed,
+            "citation": _cite(got.refs, got.texts),
+            "source_locations": refs,
+        }, True
     if got.number is not None:
         v: Any = got.number
         v = int(v) if float(v).is_integer() else round(v, 6)
@@ -352,7 +382,7 @@ def finish(
             year_range=fs.year_range,
         )
         ok = value is not None
-        if value is None and weak_type(fs) and cell_kind(t) == "text":
+        if value is None and not strict and weak_type(fs) and cell_kind(t) == "text":
             value, ok = " ".join(t.split()), True
     if value is None:
         return null, ok
@@ -386,6 +416,7 @@ def doc_cells(
     wp: WorkbookProfile,
     specs: dict[str, FieldSpec],
     hints: DocHints = NO_HINTS,
+    strict: bool = False,
 ) -> dict[str, tuple[dict[str, Any], bool | None]]:
     out = {}
     for key, ref in spec.doc_fields.items():
@@ -396,7 +427,8 @@ def doc_cells(
         col, row = split_ref(a1) or ("", 0)
         t = wp.sheets[sh].cell(col, row) if sh in wp.sheets else ""
         got = Got(text=t, refs=[ref], texts=[t], empty=not t)
-        out[key] = finish(fs, got, "doc", ref, t, doc=True, hints=hints)
+        parse = spec.doc_parse.get(key)
+        out[key] = finish(fs, got, "doc", ref, t, doc=True, hints=hints, parse=parse, strict=strict)
     return out
 
 
@@ -422,7 +454,7 @@ def execute(spec: Spec, wp: WorkbookProfile, field_list: dict[str, Any]) -> Exec
         if key == primary:
             sources[key] = "key"
         elif key in spec.row_fields:
-            sources[key] = next(k for k in spec.row_fields[key] if k != "fold")
+            sources[key] = next(k for k in spec.row_fields[key] if k not in ("fold", "parse"))
         elif key in docs:
             sources[key] = "doc"
         else:
@@ -448,7 +480,10 @@ def execute(spec: Spec, wp: WorkbookProfile, field_list: dict[str, Any]) -> Exec
                 entry[key] = {"value": None, "citation": ""}
                 continue
             kind = sources[key]
-            cell, ok = finish(fs, evaluate(spec, rec, rule), kind, key_ref, rec.key, hints=hints)
+            cell, ok = finish(
+                fs, evaluate(spec, rec, rule), kind, key_ref, rec.key, hints=hints,
+                parse=rule.get("parse"),
+            )  # fmt: skip
             if ok is not None:
                 c = parse.setdefault(key, [0, 0])
                 c[0] += int(ok)

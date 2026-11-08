@@ -11,10 +11,11 @@ and cannot fall into a long repetition loop); otherwise the baseline runs unchan
    record_start, skip) is invalid, and it asks to keep every valid entry unchanged
 3. execute both on every line, run the free checks; hard-failed specs (C1 or C5) are dropped,
    the rest ranked by checks_passed + 2 x filled_fraction (row-level fields with a non-null
-   value)
+   value); ties -> more document fields filled -> the model's spec (P8b Z-3)
 4. field-level merge (B-4): when the specs agree on sheet + key column (+ compatible
    record_start), the winner's entries plus the others' entries for fields the winner leaves
-   unmapped; kept only if its rank >= the best single spec
+   unmapped; a document cell is added only where the winner's value is null and the cell
+   normalises to the field's type (Z-3); chosen by the same rank and tie-breakers
 5. fresh retry (B-5): if the chosen spec fills 0 row-level fields, one fresh spec call (no
    repair history), then 3-4 again
 6. nothing passes -> the baseline once (T-14)
@@ -38,7 +39,7 @@ from app.pipeline import baseline
 from app.readers import Block
 from app.tables import heuristic
 from app.tables.checks import run_checks, spec_score
-from app.tables.execute import Execution, execute
+from app.tables.execute import Execution, date_hints, doc_cells, execute, range_lines
 from app.tables.profile import WorkbookProfile, preview, profile_blocks
 from app.tables.spec import Spec, salvage_spec, validate_spec
 
@@ -71,7 +72,8 @@ Reply with ONE JSON object, the spec, and nothing else:
  "skip": [any of "total_like", "header_repeat", "blank", "formula_sum_rows", "section_header",
           "no_amount"],
  "row_fields": {"<field key>": <rule>, ...},
- "doc_fields": {"<field key>": {"cell": "<Sheet>!<A1>"} or null, ...}}
+ "doc_fields": {"<field key>": {"cell": "<Sheet>!<A1>"} or {"cell": "<Sheet>!<A1>", "parse": \
+"<parse>"} or null, ...}}
 
 record_start: key_nonempty = a record starts at every line whose key cell is filled;
 key_matches_shape = only where the key cell has the usual shape of the keys (use it when
@@ -99,9 +101,17 @@ Rules for row_fields (one per field):
   "<allowed value>"}}}  only for a field whose description lists its allowed values; map
   every distinct source text you can see
 
+parse (optional) reads a value out of a cell's text, e.g. a title or header cell that says
+"Count week 2 Mar - 8 Mar 2031": "date_start" = the first date of a range, "date_end" = the
+last date, "date" = the one date in the text, "number" / "text" = the cell read as that type.
+Use it on a doc_fields entry, or on a {"col"} / {"pick_by_label"} rule whose cell holds the
+value inside other words or a date range: {"col": "B", "parse": "date_end"}. A date or
+period field whose value sits inside a header or title cell gets {"cell": ..., "parse": ...}.
+
 Example (invented): a parts ledger; a part number in column A starts each block, child lines
 carry a cost type in column C and an amount in column F, a "Part total" line closes each
-block, bins are label-only lines, the warehouse name sits in B1:
+block, bins are label-only lines, the warehouse name sits in B1, A2 reads
+"Stock count 1 Mar - 7 Mar 2031" and the field count_date asks for the last day counted:
 {"sheet": "Ledger", "header_row": 3, "data_first_row": 4, "data_last_row": null,
  "until_blank_run": null, "key_column": "A", "record_start": "key_matches_shape",
  "skip": ["total_like", "header_repeat", "blank", "section_header"],
@@ -114,7 +124,8 @@ block, bins are label-only lines, the warehouse name sits in B1:
   "bin": {"section_context": true},
   "cost_class": {"map_distinct": {"from": "section_context",
                                   "map": {"Bin 4 fasteners": "Hardware"}}}},
- "doc_fields": {"warehouse": {"cell": "Ledger!B1"}, "count_date": null}}
+ "doc_fields": {"warehouse": {"cell": "Ledger!B1"},
+                "count_date": {"cell": "Ledger!A2", "parse": "date_end"}}}
 
 Use only sheets, columns, rows and labels you can see in the preview. Every field key goes
 in row_fields or doc_fields (null when the sheet does not hold it). Do not list the
@@ -236,6 +247,16 @@ def rank(checks_passed: int, filled: float) -> float:
     return checks_passed + FILL_WEIGHT * filled
 
 
+def doc_filled(ex: Execution) -> int:
+    """Z-3 tie-breaker: document-cell fields with a non-null value."""
+    first = ex.entries[0] if ex.entries else {}
+    return sum(
+        1
+        for k, src in ex.field_sources.items()
+        if src == "doc" and (first.get(k) or {}).get("value") is not None
+    )
+
+
 def run_candidate(spec: Spec, wp: WorkbookProfile, field_list: dict[str, Any]) -> dict[str, Any]:
     ex = execute(spec, wp, field_list)
     checks = run_checks(ex)
@@ -248,25 +269,27 @@ def run_candidate(spec: Spec, wp: WorkbookProfile, field_list: dict[str, Any]) -
         "score": score,
         "hard_fail": hard,
         "filled": filled,
+        "doc_filled": doc_filled(ex),
         "rank": rank(score, filled),
     }
 
 
-# tie order: a merge that ranks as high as the best single spec is kept (B-4); then the
-# model's first spec, its fresh retry, the heuristic
-PREFER = {"merged": 3, "ai": 2, "retry": 1, "heuristic": 0}
+# Z-3 tie order after the rank: more document fields filled, then the model's first spec,
+# a merge, its fresh retry, the heuristic
+PREFER = {"ai": 3, "merged": 2, "retry": 1, "heuristic": 0}
 KEY_STARTS = ("key_nonempty", "key_matches_shape")
 
 
 def choose(cands: dict[str, dict[str, Any]]) -> str | None:
     """Hard-failed specs (C1 or C5) are dropped; among the rest the highest
-    checks_passed + 2 x filled_fraction wins; ties -> PREFER (merged, ai, retry, heuristic)."""
+    checks_passed + 2 x filled_fraction wins; ties -> more document fields filled (Z-3) ->
+    PREFER (ai, merged, retry, heuristic)."""
     ok = [
-        (round(c["rank"], 9), PREFER.get(name, -1), name)
+        (round(c["rank"], 9), c.get("doc_filled", 0), PREFER.get(name, -1), name)
         for name, c in cands.items()
         if not c["hard_fail"]
     ]
-    return max(ok)[2] if ok else None
+    return max(ok)[-1] if ok else None
 
 
 def compatible(a: Spec, b: Spec) -> bool:
@@ -279,12 +302,24 @@ def compatible(a: Spec, b: Spec) -> bool:
     return a.record_start == b.record_start and a.record_col == b.record_col
 
 
-def merge_spec(winner: Spec, others: list[Spec]) -> tuple[Spec | None, int]:
+def merge_spec(
+    winner: Spec, others: list[Spec], wp: WorkbookProfile, field_list: dict[str, Any]
+) -> tuple[Spec | None, int]:
     """B-4 field-level merge: the winner's core and entries, plus, from each compatible other
-    spec in turn, the entries for fields the winner leaves unmapped (no row rule and no
-    document cell). (None, 0) when nothing would be added."""
+    spec in turn, the row rules for fields the winner leaves unmapped (no row rule and no
+    document cell). Z-3 document cells: another spec's cell is taken only when the winner has
+    no value of the field's type there and the other cell normalises to the field's type; a
+    winner value of the field's type always stays. Both sides are read strictly: a raw-text
+    fallback (weak-typed field) is not a value of the field's type. (None, 0) when nothing
+    would be added."""
+    specs = compile_fields(field_list)
+    hints = date_hints(wp, range_lines(winner, wp))
+    have = {
+        k: c[0].get("value") for k, c in doc_cells(winner, wp, specs, hints, strict=True).items()
+    }
     row = dict(winner.row_fields)
     doc = dict(winner.doc_fields)
+    parse = dict(winner.doc_parse)
     added = 0
     for other in others:
         if not compatible(winner, other):
@@ -294,15 +329,25 @@ def merge_spec(winner: Spec, others: list[Spec]) -> tuple[Spec | None, int]:
                 continue
             row[key] = rule
             doc.pop(key, None)
+            parse.pop(key, None)
             added += 1
         for key, ref in other.doc_fields.items():
-            if ref is None or key in row or doc.get(key) is not None:
+            if ref is None or key in row or have.get(key) is not None:
+                continue
+            p = {key: other.doc_parse[key]} if key in other.doc_parse else {}
+            trial = replace(winner, doc_fields={key: ref}, doc_parse=p)
+            cell = doc_cells(trial, wp, specs, hints, strict=True).get(key, ({}, None))[0]
+            if cell.get("value") is None:  # Z-3: must normalise to the field's type
                 continue
             doc[key] = ref
+            parse.pop(key, None)
+            parse.update(p)
+            have[key] = cell["value"]
             added += 1
     if not added:
         return None, 0
-    return replace(winner, row_fields=row, doc_fields=doc, source="merged"), added
+    merged = replace(winner, row_fields=row, doc_fields=doc, doc_parse=parse, source="merged")
+    return merged, added
 
 
 def select(
@@ -318,7 +363,7 @@ def select(
         for name, c in sorted(cands.items(), key=lambda kv: -kv[1]["rank"])
         if name != best
     ]
-    merged, added = merge_spec(cands[best]["spec"], others)
+    merged, added = merge_spec(cands[best]["spec"], others, wp, field_list)
     if merged is not None:
         cands["merged"] = run_candidate(merged, wp, field_list)
         cands["merged"]["added"] = added
@@ -356,6 +401,7 @@ def summary(cand: dict[str, Any]) -> dict[str, Any]:
         "score": cand["score"],
         "hard_fail": cand["hard_fail"],
         "filled": round(cand["filled"], 4),
+        "doc_filled": cand.get("doc_filled", 0),
         "rank": round(cand["rank"], 4),
         "checks": {k: c.as_dict() for k, c in cand["checks"].items()},
         "rows": len(ex.records),
