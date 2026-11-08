@@ -222,3 +222,172 @@ def test_worker_passes_cleanup_only_when_switched_on(settings, client, monkeypat
     llm.settings = type("L", (), {"max_calls_per_doc": 4})
     assert worker.process_one(s, "w1", llm) is True
     assert len(seen) == 1 and ("cleanup" in seen[0]) is on
+
+
+# --- Z-59: weakly typed fields holding text ----------------------------------------------------
+
+BAY_FIELDS = {
+    "name": "bay_list",
+    "fields": {
+        "bay": {"name": "Bay", "description": "Bay code.", "primary": True},
+        # typed integer only from a noun ("units"): a weak type, text cells stay text
+        "occupant": {
+            "name": "Occupant",
+            "description": "Occupant of the bay; null for empty units.",
+        },
+        "crates": {"name": "Crates", "description": "Crates in the bay, as a number."},
+    },
+}
+BAYS = make_xlsx(
+    {
+        "Bays": [
+            ["Bay", "Occupant", "Crates"],
+            ["BY-1", "Rowe Supply", 4],
+            ["BY-2", "VACANT", 0],
+            ["BY-3", "Unoccupied", 0],
+            ["BY-4", "Vacant from June", 2],
+            ["BY-5", 17, 3],  # a number in the weak column: never touched
+        ]
+    }
+)
+BAY_SPEC = {
+    "sheet": "Bays", "header_row": 1, "data_first_row": 2, "data_last_row": None,
+    "until_blank_run": None, "key_column": "A", "record_start": "key_matches_shape",
+    "skip": ["blank", "total_like", "header_repeat"],
+    "row_fields": {"occupant": {"col": "B"}, "crates": {"col": "C"}}, "doc_fields": {},
+}  # fmt: skip
+
+
+def test_weak_typed_field_is_weak_and_number_field_is_not():
+    from app.extract.compile_fields import compile_fields
+    from app.tables.execute import weak_type
+
+    specs = compile_fields(BAY_FIELDS)
+    assert specs["occupant"].type == "integer" and weak_type(specs["occupant"])
+    assert specs["crates"].type == "number" and not weak_type(specs["crates"])
+
+
+def test_clean_entries_weak_typed_placeholder_text_becomes_null():
+    entries = [
+        {"bay": _cell("BY-2"), "occupant": _cell("VACANT"), "crates": _cell(0)},
+        {"bay": _cell("BY-5"), "occupant": _cell(17), "crates": _cell(3)},
+        {"bay": _cell("BY-4"), "occupant": _cell("Vacant from June"), "crates": _cell(2)},
+    ]
+    sources = {"bay": "key", "occupant": "col", "crates": "col"}
+    out, counts = clean_entries(entries, BAY_FIELDS, sources, 0.6)
+    assert out[0]["occupant"] == {"value": None, "citation": "", "confidence": 0.6}
+    assert out[0]["crates"]["value"] == 0  # a real number is never touched
+    assert out[1]["occupant"]["value"] == 17  # a number in the weak field stays
+    assert out[2]["occupant"]["value"] == "Vacant from June"  # whole cell only
+    assert counts == {"placeholder_nulls": 1, "section_suffixes": 0}
+
+
+def test_strong_numeric_field_is_out_of_scope():
+    entries = [{"bay": _cell("BY-1"), "occupant": _cell("Rowe Supply"), "crates": _cell("none")}]
+    sources = {"bay": "key", "occupant": "col", "crates": "col"}
+    out, counts = clean_entries(entries, BAY_FIELDS, sources, 0.6)
+    assert out[0]["crates"]["value"] == "none" and counts["placeholder_nulls"] == 0
+
+
+def test_row_key_placeholder_is_never_nulled_even_when_weak():
+    fields = {"name": "k", "fields": {
+        "unit": {"name": "Unit", "description": "Unit; null for empty units.", "primary": True},
+        "occupant": BAY_FIELDS["fields"]["occupant"]}}  # fmt: skip
+    entries = [{"unit": _cell("TBD"), "occupant": _cell("TBD")}]
+    out, _counts = clean_entries(entries, fields, {"unit": "key", "occupant": "col"}, 0.6)
+    assert out[0]["unit"]["value"] == "TBD" and out[0]["occupant"]["value"] is None
+
+
+@pytest.mark.parametrize("cleanup", [False, True])
+def test_spreadsheet_path_weak_typed_column(cleanup):
+    out = table_spec.extract(FakeLLM(ok(BAY_SPEC)), CTX, BAY_FIELDS, blocks_of(BAYS), "xlsx",
+                             cleanup=cleanup)  # fmt: skip
+    occ = {e["bay"]["value"]: e["occupant"]["value"] for e in out.entries}
+    crates = {e["bay"]["value"]: e["crates"]["value"] for e in out.entries}
+    assert occ["BY-1"] == "Rowe Supply" and occ["BY-4"] == "Vacant from June"
+    assert occ["BY-5"] == 17 and crates == {"BY-1": 4, "BY-2": 0, "BY-3": 0, "BY-4": 2, "BY-5": 3}
+    if cleanup:
+        assert occ["BY-2"] is None and occ["BY-3"] is None
+        assert out.notes["extraction"]["table"]["cleanup"]["placeholder_nulls"] == 2
+    else:
+        assert occ["BY-2"] == "VACANT" and occ["BY-3"] == "Unoccupied"
+
+
+# --- Z-59 targeted-fix gate (scripts/gate_cleanup.py) ------------------------------------------
+
+
+def _gate_mod():
+    from test_p9a import _load
+
+    return _load("gate_cleanup")
+
+
+def test_targeted_cells_count_placeholder_halluc_and_continued_labels(tmp_path):
+    gc = _gate_mod()
+    schema = {"name": "bins", "fields": {
+        "sku": {"name": "SKU", "description": "Code.", "primary": True},
+        "holder": {"name": "Holder", "description": "Holder name."},
+        "zone": {"name": "Zone", "description": "Zone label."}}}  # fmt: skip
+    truth = {"schema": "bins", "entries": [
+        {"sku": "BX-1", "holder": None, "zone": "North"},
+        {"sku": "BX-2", "holder": "Ann Lee", "zone": "North"},
+        {"sku": "BX-3", "holder": None, "zone": "South"}]}  # fmt: skip
+    (tmp_path / "s.json").write_text(json.dumps(schema), encoding="utf-8")
+    (tmp_path / "t.json").write_text(json.dumps(truth), encoding="utf-8")
+    row = {"schema_name": "bins", "schema_path": str(tmp_path / "s.json"),
+           "truth_path": str(tmp_path / "t.json")}  # fmt: skip
+
+    def c(v):
+        return {"value": v, "citation": "", "confidence": 0.5}
+
+    job = {
+        "result": {
+            "entries": [
+                {
+                    "sku": c("BX-1"),
+                    "holder": c("Vacant"),
+                    "zone": c("North (continued)"),
+                },  # 2 targeted
+                {"sku": c("BX-2"), "holder": c("Vacant"), "zone": c("North")},  # truth not null: no
+                {
+                    "sku": c("BX-3"),
+                    "holder": c("Someone"),
+                    "zone": c("South"),
+                },  # halluc, not placeholder
+                {"sku": c("BX-9"), "holder": c("Vacant"), "zone": c("X (cont.)")},
+            ]
+        }
+    }  # extra row: no
+    assert gc.targeted_cells("bins_t", row, job) == 2
+
+
+def _g(score: float, halluc: float = 0.0, valid: bool = True) -> dict:
+    return {"set": "syn", "n": 3, "score": score, "scores": [score] * 3, "min": score,
+            "halluc": halluc, "missed": 0.0, "rows_pred": 1, "rows_truth": 1, "usd": 0.001,
+            "valid": valid, "cells": None}  # fmt: skip
+
+
+def test_targeted_gate_rules():
+    gc = _gate_mod()
+    docs = gc.DOCS
+    base = {d: _g(0.98, 1.0) for d in docs}
+    t_base = dict.fromkeys(docs, 2.0)
+    good = {d: _g(0.99, 1.0) for d in docs}
+    assert gc.gate(base, good, t_base, dict.fromkeys(docs, 1.0))["verdict"] == "PASS"
+    # (ii) strictly fewer: equal counts fail
+    assert gc.gate(base, good, t_base, t_base)["checks"]["targeted"][0] is False
+    # (i) one doc a hair below its base fails
+    low = {**good, docs[0]: _g(0.979, 1.0)}
+    assert (
+        gc.gate(base, low, t_base, dict.fromkeys(docs, 0.0))["checks"]["no_doc_below"][0] is False
+    )
+    # (iii) more hallucinations fail (totals used when no per-run cell data)
+    worse = {d: _g(0.99, 2.0) for d in docs}
+    assert (
+        gc.gate(base, worse, t_base, dict.fromkeys(docs, 0.0))["checks"]["halluc_paired"][0]
+        is False
+    )
+    assert gc.BASES == {"syn_budget_pdf": ["141", "142", "143"],
+                        "syn_rentroll_pdf": ["141", "142", "143"],
+                        "rentroll_001": ["104", "105", "106"],
+                        "syn_rentroll_xlsx": ["104", "105", "106"]}  # fmt: skip
