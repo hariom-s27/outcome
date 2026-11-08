@@ -217,7 +217,7 @@ _MDY = re.compile(
 _DMY = re.compile(
     r"\b(?P<day>\d{1,2})"
     + _ORD
-    + r"(?:\s+day\s+of)?[\s-]*"
+    + r"(?:\s+(?:day\s+)?of)?[\s-]*"  # "1st day of March" | "1st of March" | "1 March"
     + _MON
     + r"[\s,.-]*(?P<year>\d{4}|\d{2})(?!\d)"
 )
@@ -510,7 +510,7 @@ _HEDGE = re.compile(
 )
 _NUMERAL = re.compile(
     r"(?P<lpar>\()?\s*(?P<cur1>[$€£¥])?\s*(?P<lpar2>\()?\s*(?P<sign>[-+])?\s*(?P<cur2>[$€£¥])?"
-    r"(?P<num>\d+(?:[.,]\d+)*)"
+    r"(?P<num>\d+(?:[.,]\d+)*|(?<![\w.])\.\d+)"  # ".5" is 0.5, never 5
     r"(?:(?P<lscale>mm|bn|[kmb])(?![a-z0-9])|\s?(?P<wscale>thousand|million|billion)\b)?"
     r"(?P<rpar>\))?(?P<tminus>-(?!\d))?(?P<pct>\s?%|\s?percent\b|\s?per\s?cent\b)?"
     r"(?![A-Za-z\d])",
@@ -827,7 +827,7 @@ def norm_list(
     if value is None:
         return None, "empty"
     if isinstance(value, list | tuple):
-        raw = list(value)
+        raw = [v for v in value if not _is_blank(v)]  # blank items are not items (as for str)
     elif isinstance(value, str):
         if not value.strip():
             return [], "ok"
@@ -896,18 +896,25 @@ def match_text(s: str) -> str:
 
 
 def _close(a: float, b: float) -> bool:
-    return abs(a - b) <= max(0.005, 1e-9 * abs(b))
+    """P5b F-6: the scorer's number tolerance (tools/validate.py): max(0.01, 0.5 %)."""
+    return abs(a - b) <= max(0.01, 0.005 * abs(b))
 
 
 def _date_values(
-    quote: str, hints: DocHints = NO_HINTS
+    quote: str, hints: DocHints = NO_HINTS, *, hinted_only: bool = False
 ) -> tuple[set[dt.date], set[tuple[int, int]]]:
+    """Every date / month-year the quote states. An ambiguous numeric date (03/04/2021)
+    counts as both readings, or (hinted_only, P5b F-7) only as the reading the document's
+    date-order hint picks, and as none without a hint."""
     dates: set[dt.date] = set()
     months: set[tuple[int, int]] = set()
     for c in extract_dates(quote, pivot_of(hints)):
         found: list[dt.date] = []
         if c.kind == "date" and c.date:
             found = [c.date]
+        elif c.kind == "amb" and hinted_only:
+            picked = _resolve(c, hints)
+            found = [picked] if picked else []
         elif c.kind == "amb":
             found = list(c.options)  # presence check: either reading may be the one
         elif c.kind == "month" and c.month:
@@ -948,7 +955,7 @@ def round_trip(
             d = dt.date.fromisoformat(str(value))
         except ValueError:
             return False
-        dates, months = _date_values(q, hints)
+        dates, months = _date_values(q, hints, hinted_only=True)  # P5b F-7: parsed compare
         return d in dates or ((d.year, d.month) in months and d == month_end(d.year, d.month))
     if type_ == "month":
         m = re.fullmatch(r"(\d{4})-(\d{2})", str(value))
@@ -979,3 +986,27 @@ def round_trip(
     if v in hay:
         return True
     return len(v) >= 8 and fuzz.partial_ratio(v, hay) >= 90
+
+
+def source_value(
+    value: Any,
+    quote: str,
+    type_: str,
+    *,
+    hints: DocHints = NO_HINTS,
+) -> Any:
+    """P5b G-1: the source wins. For a number that passed round_trip within the scorer
+    tolerance, the number the QUOTE states (the closest one) replaces the model's. Dates match
+    by equality, so the parsed source date is the model's date; other types are unchanged.
+    An integer field keeps the model's value if the quoted number is not whole."""
+    if type_ not in ("number", "integer", "percent"):
+        return value
+    if isinstance(value, bool) or not isinstance(value, int | float):
+        return value
+    near = [n.value for n in all_numbers(quote or "", hints) if _close(n.value, float(value))]
+    if not near:
+        return value
+    best = min(near, key=lambda x: abs(x - float(value)))
+    if type_ == "integer":
+        return int(best) if float(best).is_integer() else value
+    return _as_number(best)

@@ -12,7 +12,9 @@ one entry out. Steps:
     {"q", "loc", "v", "conf"} (+ "parts"/"op" for computed candidates), JSON-object mode (P5-09)
   5 per field, in code: forgiving parse (PR-72), quote found in the cited block (text) or the
     page was sent (vision), value normalised, value in the quote; computed fields from verified
-    parts with whitelisted ops; any failure -> null + reason code (P5-11 … P5-13)
+    parts with whitelisted ops; any failure -> null + reason code (P5-11 … P5-13).
+    P5b compares meaning, not spelling: a page named in any form (F-2); free text = the source
+    span found (F-3); list items one by one (F-4); numbers / dates parsed (F-6, F-7)
   6 lease self-check (P5-14), hand-rule confidence (P5-17), diagnostics in metadata.extraction
   7 the smart path raising, or nothing parsing -> the baseline once -> the skeleton (P5-16)
 
@@ -41,10 +43,11 @@ from app.extract.normalise import (
     add_months,
     month_end,
     norm_number,
+    norm_text,
     normalise,
     vote_date_order,
 )
-from app.extract.verify import find_quote, neighbour_ids, value_in_quote
+from app.extract.verify import find_quote, neighbour_ids, quoted_value, value_in_quote
 from app.llm import CallContext, LLMClient
 from app.llm.models import Estimate, ModelCatalog
 from app.pipeline import baseline
@@ -83,7 +86,20 @@ CONF_MIN, CONF_MAX = 0.05, 0.95
 # reasons that send the document to the baseline once (P5-16)
 FALLBACK_REASONS = frozenset({"llm_unusable", "llm_truncated", "nothing_parsed", "smart_error"})
 
-_PAGE_LABEL = re.compile(r"^\[?\s*page\s+(\d+)\s*\]?$", re.I)
+# P5b F-2: a page named in any common form; the number is the first one after the page word
+# ("Page 3", "[Page 3]", "page 3", "p. 3", "p3", "pg 3", "3", "Page 3 of 25").
+_PAGE_LABEL = re.compile(
+    r"^\[?\s*(?:(?:page|pg|p)\s*\.?\s*)?(\d{1,4})(?:\s+of\s+\d{1,4})?\s*\]?\.?$", re.I
+)
+# loc shapes for diagnostics (P5b F-11): shape names only, never the loc text itself
+_LOC_SHAPES = (
+    ("[Page N]", re.compile(r"^\[\s*page\s*\d+\s*\]$", re.I)),
+    ("Page N of N", re.compile(r"^\[?\s*page\s*\d+\s+of\s+\d+\s*\]?$", re.I)),
+    ("Page N", re.compile(r"^page\s*\d+$", re.I)),
+    ("p. N", re.compile(r"^(?:p|pg)\s*\.\s*\d+$", re.I)),
+    ("pN", re.compile(r"^(?:p|pg)\s*\d+$", re.I)),
+    ("N", re.compile(r"^\[?\s*\d+\s*\]?$")),
+)
 
 # --- prompts -----------------------------------------------------------------------------------
 
@@ -170,8 +186,21 @@ def with_ids(blocks: Sequence[Block]) -> list[Block]:
 
 
 def page_label(loc: Any) -> int | None:
-    m = _PAGE_LABEL.match(str(loc or "").strip())
+    m = _PAGE_LABEL.match(" ".join(str(loc or "").split()))
     return int(m.group(1)) if m else None
+
+
+def loc_shape(loc: Any, block_ids: Any = ()) -> str:
+    """The form of a model loc, for counts only: a shape name, never the loc text."""
+    s = " ".join(str(loc or "").split())
+    if not s:
+        return "empty"
+    if s.strip("[]").strip() in block_ids:
+        return "block_id"
+    for name, rx in _LOC_SHAPES:
+        if rx.match(s):
+            return name
+    return "other"
 
 
 @dataclass
@@ -188,6 +217,7 @@ class DocView:
         self.ids = [b.block_id for b in self.blocks if b.kind != "image"]
         self.text = {i: block_text(b) for i, b in self.by_id.items()}
         self.page_ids: dict[int, list[str]] = {}
+        self.image_pages = {b.page for b in self.blocks if b.kind == "image" and b.page}
         for b in self.blocks:
             if b.kind != "image" and b.page is not None:
                 self.page_ids.setdefault(b.page, []).append(b.block_id)
@@ -404,6 +434,15 @@ def _null(reason: str) -> Checked:
     return Checked(None, "", CONF_NULL, reason, "none")
 
 
+def cited_page(cited: str, doc: DocView) -> int | None:
+    """P5b F-2: the page a loc names, in any form; one image sent and no reference -> that
+    page. Whether the page was sent is the caller's check."""
+    page = page_label(cited)
+    if page is None and not cited and len(doc.sent_pages) == 1:
+        page = next(iter(doc.sent_pages))
+    return page
+
+
 def evidence(q: Any, loc: Any, doc: DocView) -> tuple[Evidence | None, str]:
     """Find the quote where the model says it is. Text: the cited block, then +-2 neighbours;
     a page label on a text page: that page's blocks. Vision: the page must have been sent."""
@@ -418,9 +457,9 @@ def evidence(q: Any, loc: Any, doc: DocView) -> tuple[Evidence | None, str]:
             return None, "quote_not_found"
         src = doc.by_id[m.block_id] if m.relocated and m.block_id else doc.by_id[cited]
         return Evidence(m.span, src.address or src.block_id, src.page, m.kind, m.relocated), "ok"
-    page = page_label(cited)
-    if page is None:
-        return None, "loc_unknown"
+    page = cited_page(cited, doc)
+    if page is None:  # P5b F-2: unreadable reference on a doc with page images -> page_not_sent
+        return None, ("page_not_sent" if doc.sent_pages else "loc_unknown")
     if page in doc.sent_pages:
         return Evidence(quote, f"Page {page}", page, "vision"), "ok"
     ids = doc.page_ids.get(page, [])
@@ -429,7 +468,10 @@ def evidence(q: Any, loc: Any, doc: DocView) -> tuple[Evidence | None, str]:
         if m is not None:
             b = doc.by_id[i]
             return Evidence(m.span, b.address or b.block_id, b.page, m.kind), "ok"
-    return (None, "quote_not_found") if ids else (None, "page_not_sent")
+    if ids:
+        return None, "quote_not_found"
+    # an image page the read call did not carry, vs a page the document does not have
+    return None, ("page_not_sent" if page in doc.image_pages else "loc_unknown")
 
 
 def _pages(evs: Sequence[Evidence], doc: DocView) -> list[int]:
@@ -560,6 +602,8 @@ def check_computed(spec: FieldSpec, raw: dict[str, Any], doc: DocView) -> Checke
         v, _r = normalise(p.get("v"), kind, hints=doc.hints)
         if v is None or not value_in_quote(v, ev.span, kind, hints=doc.hints):
             return _null("part_unverified")
+        if kind != "date":  # P5b G-1: compute from the number the part's quote states
+            v = quoted_value(v, ev.span, kind, hints=doc.hints)
         vals.append(dt.date.fromisoformat(v) if kind == "date" else v)
         evs.append(ev)
     code = _code_value(spec, apply_op(op, vals))
@@ -580,6 +624,90 @@ def check_computed(spec: FieldSpec, raw: dict[str, Any], doc: DocView) -> Checke
     )
 
 
+LIST_ITEM_MIN_CHARS = 4  # P5b F-4: shortest list item the fuzzy step may try
+_TEXT_ITEMS = ("text", "free_text", "code", "list")
+
+
+def list_haystacks(q: Any, loc: Any, doc: DocView) -> list[tuple[str, str, int | None, str]]:
+    """Where list items may be checked (P5b F-4): the cited block and its +-2 neighbours, the
+    blocks of a cited text page, or the model's transcription of a sent page image.
+    Each entry: (citation label, text, page, kind 'text' | 'vision')."""
+    cited = str(loc or "").strip().strip("[]").strip()
+    if cited in doc.by_id:
+        ids = [cited, *neighbour_ids(doc.ids, cited)]
+        return [(doc.by_id[i].address or i, doc.text[i], doc.by_id[i].page, "text") for i in ids]
+    page = cited_page(cited, doc)
+    if page is None:
+        return []
+    if page in doc.sent_pages:
+        quote = " ".join(str(q or "").split())
+        return [(f"Page {page}", quote, page, "vision")] if quote else []
+    return [
+        (doc.by_id[i].address or i, doc.text[i], page, "text") for i in doc.page_ids.get(page, [])
+    ]
+
+
+def _clip(text: str, limit: int = 300) -> str:
+    return text if len(text) <= limit else text[:limit].rsplit(" ", 1)[0]
+
+
+def check_list(spec: FieldSpec, raw: dict[str, Any], items: list[Any], doc: DocView) -> Checked:
+    """P5b F-4: every item on its own (text items: exact, then fuzzy >= 90 and >= 4 chars;
+    number / date items: parsed compare) against the cited block, its neighbours or the scan
+    transcription. Verified items kept in the model's order; null only if none verify."""
+    hays = list_haystacks(raw.get("q"), raw.get("loc"), doc)
+    if not hays:
+        ev, why = evidence(raw.get("q"), raw.get("loc"), doc)
+        return _null(why if ev is None else "list_unverified")
+    item_type = spec.item_type or "text"
+    kept: list[Any] = []
+    cites: dict[tuple[str, str], None] = {}  # ordered set of (label, span)
+    pages: set[int] = set()
+    kinds: set[str] = set()
+    for item in items:
+        for label, text, page, kind in hays:
+            if item_type in _TEXT_ITEMS:
+                m = find_quote(str(item), text, min_chars=LIST_ITEM_MIN_CHARS)
+                if m is None:
+                    continue
+                span, how = (text if kind == "vision" else m.span), m.kind
+            elif value_in_quote(item, text, item_type, hints=doc.hints):
+                span, how = text, "exact"
+                item = quoted_value(item, text, item_type, hints=doc.hints)  # G-1
+            else:
+                continue
+            kept.append(item)
+            cites[(label, _clip(span))] = None
+            kinds.add("vision" if kind == "vision" else how)
+            if page is not None:
+                pages.add(page)
+            break
+    if not kept:
+        return _null("list_unverified")
+    level = "vision" if "vision" in kinds else "fuzzy" if "fuzzy" in kinds else "exact"
+    if len(kept) < len(items):
+        level = "fuzzy" if level == "exact" else level
+    citation = "; ".join(f"[{label}] {span}" for label, span in cites)
+    page_list = sorted(p for p in pages if p >= 1) if doc.file_type == "pdf" else []
+    return Checked(
+        kept,
+        citation,
+        _confidence(level, raw.get("conf")),
+        "ok" if len(kept) == len(items) else "ok_partial",
+        level,
+        page_list,
+    )
+
+
+def free_text_value(model_value: Any, span: str) -> str | None:
+    """P5b F-3: free text is never the model's retyped wording. The model's value located
+    inside the matched source span (find_quote, snapped to words) when it is there; else the
+    whole span. Either way normalised (labels and cross-references trimmed). No round trip."""
+    inner = find_quote(str(model_value), span)
+    value, _why = norm_text(inner.span if inner is not None else span)
+    return value
+
+
 def check_field(spec: FieldSpec, raw: Any, doc: DocView) -> Checked:
     """One field of the model answer -> a checked cell. Never raises on bad model output."""
     if not isinstance(raw, dict):
@@ -589,9 +717,11 @@ def check_field(spec: FieldSpec, raw: Any, doc: DocView) -> Checked:
     v = raw.get("v")
     if v is None or (isinstance(v, str) and v.strip().lower() in ("", "null", "n/a", "none")):
         return _null("model_null")
-    value, _why = _norm(spec, v, doc.hints)
-    if value is None:
-        return _null("type_invalid")
+    value, why = _norm(spec, v, doc.hints)
+    if value is None:  # P5b G-2: an empty list (or only blank items) is the model saying null
+        return _null("model_null" if why == "empty" else "type_invalid")
+    if spec.type == "list" and isinstance(value, list):  # a string was split by norm_list
+        return check_list(spec, raw, value, doc)
     ev, why = evidence(raw.get("q"), raw.get("loc"), doc)
     if spec.type == "boolean" and value is False:  # R25: false needs no quote
         if ev is None:
@@ -599,10 +729,17 @@ def check_field(spec: FieldSpec, raw: Any, doc: DocView) -> Checked:
     elif ev is None:
         return _null(why)
     assert ev is not None
-    if not value_in_quote(
+    if spec.type == "free_text":  # P5b F-3: the value is source text the checker found
+        if ev.kind != "vision":
+            value = free_text_value(value, ev.span)
+            if value is None:
+                return _null("type_invalid")
+    elif not value_in_quote(
         value, ev.span, spec.type, hints=doc.hints, item_type=spec.item_type or "text"
     ):
         return _null("value_not_in_quote")
+    else:  # P5b G-1: the number as the quote states it (source wins over the model's)
+        value = quoted_value(value, ev.span, spec.type, hints=doc.hints)
     level = ev.kind
     return Checked(
         value,
@@ -708,10 +845,27 @@ def check_answer(
     if obj is None:
         return None, {"nothing_parsed": True}
     bad = set(salvaged)
+    answers = [obj.get(k) for k in specs if isinstance(obj.get(k), dict)]
+    if doc.hints.date_order is None:  # P5b F-7: no vote from the text -> vote from the quotes
+        quotes = [str(a.get("q") or "") for a in answers]
+        quotes += [
+            str(p.get("q") or "")
+            for a in answers
+            if isinstance(a.get("parts"), list)
+            for p in a["parts"]
+            if isinstance(p, dict)
+        ]
+        voted = vote_date_order(quotes)
+        if voted:
+            doc.hints = replace(doc.hints, date_order=voted)
     cells: dict[str, Checked] = {}
     for k, s in specs.items():
         cells[k] = _null("parse_failed") if k in bad else check_field(s, obj.get(k), doc)
-    return cells, {"unknown_keys": sum(1 for k in obj if k not in specs)}
+    shapes = Counter(loc_shape(a.get("loc"), doc.by_id) for a in answers if a.get("v") is not None)
+    return cells, {
+        "unknown_keys": sum(1 for k in obj if k not in specs),
+        "loc_shapes": dict(shapes),
+    }
 
 
 def merge_batches(results: list[dict[str, Checked]]) -> tuple[dict[str, Checked], list[str]]:
@@ -923,6 +1077,7 @@ def _extract_smart(
     results: list[dict[str, Checked]] = []
     salvaged_total = 0
     unknown = 0
+    loc_shapes: Counter = Counter()  # P5b F-11: shape names and counts only
     stop_reason = None
     for n, batch in enumerate(batches):
         p = plan if n == 0 else replace(plan, text_blocks=[])  # text once (first batch)
@@ -941,6 +1096,7 @@ def _extract_smart(
             continue
         salvaged_total += len(salvaged)
         unknown += extra.get("unknown_keys", 0)
+        loc_shapes.update(extra.get("loc_shapes", {}))
         results.append(cells)
     notes["images_sent"] = sum(len(b) for b in batches)
     if not results:
@@ -971,6 +1127,7 @@ def _extract_smart(
     notes["fields"] = {k: {"reason": c.reason, "level": c.level} for k, c in cells.items()}
     notes["reason_counts"] = dict(Counter(c.reason for c in cells.values()))
     notes["level_counts"] = dict(Counter(c.level for c in cells.values()))
+    notes["loc_shapes"] = dict(loc_shapes)
     if salvaged_total:
         notes["salvaged_fields"] = salvaged_total
     if unknown:

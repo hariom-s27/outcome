@@ -19,7 +19,7 @@ from typing import Any
 
 from rapidfuzz import fuzz
 
-from app.extract.normalise import NO_HINTS, DocHints, round_trip, unify
+from app.extract.normalise import NO_HINTS, DocHints, round_trip, source_value, unify
 
 FUZZY_MIN_SCORE = 90.0
 FUZZY_MIN_CHARS = 8
@@ -85,7 +85,7 @@ def _exact(q: str, hay: str) -> tuple[int, int] | None:
     return (m.start(), m.end()) if m else None
 
 
-def _match_one(quote: str, text: str) -> QuoteMatch | None:
+def _match_one(quote: str, text: str, min_chars: int = FUZZY_MIN_CHARS) -> QuoteMatch | None:
     q = _norm(quote).strip(_EDGE_PUNCT)
     if not q or not text:
         return None
@@ -108,7 +108,7 @@ def _match_one(quote: str, text: str) -> QuoteMatch | None:
         s, e = idx[spans[0][0]], idx[spans[-1][1] - 1] + 1
         return QuoteMatch(text[s:e], s, e, "exact", 100.0)
     # fuzzy: whole quote, long enough only
-    if len(q) < FUZZY_MIN_CHARS:
+    if len(q) < min_chars:
         return None
     al = fuzz.partial_ratio_alignment(q, hay, score_cutoff=FUZZY_MIN_SCORE)
     if al is None or al.score < FUZZY_MIN_SCORE or al.dest_end <= al.dest_start:
@@ -122,16 +122,19 @@ def find_quote(
     quote: str,
     block_text: str,
     neighbours: Sequence[tuple[str, str]] = (),
+    *,
+    min_chars: int = FUZZY_MIN_CHARS,
 ) -> QuoteMatch | None:
     """Find quote in the cited block; else in neighbours [(block_id, text), ...] (the caller
-    passes the +-2 blocks, nearest first). None when not found anywhere."""
+    passes the +-2 blocks, nearest first). None when not found anywhere. min_chars: shortest
+    quote the fuzzy step may try (list items use 4, P5b F-4)."""
     if not quote or not quote.strip():
         return None
-    hit = _match_one(quote, block_text)
+    hit = _match_one(quote, block_text, min_chars)
     if hit is not None:
         return hit
     for block_id, text in neighbours:
-        hit = _match_one(quote, text)
+        hit = _match_one(quote, text, min_chars)
         if hit is not None:
             return QuoteMatch(hit.span, hit.start, hit.end, hit.kind, hit.score, block_id)
     return None
@@ -160,3 +163,8 @@ def value_in_quote(
     item_type: str = "text",
 ) -> bool:
     return round_trip(value, quote, type_, hints=hints, item_type=item_type)
+
+
+def quoted_value(value: Any, quote: str, type_: str, *, hints: DocHints = NO_HINTS) -> Any:
+    """P5b G-1: after value_in_quote passed, the value as the quote states it (source wins)."""
+    return source_value(value, quote, type_, hints=hints)
