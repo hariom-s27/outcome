@@ -60,6 +60,10 @@ class Settings:
     # "(continued)" off carried section labels). Default on (lab) since Z-60 cleared it (runs
     # 154-157, 161-166); env TABLE_CLEANUP=0 (or false/no/off) turns it off.
     table_cleanup: bool = True
+    # P9g Z-61: table spec answers keep an entry with an unknown extra key (the key ignored,
+    # counted), and the E0 spec retry is told what failed (key names, allowed keys, unfilled
+    # field names). Default off (= the lab path); env SPEC_RETRY_FEEDBACK=1 (or true/yes/on).
+    spec_retry_feedback: bool = False
 
     def __post_init__(self) -> None:
         if self.pdf_table_method not in PDF_TABLE_METHODS:
@@ -111,4 +115,6 @@ class Settings:
             e0_robust=(env.get("E0_ROBUST") or "").strip().lower() not in E0_OFF,
             pdf_table_method=(env.get("PDF_TABLE_METHOD") or "grid").strip().lower(),
             table_cleanup=(env.get("TABLE_CLEANUP") or "").strip().lower() not in E0_OFF,
+            spec_retry_feedback=(env.get("SPEC_RETRY_FEEDBACK") or "").strip().lower()
+            in ("1", "true", "yes", "on"),
         )

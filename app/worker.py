@@ -162,6 +162,8 @@ def process(
     del grid_src
     if settings.table_cleanup and pipeline is table_spec:  # P9c Z-51; off -> no kwarg
         extra["cleanup"] = True
+    if settings.spec_retry_feedback and pipeline is table_spec:  # P9g Z-61; off -> no kwarg
+        extra["feedback"] = True
     # P9e Z-53: SCAN_PAGE_METHOD=all -> a long scan sends every page image (cap 40) on the
     # single-value baseline; first (default) / locate -> no kwarg, as before
     if settings.scan_page_method == "all" and pipeline is baseline and is_single_value(field_list):
@@ -286,7 +288,7 @@ def main() -> None:  # pragma: no cover - container entry point
     log.info(
         "worker %s started (pipeline=%s, single_value_path=%s, table_path=%s, scan_pages=%s, "
         "cache_mode=%s, sv_model=%s, lab_mode=%s, e0_robust=%s, pdf_table=%s, "
-        "table_cleanup=%s)",
+        "table_cleanup=%s, spec_retry_feedback=%s)",
         wid,
         baseline.PIPELINE if llm else "stub",
         settings.single_value_path,
@@ -298,6 +300,7 @@ def main() -> None:  # pragma: no cover - container entry point
         "on" if settings.e0_robust else "off",
         settings.pdf_table_method,
         "on" if settings.table_cleanup else "off",
+        "on" if settings.spec_retry_feedback else "off",
     )
     threading.Thread(target=_sweep_loop, args=(settings, wid), name="sweeper", daemon=True).start()
     backoff = settings.worker_poll_s

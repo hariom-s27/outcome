@@ -70,6 +70,8 @@ services:
       PDF_TABLE_METHOD: ${PDF_TABLE_METHOD:-grid}
       # P9c Z-51/Z-60: table cleanup rules, on (cleared: runs 154-157, 161-166); 0 turns off
       TABLE_CLEANUP: ${TABLE_CLEANUP:-1}
+      # P9g Z-61: lenient spec entry keys + E0 retry feedback; off until its gate (Z-62)
+      SPEC_RETRY_FEEDBACK: ${SPEC_RETRY_FEEDBACK:-0}
     depends_on:
       db:
         condition: service_healthy
