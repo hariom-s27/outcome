@@ -60,6 +60,7 @@ services:
       LLM_API_KEY: ${LLM_API_KEY:-}
       DOCX_PAGE_METHOD: ${DOCX_PAGE_METHOD:-none}
       EXTRACT_SINGLE_VALUE_PATH: ${EXTRACT_SINGLE_VALUE_PATH:-baseline}
+      EXTRACT_TABLE_PATH: ${EXTRACT_TABLE_PATH:-baseline}
     depends_on:
       db:
         condition: service_healthy

@@ -7,6 +7,7 @@ from dataclasses import dataclass
 
 DEFAULT_DATABASE_URL = "postgresql://docextract:docextract@db:5432/docextract"
 SINGLE_VALUE_PATHS = ("baseline", "smart")
+TABLE_PATHS = ("baseline", "spec")
 
 
 @dataclass(frozen=True)
@@ -25,12 +26,19 @@ class Settings:
     # P5-03/P5-04: single-value field lists go to the smart path only when "smart";
     # table field lists always keep the baseline. env EXTRACT_SINGLE_VALUE_PATH.
     single_value_path: str = "baseline"
+    # P6 T-15: table field lists go to the spec path (long XLSX/CSV tables) only when "spec";
+    # default baseline until P6 ships. env EXTRACT_TABLE_PATH.
+    table_path: str = "baseline"
 
     def __post_init__(self) -> None:
         if self.single_value_path not in SINGLE_VALUE_PATHS:
             raise ValueError(
                 f"EXTRACT_SINGLE_VALUE_PATH must be one of {SINGLE_VALUE_PATHS}, "
                 f"got {self.single_value_path!r}"
+            )
+        if self.table_path not in TABLE_PATHS:
+            raise ValueError(
+                f"EXTRACT_TABLE_PATH must be one of {TABLE_PATHS}, got {self.table_path!r}"
             )
         if not 0 < self.heartbeat_s < self.lease_s:
             raise ValueError(
@@ -53,4 +61,5 @@ class Settings:
             worker_poll_s=float(env.get("WORKER_POLL_S") or 1.0),
             version=env.get("APP_VERSION") or "dev",
             single_value_path=(env.get("EXTRACT_SINGLE_VALUE_PATH") or "baseline").strip().lower(),
+            table_path=(env.get("EXTRACT_TABLE_PATH") or "baseline").strip().lower(),
         )

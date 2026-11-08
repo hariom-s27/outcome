@@ -3,6 +3,7 @@
     uv run python scripts/dry_run.py                    # all DEV docs
     uv run python scripts/dry_run.py --docs om_001      # a given list
     uv run python scripts/dry_run.py --path smart       # P5: plan the smart single-value path
+    uv run python scripts/dry_run.py --table-path spec  # P6: plan the long-table spec path
 
 Same steps as the worker before its call: read_document(file_type, bytes) ->
 baseline.build_messages(field_list, blocks, file_type, est=catalog.estimate) -> the fuse's
@@ -30,7 +31,7 @@ from make_outputs import DOCS, ROOT, SCHEMAS, manifest
 
 from app.extract.compile_fields import is_single_value
 from app.llm.models import ModelCatalog
-from app.pipeline import baseline, single_value
+from app.pipeline import baseline, single_value, table_spec
 from app.readers import read_document
 
 HELD_OUT = frozenset({"lease_003", "budget_001"})  # D03
@@ -116,6 +117,52 @@ def dry_run_smart(doc_id: str, row: dict[str, str], catalog: ModelCatalog) -> di
     return rec
 
 
+def dry_run_table(doc_id: str, row: dict[str, str], catalog: ModelCatalog) -> dict[str, Any]:
+    """P6: EXTRACT_TABLE_PATH=spec. Table field lists -> table_spec.plan (path chosen, preview
+    tokens, calls, est. $, the heuristic spec's checks); a doc that keeps the baseline also
+    gets the baseline record. Single-value lists -> the baseline record (path unchanged)."""
+    rec = dry_run_doc(doc_id, row, catalog)
+    try:
+        path = DOCS / row["file"]
+        file_type = path.suffix.lower().lstrip(".")
+        field_list = json.loads((SCHEMAS / f"{row['schema_name']}.json").read_text("utf-8"))
+        if is_single_value(field_list):
+            rec["table"] = {"path": "baseline", "why": "single_value"}
+            return rec
+        dm = read_document(file_type, path.read_bytes())
+        plan = table_spec.plan(field_list, dm.blocks, file_type, catalog)
+        rec["table"] = plan
+        if plan["path"] == "table_spec":
+            rec["ok"] = plan["est_tokens_in"] < TOKEN_LIMIT
+            if not rec["ok"]:
+                rec["error"] = f"estimate {plan['est_tokens_in']} >= {TOKEN_LIMIT}"
+    except Exception as exc:  # recorded and fails the gate; the type only (no content, R23)
+        rec["ok"] = False
+        rec["error"] = f"{type(exc).__name__}"
+        rec["detail"] = str(exc)[:300]  # cache file only, never printed
+    return rec
+
+
+def fmt_table(r: dict[str, Any]) -> str:
+    t = r.get("table") or {}
+    if not t:
+        return f"{r['doc']:14s} FAIL {r.get('error')}"
+    head = f"{r['doc']:14s} {'ok  ' if r['ok'] else 'FAIL'} path={t.get('path')} why={t.get('why')}"
+    if t.get("path") != "table_spec":
+        return (
+            f"{head} data_lines={t.get('data_lines', '-')} baseline_est_tokens="
+            f"{r.get('fuse_tokens_est', '-')}" + (f" error={r['error']}" if r.get("error") else "")
+        )
+    h = t.get("heuristic") or {}
+    return (
+        f"{head} data_lines={t['data_lines']} preview_tokens={t['est_tokens_in']} "
+        f"calls={t['calls_planned']} (max {t['calls_max']}) est$={t['est_usd_realistic']:.4f} "
+        f"(fuse {t['est_usd_fuse']:.4f}) heuristic_score={h.get('score', '-')} "
+        f"heuristic_hard_fail={h.get('hard_fail', '-')} rows={h.get('rows', '-')}"
+        + (f" error={r['error']}" if r.get("error") else "")
+    )
+
+
 def fmt_smart(r: dict[str, Any]) -> str:
     calls = r.get("calls") or []
     if not calls:
@@ -133,7 +180,9 @@ def fmt_smart(r: dict[str, Any]) -> str:
     )
 
 
-def run(docs: list[str] | None = None, path: str = "baseline") -> tuple[bool, list[dict[str, Any]]]:
+def run(
+    docs: list[str] | None = None, path: str = "baseline", table_path: str = "baseline"
+) -> tuple[bool, list[dict[str, Any]]]:
     rows = manifest()
     docs = docs or [d for d in rows if d not in HELD_OUT]
     sealed = [d for d in docs if d in HELD_OUT]
@@ -144,6 +193,8 @@ def run(docs: list[str] | None = None, path: str = "baseline") -> tuple[bool, li
         return False, [{"doc": d, "ok": False, "error": "unknown doc id"} for d in unknown]
     catalog = ModelCatalog.load()
     one = dry_run_smart if path == "smart" else dry_run_doc
+    if table_path == "spec":
+        one = dry_run_table
     records = [one(d, rows[d], catalog) for d in docs]
     return all(r["ok"] for r in records), records
 
@@ -168,10 +219,21 @@ def main(argv: list[str] | None = None) -> int:
         default="baseline",
         help="EXTRACT_SINGLE_VALUE_PATH to plan for (P5)",
     )
+    ap.add_argument(
+        "--table-path",
+        choices=["baseline", "spec"],
+        default="baseline",
+        help="EXTRACT_TABLE_PATH to plan for (P6)",
+    )
     args = ap.parse_args(argv)
-    ok, records = run(args.docs, args.path)
+    if args.path == "smart" and args.table_path == "spec":
+        ap.error("plan one switch at a time: --path smart or --table-path spec")
+    ok, records = run(args.docs, args.path, args.table_path)
     for r in records:
-        print(fmt_smart(r) if args.path == "smart" else fmt(r))
+        if args.table_path == "spec":
+            print(fmt_table(r))
+        else:
+            print(fmt_smart(r) if args.path == "smart" else fmt(r))
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     stamp = dt.datetime.now(dt.UTC).strftime("%Y%m%dT%H%M%SZ")
     (OUT_DIR / f"{stamp}.json").write_text(json.dumps(records, indent=1), encoding="utf-8")

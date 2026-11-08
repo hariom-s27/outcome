@@ -161,9 +161,14 @@ def replays(job: dict) -> int:
 
 
 def doc_path(job: dict) -> str:
-    """'smart' when the single-value smart path ran (even if it fell back), else 'baseline'."""
+    """'smart' when the single-value smart path ran (even if it fell back); P6: 'table:<ai|
+    heuristic|fallback>' when the long-table spec path ran; else 'baseline'."""
     ext = _meta(job).get("extraction")
-    return "smart" if isinstance(ext, dict) and ext.get("path") == "smart" else "baseline"
+    if isinstance(ext, dict) and ext.get("path") == "smart":
+        return "smart"
+    if isinstance(ext, dict) and ext.get("path") == "table":
+        return f"table:{(ext.get('table') or {}).get('chosen', '?')}"
+    return "baseline"
 
 
 # --- running ------------------------------------------------------------------------------------
