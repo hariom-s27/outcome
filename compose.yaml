@@ -64,8 +64,11 @@ services:
       SCAN_PAGE_METHOD: ${SCAN_PAGE_METHOD:-first}
       # P9b Z-35: robust parsing on (gate passed, runs 105-106); 0 turns it off
       E0_ROBUST: ${E0_ROBUST:-1}
-      # P9c Z-42: PDF tables; single = v1.0, grid = line grid -> spec path (lab only so far)
-      PDF_TABLE_METHOD: ${PDF_TABLE_METHOD:-single}
+      # P9c Z-42: PDF tables; grid = line grid -> spec path (gate passed: runs 141-143 with
+      # Z-50, full set run 144); single = the v1.0 call
+      PDF_TABLE_METHOD: ${PDF_TABLE_METHOD:-grid}
+      # P9c Z-51: table cleanup rules, off until their gate passes; 1 turns them on
+      TABLE_CLEANUP: ${TABLE_CLEANUP:-0}
     depends_on:
       db:
         condition: service_healthy
