@@ -37,6 +37,12 @@ terminal, so there is no shared volume between api and worker. Workers scale wit
 **Winners:** Haiku 5.5 for scans, locate-then-read for page choice, and one call for all fields. A difference of ≤ 0.025 counts as noise. Cost is counted as max(reported, computed), because one gateway reported $0.
 **Numbers:** Haiku locate-then-read 0.825 at $0.0057 vs Gemini 3.8 Flash 0.825 at $0.127. The noise spread is 0.017 on om_001 and 0.025 on lease_002 (n = 4 each). Field groups cost 2.3× for ±0.025. rentroll_001 returns 2–3 of 325 rows, so table documents need chunking.
 
+**Confidence (P5-17, placeholder until P7 calibrates it):** a hand rule over how each value was
+verified, not the model's own number. Exact quote with the value in it 0.90 · fuzzy quote 0.75 ·
+computed from verified parts 0.80 · read from a page image 0.70 · null 0.60; the model saying
+"low" −0.15; a lease expiration that disagrees with commencement + term −0.20; clipped to
+[0.05, 0.95]. Not yet measured against accuracy.
+
 ## Evaluation honesty
 
 Sample set split (D03): 6 development documents, 2 held out (one lease, and the only document
