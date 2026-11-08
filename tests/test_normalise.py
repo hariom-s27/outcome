@@ -316,4 +316,6 @@ def test_neighbour_ids_nearest_first():
 
 def test_value_in_quote_pass_and_fail():
     assert value_in_quote(12345, "containing 12,345 rentable square feet", "number")
-    assert not value_in_quote(12354, "containing 12,345 rentable square feet", "number")
+    # P5b F-6: scorer tolerance max(0.01, 0.5 %): 12,354 is within it, 12,445 is not
+    assert value_in_quote(12354, "containing 12,345 rentable square feet", "number")
+    assert not value_in_quote(12445, "containing 12,345 rentable square feet", "number")
