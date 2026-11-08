@@ -209,7 +209,8 @@ def doc_path(job: dict) -> str:
     if isinstance(ext, dict) and ext.get("path") == "smart":
         return "smart"
     if isinstance(ext, dict) and ext.get("path") == "table":
-        return f"table:{(ext.get('table') or {}).get('chosen', '?')}"
+        prefix = "grid" if ext.get("method") == "grid" else "table"  # P9c PDF_TABLE_METHOD
+        return f"{prefix}:{(ext.get('table') or {}).get('chosen', '?')}"
     return "baseline"
 
 
