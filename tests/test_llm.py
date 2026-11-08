@@ -964,6 +964,32 @@ def test_pr75_never_more_than_one_retry(make_client, ctx):
     assert len(fake.requests) == 2
 
 
+def test_p6b_outcome_carries_finish_reason_and_repetition(make_client, ctx):
+    loop = '{"widget_count": 3, "note": "' + "ab " * 400 + '"}'  # invented runaway answer
+    fake = FakeLLM(j(ok_body(loop, finish="length")))
+    out = make_client(fake).complete_json(ctx, HAIKU, MSGS)
+    assert out.status == "ok" and out.finish_reason == "length" and out.repetition > 0.9
+    clean = make_client(FakeLLM(j(ok_body()))).complete_json(ctx, HAIKU, MSGS)
+    assert clean.finish_reason == "stop" and clean.repetition == 0.0
+
+
+def test_p6b_repetition_share_loops_versus_ordinary_json():
+    from app.llm.client import repetition_share
+
+    assert repetition_share("") == 0.0
+    assert repetition_share("x " * 2000) > 0.99  # one token repeated
+    assert repetition_share('{"a": "' + "1, 2, " * 500 + '"}') > 0.15  # short fragment loop
+    cell = (
+        '"{k}": {{"value": "Gadget {i}", "citation": "[Sheet!B{i}] Gadget {i}", "confidence": 0.9}}'
+    )
+    rows = [
+        "{" + ", ".join(cell.format(k=k, i=i) for k in ("part", "label", "qty", "bin")) + "}"
+        for i in range(300)
+    ]
+    ordinary = '{"entries": [' + ", ".join(rows) + "]}"  # invented, well-formed table answer
+    assert repetition_share(ordinary) < 0.10
+
+
 def test_max_tokens_sizing_from_config(catalog):
     out = catalog.output
     assert out.max_tokens(0) == out.base

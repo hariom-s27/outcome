@@ -8,6 +8,7 @@ from __future__ import annotations
 import io
 import re
 import zipfile
+from dataclasses import replace
 from types import SimpleNamespace
 from typing import Any
 
@@ -27,7 +28,7 @@ from app.tables import heuristic
 from app.tables.checks import run_checks, spec_score
 from app.tables.execute import execute
 from app.tables.profile import cell_kind, preview, profile_blocks, shape, to_number
-from app.tables.spec import allowed_values, validate_spec
+from app.tables.spec import allowed_values, salvage_spec, validate_spec
 
 HAIKU = "anthropic/claude-haiku-5.5"
 CTX = CallContext(job_id=None, deadline=4_000_000_000.0)
@@ -566,7 +567,9 @@ def test_pipeline_invalid_spec_then_repaired():
     table = out.notes["extraction"]["table"]
     assert table["calls"] == 2 and table["ai_spec"]["repaired"] is True
     assert table["chosen"] == "ai"
-    assert "validator rejected" in fake.calls[1][1][-1]["content"]
+    repair = fake.calls[1][1][-1]["content"]
+    assert "validator rejected" in repair and "Keep every valid entry" in repair
+    assert fake.calls[1][0] == "table_spec_repair"
 
 
 def test_pipeline_garbage_spec_heuristic_wins():
@@ -662,11 +665,20 @@ def test_filled_fraction_ignores_primary_and_doc_level_fields():
     assert table_spec.filled_fraction(entries, ["item_name", "qty", "unit_price"]) == 2 / 3
 
 
-def test_short_table_keeps_the_current_path():
+def test_short_table_takes_the_spec_path():  # P6b B-2: no length threshold
     short = blocks_of(make_xlsx({"Stock": flat_rows(20)}))
-    a = table_spec.extract(FakeLLM(baseline_answer()), CTX, FLAT_FIELDS, short, "xlsx")
-    b = baseline.extract(FakeLLM(baseline_answer()), CTX, FLAT_FIELDS, short, "xlsx")
-    assert a.entries == b.entries and a.notes == b.notes and "extraction" not in a.notes
+    fake = FakeLLM(ok(flat_spec()))
+    out = table_spec.extract(fake, CTX, FLAT_FIELDS, short, "xlsx")
+    table = out.notes["extraction"]["table"]
+    assert table["why"] == "table" and table["chosen"] == "ai" and table["rows"] == 20
+    assert [c[0] for c in fake.calls] == ["table_spec"]  # the model never types the rows
+    assert len(out.entries) == 20 and contract_ok(out.entries, FLAT_FIELDS)
+
+
+def test_sheet_without_data_lines_keeps_the_current_path():
+    empty = blocks_of(make_xlsx({"Stock": [["SKU", "Item Name"]]}))
+    ok_, why, _wp = table_spec.applies(FLAT_FIELDS, empty, "xlsx")
+    assert not ok_ and why == "no_table"
 
 
 def test_pdf_keeps_the_current_path():
@@ -720,15 +732,187 @@ def test_plan_reports_path_tokens_and_cost():
 
     cat = ModelCatalog.load()
     rec = table_spec.plan(FLAT_FIELDS, blocks_of(LONG), "xlsx", cat)
-    assert rec["path"] == "table_spec" and rec["calls_planned"] == 1 and rec["calls_max"] == 2
+    # 1 spec call; at most 1 repair (broken core) + 1 fresh retry (key-only winner)
+    assert rec["path"] == "table_spec" and rec["calls_planned"] == 1 and rec["calls_max"] == 3
     assert 0 < rec["est_usd_realistic"] <= rec["est_usd_fuse"] < 0.08
     short = table_spec.plan(
         FLAT_FIELDS, blocks_of(make_xlsx({"Stock": flat_rows(20)})), "xlsx", cat
     )
-    assert short == {"why": "short_table", "data_lines": 21, "path": "baseline"}
+    assert short["path"] == "table_spec" and short["why"] == "table"
+    pdf = [Block("paragraph", "Page 1", "WX-1 widget line", page=1)]
+    assert table_spec.plan(FLAT_FIELDS, pdf, "pdf", cat)["path"] == "baseline"
 
 
 def test_metadata_carries_no_cell_text():
     out = table_spec.extract(FakeLLM(ok(flat_spec())), CTX, FLAT_FIELDS, blocks_of(LONG), "xlsx")
     text = str(out.notes)
     assert "Widget" not in text and "North Widget Yard" not in text and "WX-1" not in text
+
+
+# --- P6b B-3: per-entry salvage ------------------------------------------------------------------
+
+
+def test_salvage_drops_bad_entries_and_keeps_the_rest():
+    wp = profile_blocks(blocks_of(LONG))
+    raw = flat_spec(
+        extra=1,
+        row_fields={"item_name": {"col": "B"}, "qty": {"col": "C", "scale": 2},
+                    "unit_price": {"col": "D"}, "ghost": {"col": "E"}},
+        doc_fields={"depot": {"cell": "Nowhere!B2"}},
+    )  # fmt: skip
+    spec, core, dropped = salvage_spec(raw, FLAT_FIELDS, wp)
+    assert core == [] and spec is not None
+    assert set(spec.row_fields) == {"item_name", "unit_price"} and spec.doc_fields == {}
+    assert len(dropped) == 4  # unknown top key, bad rule, unknown field, bad cell
+    assert validate_spec(raw, FLAT_FIELDS, wp)[0] is None  # the strict check still refuses
+
+
+def test_salvage_broken_core_gives_no_spec():
+    wp = profile_blocks(blocks_of(LONG))
+    spec, core, dropped = salvage_spec(flat_spec(sheet="Nope", key_column="1"), FLAT_FIELDS, wp)
+    assert spec is None and len(core) == 2 and dropped == []
+
+
+def test_pipeline_bad_entry_is_dropped_without_a_repair_call():
+    raw = flat_spec(
+        extra=1, row_fields={"item_name": {"col": "B"}, "qty": {"col": "C", "scale": 2},
+                             "unit_price": {"col": "D"}})  # fmt: skip
+    fake = FakeLLM(ok(raw))
+    out = table_spec.extract(fake, CTX, FLAT_FIELDS, blocks_of(LONG), "xlsx")
+    table = out.notes["extraction"]["table"]
+    assert [c[0] for c in fake.calls] == ["table_spec"]
+    assert table["ai_spec"]["valid"] is True and table["ai_spec"]["entries_dropped"] == 2
+    assert table["ai_spec"]["repaired"] is False
+    # the salvaged AI spec keeps 2 of 3 row fields (qty dropped), not key-only, no retry
+    assert round(table["candidates"]["ai"]["filled"], 4) == 0.6667 and "retry" not in table
+    # the heuristic maps all 3 here and outranks it
+    assert table["chosen"] == "heuristic"
+    assert all(e["qty"]["value"] is not None for e in out.entries)
+
+
+def test_repair_prompt_lists_only_core_errors():
+    raw = flat_spec(sheet="Nope", row_fields={"item_name": {"col": "B"}, "ghost": {"col": "E"}})
+    fake = FakeLLM(ok(raw), ok(flat_spec()))
+    table_spec.extract(fake, CTX, FLAT_FIELDS, blocks_of(LONG), "xlsx")
+    repair = fake.calls[1][1][-1]["content"]
+    assert "sheet:" in repair and "ghost" not in repair
+
+
+# --- P6b B-4: field-level merge ------------------------------------------------------------------
+
+
+def renamed(rows: list[list], header: list[str]) -> list[list]:
+    """Replace the header line of flat_rows (third line) with invented header texts."""
+    return rows[:2] + [header] + rows[3:]
+
+
+def test_merge_fills_fields_the_winner_left_unmapped():
+    # the heuristic cannot match "Label" to Item Name; the AI maps item_name + qty only
+    data = make_xlsx({"Stock": renamed(flat_rows(70), ["SKU", "Label", "Qty", "Unit Price"])})
+    h_raw = heuristic.build(FLAT_FIELDS, profile_blocks(blocks_of(data)))
+    assert "item_name" not in h_raw["row_fields"] and "unit_price" in h_raw["row_fields"]
+    ai = flat_spec(row_fields={"item_name": {"col": "B"}, "qty": {"col": "C"}})
+    out = table_spec.extract(FakeLLM(ok(ai)), CTX, FLAT_FIELDS, blocks_of(data), "xlsx")
+    table = out.notes["extraction"]["table"]
+    cand = table["candidates"]
+    assert table["chosen"] == "merged" and cand["merged"]["base"] == "ai"
+    assert cand["merged"]["filled"] == 1.0 and cand["merged"]["rank"] >= cand["ai"]["rank"]
+    assert all(e["unit_price"]["value"] is not None for e in out.entries)
+    assert contract_ok(out.entries, FLAT_FIELDS)
+
+
+def test_merge_that_breaks_c3_is_not_chosen():
+    rows = flat_rows(70)
+    rows[-1] = [None, "Total", rows[-1][2], 1.0]  # the price total does not add up
+    data = make_xlsx({"Stock": renamed(rows, ["SKU", "Label", "Qty", "Unit Price"])})
+    ai = flat_spec(row_fields={"item_name": {"col": "B"}, "qty": {"col": "C"}})
+    out = table_spec.extract(FakeLLM(ok(ai)), CTX, FLAT_FIELDS, blocks_of(data), "xlsx")
+    table = out.notes["extraction"]["table"]
+    cand = table["candidates"]
+    assert cand["ai"]["checks"]["C3"]["passed"] is True
+    assert cand["merged"]["checks"]["C3"]["passed"] is False
+    assert cand["merged"]["rank"] < cand["ai"]["rank"] and table["chosen"] == "ai"
+
+
+def test_merge_needs_the_same_sheet_and_key_column():
+    wp = profile_blocks(blocks_of(LONG))
+
+    def spec(**over):
+        return validate_spec(flat_spec(**over), FLAT_FIELDS, wp)[0]
+
+    win = spec(row_fields={"item_name": {"col": "B"}})
+    other_key = spec(key_column="B", row_fields={"qty": {"col": "C"}})
+    same = spec(record_start="key_nonempty", row_fields={"qty": {"col": "C"}})
+    col = spec(record_start="column_nonempty:C", row_fields={"qty": {"col": "C"}})
+    assert table_spec.merge_spec(win, [other_key]) == (None, 0)
+    assert table_spec.merge_spec(win, [col]) == (None, 0)
+    merged, added = table_spec.merge_spec(win, [same])
+    assert added == 1 and set(merged.row_fields) == {"item_name", "qty"}
+    assert merged.record_start == win.record_start  # the winner's core is kept
+
+
+def test_merge_never_overrides_a_winner_entry():
+    wp = profile_blocks(blocks_of(LONG))
+    win = validate_spec(flat_spec(), FLAT_FIELDS, wp)[0]
+    other = validate_spec(flat_spec(row_fields={"qty": {"col": "D"}}), FLAT_FIELDS, wp)[0]
+    assert table_spec.merge_spec(win, [other]) == (None, 0)
+
+
+# --- P6b B-5: fresh retry when the chosen spec is key-only -------------------------------------
+
+NO_MATCH = ["Code", "Label", "Count", "Each"]  # invented headers the heuristic cannot match
+
+
+def test_key_only_winner_gets_one_fresh_retry():
+    data = make_xlsx({"Stock": renamed(flat_rows(70), NO_MATCH)})
+    fake = FakeLLM(ok(flat_spec(row_fields={})), ok(flat_spec()))
+    out = table_spec.extract(fake, CTX, FLAT_FIELDS, blocks_of(data), "xlsx")
+    table = out.notes["extraction"]["table"]
+    assert [c[0] for c in fake.calls] == ["table_spec", "table_spec_retry"]
+    assert len(fake.calls[1][1]) == 2  # fresh: system + user, no repair history
+    assert table["calls"] == 2 and table["retry"]["valid"] is True
+    assert table["candidates"]["heuristic"]["filled"] == 0.0
+    assert table["chosen"] == "retry" and table["candidates"]["retry"]["filled"] == 1.0
+
+
+def test_retry_happens_at_most_once():
+    data = make_xlsx({"Stock": renamed(flat_rows(70), NO_MATCH)})
+    fake = FakeLLM(ok(flat_spec(row_fields={})), ok(flat_spec(row_fields={})))
+    out = table_spec.extract(fake, CTX, FLAT_FIELDS, blocks_of(data), "xlsx")
+    table = out.notes["extraction"]["table"]
+    assert table["calls"] == 2 and table["chosen"] == "ai"  # tie -> the first spec
+
+
+def test_no_retry_when_a_field_is_filled_or_the_model_was_stopped():
+    fake = FakeLLM(ok(flat_spec()))
+    table_spec.extract(fake, CTX, FLAT_FIELDS, blocks_of(LONG), "xlsx")
+    assert len(fake.calls) == 1
+    data = make_xlsx({"Stock": renamed(flat_rows(70), NO_MATCH)})
+    stopped = FakeLLM(JSONOutcome("stopped", reason="doc_llm_cap"))
+    out = table_spec.extract(stopped, CTX, FLAT_FIELDS, blocks_of(data), "xlsx")
+    assert len(stopped.calls) == 1 and out.notes["extraction"]["table"]["chosen"] == "heuristic"
+
+
+# --- P6b B-6: truncation / loop flags on the old path ------------------------------------------
+
+
+def test_baseline_flags_truncated_and_looping_answers_without_retry():
+    pages = [Block("paragraph", "Page 1", "WX-1 widget line", page=1)]
+    cases = [
+        (replace(baseline_answer(), finish_reason="length"), ["truncated_output"]),
+        (replace(baseline_answer(), repetition=0.4), ["repetition_loop"]),
+        (
+            replace(baseline_answer(), finish_reason="length", repetition=0.9),
+            ["truncated_output", "repetition_loop"],
+        ),
+    ]
+    for outcome, flags in cases:
+        fake = FakeLLM(outcome)
+        out = baseline.extract(fake, CTX, FLAT_FIELDS, pages, "pdf")
+        assert out.notes["output_flags"] == flags and len(fake.calls) == 1
+        assert out.entries is not None  # flagged, still used
+    clean = baseline.extract(FakeLLM(baseline_answer()), CTX, FLAT_FIELDS, pages, "pdf")
+    assert "output_flags" not in clean.notes
+    cut = FakeLLM(JSONOutcome("unusable", reason="llm_truncated", finish_reason="length"))
+    bad = baseline.extract(cut, CTX, FLAT_FIELDS, pages, "pdf")
+    assert bad.entries is None and bad.notes["output_flags"] == ["truncated_output"]
