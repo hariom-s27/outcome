@@ -133,7 +133,28 @@ Base per doc (mean over 104–106): budget 0.016, rent roll 0.044.
 
 **VERDICT: FAIL** (exit 1).
 
-## Decision
+### Z-50 re-gate (approved after the FAIL above; $0, same runs)
+
+- Z-50 (a) changes how check 3 counts:
+  - Hallucinations are counted only in **paired cells**: cells of matched rows that both base and
+    candidate returned (rows matched in any base run and in any candidate run).
+  - Totals are still reported.
+- Implemented in `scripts/compare_runs.py` (`cell_outcomes`, `paired_halluc`); tested in
+  `tests/test_p9c.py`.
+- Command: `compare_runs.py --base 104 105 106 --cand 141 142 143 --docs syn_budget_pdf
+  syn_rentroll_pdf`
+
+| doc | paired rows | halluc paired (base → cand) | halluc total (base → cand) |
+|---|---|---|---|
+| syn_budget_pdf | 1 | 0.0 → 0.0 | 0.0 → 0.0 |
+| syn_rentroll_pdf | 2 | 0.0 → 0.0 | 0.0 → 7.0 |
+
+- `halluc` check: pass. Paired cand 0.0 vs base 0.0 (total 7.0 vs 0.0).
+- All other checks as above. **VERDICT: PASS** (exit 0).
+- Next per Z-50: one full `--set all` run with grid on (must-not-error). It waits for a clean tree:
+  the Z-50 code must be committed first (PR-09).
+
+## Decision (before Z-50)
 
 - As pre-registered: the full `--set all` must-not-error run was **not** made (Part B step 3 needs
   a pass).
