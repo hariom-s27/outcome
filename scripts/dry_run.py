@@ -5,6 +5,7 @@
     uv run python scripts/dry_run.py --path smart       # P5: plan the smart single-value path
     uv run python scripts/dry_run.py --table-path spec  # P6: plan the long-table spec path
     uv run python scripts/dry_run.py --scan-pages locate  # P8b: plan locate page choice
+    uv run python scripts/dry_run.py --scan-pages all   # P9e: every scan page (cap 40)
     uv run python scripts/dry_run.py --set syn          # P9a: the invented SYN set
     uv run python scripts/dry_run.py --table-path spec --pdf-table grid  # P9c: PDF line grid
 
@@ -56,8 +57,11 @@ def _schema_file(row: dict[str, str]) -> Path:
     return SCHEMAS / f"{row['schema_name']}.json"
 
 
-def dry_run_doc(doc_id: str, row: dict[str, str], catalog: ModelCatalog) -> dict[str, Any]:
-    """One document, as the worker would prepare it. Never raises: errors are recorded."""
+def dry_run_doc(
+    doc_id: str, row: dict[str, str], catalog: ModelCatalog, scan_all: bool = False
+) -> dict[str, Any]:
+    """One document, as the worker would prepare it. Never raises: errors are recorded.
+    scan_all (P9e): SCAN_PAGE_METHOD=all, applied as the worker does (single-value lists)."""
     rec: dict[str, Any] = {"doc": doc_id, "ok": False}
     t0 = time.monotonic()
     try:
@@ -65,9 +69,19 @@ def dry_run_doc(doc_id: str, row: dict[str, str], catalog: ModelCatalog) -> dict
         file_type = path.suffix.lower().lstrip(".")
         field_list = json.loads(_schema_file(row).read_text("utf-8"))
         dm = read_document(file_type, path.read_bytes())
-        messages, notes = baseline.build_messages(
-            field_list, dm.blocks, file_type, est=catalog.estimate
-        )
+        page_total = None
+        if scan_all and is_single_value(field_list):
+            page_total = baseline.scan_page_total(dm.blocks)
+        if page_total is None:
+            messages, notes = baseline.build_messages(
+                field_list, dm.blocks, file_type, est=catalog.estimate
+            )
+        else:
+            messages, notes = baseline.build_messages(
+                field_list, dm.blocks, file_type, est=catalog.estimate, page_total=page_total
+            )
+            notes.pop(baseline.PAGES_SENT, None)
+            rec["scan_all"] = True
         kind_chars = notes.pop(baseline.KIND_CHARS, None)
         est = catalog.estimate.tokens(messages, kind_chars)
         rec.update(
@@ -281,6 +295,8 @@ def run(
         one = functools.partial(dry_run_table, pdf_table=pdf_table)
     if scan_pages == "locate":
         one = dry_run_scan
+    if scan_pages == "all":
+        one = functools.partial(dry_run_doc, scan_all=True)
     records = [one(d, rows[d], catalog) for d in docs]
     return all(r["ok"] for r in records), records
 
@@ -292,7 +308,9 @@ def fmt(r: dict[str, Any]) -> str:
         f"{r['doc']:14s} {'ok  ' if r['ok'] else 'FAIL'} type={r['file_type']} "
         f"blocks={r['blocks']} sent={r['blocks_sent']} images={r['images_sent']}/"
         f"{r['images_total']} truncated={r['truncated']} est_tokens={r['fuse_tokens_est']} "
-        f"{r['seconds']}s" + (f" error={r['error']}" if r.get("error") else "")
+        f"{r['seconds']}s"
+        + (f" scan_all builder_tokens={r['builder_tokens_est']}" if r.get("scan_all") else "")
+        + (f" error={r['error']}" if r.get("error") else "")
     )
 
 
@@ -313,9 +331,9 @@ def main(argv: list[str] | None = None) -> int:
     )
     ap.add_argument(
         "--scan-pages",
-        choices=["first", "locate"],
+        choices=["first", "locate", "all"],
         default="first",
-        help="SCAN_PAGE_METHOD to plan for (P8b)",
+        help="SCAN_PAGE_METHOD to plan for (P8b; all = P9e)",
     )
     ap.add_argument("--set", choices=doc_sets.SETS, default="dev", help="P9a document set")
     ap.add_argument(
@@ -327,7 +345,7 @@ def main(argv: list[str] | None = None) -> int:
     args = ap.parse_args(argv)
     if args.pdf_table == "grid" and args.table_path != "spec":
         ap.error("--pdf-table grid needs --table-path spec")
-    switches = [args.path == "smart", args.table_path == "spec", args.scan_pages == "locate"]
+    switches = [args.path == "smart", args.table_path == "spec", args.scan_pages != "first"]
     if sum(switches) > 1:
         ap.error("plan one switch at a time: --path smart, --table-path spec or --scan-pages")
     if args.pdf_table == "grid":

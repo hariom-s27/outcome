@@ -172,9 +172,14 @@ def score_doc(doc_id: str, schema_name: str, job: dict, row: dict | None = None)
 
 
 def scan_pages(meta: dict) -> str:
-    """'first' (default path), or 'locate:<result>' when the Z-13 page choice ran."""
+    """'first' (default path), 'locate:<result>' when the Z-13 page choice ran, or
+    'all:<sent>/<image pages>' when the P9e all-pages path ran."""
     sp = meta.get("scan_pages")
-    return f"locate:{sp.get('result', '?')}" if isinstance(sp, dict) else "first"
+    if not isinstance(sp, dict):
+        return "first"
+    if sp.get("method") == "all":
+        return f"all:{sp.get('pages_sent', '?')}/{sp.get('image_pages', '?')}"
+    return f"locate:{sp.get('result', '?')}"
 
 
 # --- P5 D-1 / D-2: live runs and what a history line records ------------------------------------
