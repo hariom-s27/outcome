@@ -38,9 +38,17 @@ from app.llm.models import ModelCatalog
 from app.pipeline import baseline
 from app.readers import Block
 from app.tables import heuristic
-from app.tables.checks import run_checks, spec_score
-from app.tables.execute import Execution, date_hints, doc_cells, execute, range_lines
-from app.tables.profile import WorkbookProfile, preview, profile_blocks
+from app.tables.checks import TYPE_FIT_MIN, run_checks, spec_score
+from app.tables.execute import (
+    NUMERIC_TYPES,
+    Execution,
+    date_hints,
+    doc_cells,
+    execute,
+    range_lines,
+)
+from app.tables.pdf_grid import Grid, GridResult, to_pdf_cells
+from app.tables.profile import WorkbookProfile, has_total_word, preview, profile_blocks, shape
 from app.tables.spec import Spec, salvage_spec, validate_spec
 
 log = logging.getLogger("app.pipeline.table_spec")
@@ -510,7 +518,10 @@ def _spec_path(
     model: str,
     table: dict[str, Any],
     robust: bool = False,
+    keep: dict[str, Any] | None = None,
 ) -> list[dict[str, Any]] | None:
+    """`keep` (P9c grid only): receives the candidates, the chosen name and the model's call
+    status, so the grid checks can run on them; None (every other caller) changes nothing."""
     ai_info: dict[str, Any] = {"calls": 0}
     ai_spec = ask_spec(llm, ctx, model, field_list, wp, file_type, ai_info)
     table["calls"] = ai_info.pop("calls")
@@ -534,6 +545,8 @@ def _spec_path(
             cands["retry"] = run_candidate(r_spec, wp, field_list)
             chosen = select(cands, wp, field_list)
     table["candidates"] = {name: summary(c) for name, c in cands.items()}
+    if keep is not None:
+        keep.update(cands=cands, chosen=chosen, llm_status=ai_info.get("llm_status"))
     if chosen is None:
         table["chosen"] = "fallback"
         table["fallback_reason"] = "no_spec_passed" if cands else "no_valid_spec"
@@ -550,6 +563,202 @@ def _spec_path(
     return entries
 
 
+# --- P9c: PDF tables through a line grid (PDF_TABLE_METHOD=grid, Z-42, Z-45) -------------------
+
+
+def _norm_key(k: str) -> str:
+    return " ".join(str(k).split()).casefold()
+
+
+def grid_checks(
+    cand: dict[str, Any], wp: WorkbookProfile, field_list: dict[str, Any], grid: Grid
+) -> dict[str, Any]:
+    """Z-45 on one executed spec: rows >= 1; keys unique after normalising; completeness
+    (every grid body line whose key cell has the recipe's key shape became a row); numeric
+    fields parse (>= TYPE_FIT_MIN of their non-empty cells). Counts only."""
+    ex: Execution = cand["ex"]
+    spec: Spec = cand["spec"]
+    keys = [_norm_key(k) for k in ex.keys_seen]
+    got = set(keys)
+    sp = wp.sheets.get(spec.sheet)
+    expected = set()
+    if sp is not None and ex.key_shape:
+        for r in grid.body_rows:
+            ln = sp.lines.get(r)
+            k = ln.text(spec.key_column) if ln else ""
+            if k and shape(k) == ex.key_shape and not has_total_word(k):
+                expected.add(_norm_key(k))
+    missing = len(expected - got)
+    specs = compile_fields(field_list)
+    bad_num = sorted(
+        key
+        for key, (ok_n, tried) in ex.parse.items()
+        if key in specs and specs[key].type in NUMERIC_TYPES and tried
+        and ok_n / tried < TYPE_FIT_MIN
+    )  # fmt: skip
+    passed = {
+        "rows": len(ex.records) >= 1,
+        "unique_keys": len(got) == len(keys),
+        "complete": bool(expected) and missing == 0,
+        "numeric_parse": not bad_num,
+    }
+    return {
+        "passed": passed,
+        "failed": [k for k, v in passed.items() if not v],
+        "rows": len(ex.records),
+        "key_lines": len(expected),
+        "missing": missing,
+        "duplicate_keys": len(keys) - len(got),
+        "numeric_below": bad_num[:10],
+    }
+
+
+def _grid_pick(
+    cands: dict[str, dict[str, Any]],
+    chosen: str | None,
+    wp: WorkbookProfile,
+    field_list: dict[str, Any],
+    grid: Grid,
+    table: dict[str, Any],
+) -> str | None:
+    """The chosen spec if it passes the grid checks, else the best-ranked other candidate that
+    passes (no call); None when none passes. Entries that break the contract count as a failed
+    check ("contract"). Results per candidate go to table (counts)."""
+    results = {}
+    for n, c in cands.items():
+        results[n] = grid_checks(c, wp, field_list, grid)
+        if _grid_entries(c, n, field_list, grid) is None:
+            results[n]["failed"].append("contract")
+    table["grid_checks"] = {n: {k: v for k, v in r.items() if k != "passed"} for n, r in
+                            results.items()}  # fmt: skip
+    if chosen is not None and not results[chosen]["failed"]:
+        return chosen
+    ok = [
+        (round(c["rank"], 9), c.get("doc_filled", 0), PREFER.get(n, -1), n)
+        for n, c in cands.items()
+        if not c["hard_fail"] and not results[n]["failed"]
+    ]
+    return max(ok)[-1] if ok else None
+
+
+def _grid_entries(
+    cand: dict[str, Any], name: str, field_list: dict[str, Any], grid: Grid
+) -> list[dict[str, Any]] | None:
+    entries = to_pdf_cells(entries_with_confidence(cand["ex"], confidence(cand, name)),
+                                    grid)  # fmt: skip
+    if not entries or contract_errors({"entries": entries, "metadata": _zero_meta()}, field_list):
+        return None
+    return entries
+
+
+def _grid_path(
+    llm: LLMClient,
+    ctx: CallContext,
+    field_list: dict[str, Any],
+    grid: Grid,
+    model: str,
+    table: dict[str, Any],
+    robust: bool,
+) -> list[dict[str, Any]] | None:
+    """Spec path on the virtual sheet, then the Z-45 checks: chosen spec -> another candidate
+    that passes -> one E0 spec retry (only if E0 has not already made its call) -> None."""
+    wp = profile_blocks(grid.blocks)
+    table["data_lines"] = wp.data_line_count()
+    if wp.data_line_count() == 0:
+        table["grid_result"] = "no_table"
+        return None
+    keep: dict[str, Any] = {}
+    _spec_path(llm, ctx, field_list, wp, "pdf", model, table, robust, keep=keep)
+    cands: dict[str, dict[str, Any]] = keep.get("cands", {})
+    pick = _grid_pick(cands, keep.get("chosen"), wp, field_list, grid, table)
+    reachable = keep.get("llm_status") not in ("stopped", "failed")
+    if pick is None and reachable and "e0" not in table:
+        r_info: dict[str, Any] = {"calls": 0}
+        r_spec = ask_spec(
+            llm, ctx, model, field_list, wp, "pdf", r_info, purpose="table_spec_e0", repairs=0
+        )
+        table["calls"] = table.get("calls", 0) + r_info.pop("calls")
+        table["grid_retry"] = {"valid": r_spec is not None, **r_info}
+        log.info("job %s pdf grid: checks failed, e0 spec retry", ctx.job_id)
+        if r_spec is not None:
+            cands["retry"] = run_candidate(r_spec, wp, field_list)
+            table["candidates"]["retry"] = summary(cands["retry"])
+            pick = _grid_pick(cands, "retry", wp, field_list, grid, table)
+    if pick is None:
+        failed = sorted({f for r in table.get("grid_checks", {}).values() for f in r["failed"]})
+        table["grid_result"] = "checks_failed"
+        table["grid_failed"] = failed
+        log.info("job %s pdf grid: checks failed %s", ctx.job_id, ",".join(failed) or "-")
+        return None
+    entries = _grid_entries(cands[pick], pick, field_list, grid)
+    if entries is None:
+        table["grid_result"] = "contract_errors"
+        return None
+    table.pop("fallback_reason", None)  # the spec path's own verdict, superseded by the pick
+    table["chosen"] = pick
+    table["rows"] = len(entries)
+    table["lines"] = dict(sorted(cands[pick]["ex"].dispositions.items()))
+    table["grid_result"] = "ok"
+    return entries
+
+
+def extract_grid(
+    llm: LLMClient,
+    ctx: CallContext,
+    field_list: dict[str, Any],
+    blocks: list[Block],
+    file_type: str,
+    model: str | None,
+    robust: bool,
+    pdf_grid_result: GridResult,
+) -> baseline.BaselineOutcome:
+    """P9c: a table field list on a text-layer PDF. Any grid or check failure -> the v1.0 call
+    (`single`) for this job, so the job is never worse than v1.0. Metadata: counts only."""
+    table: dict[str, Any] = {
+        "why": "pdf_grid",
+        "grid": {"reason": pdf_grid_result.reason, **pdf_grid_result.stats},
+    }
+    entries: list[dict[str, Any]] | None = None
+    if pdf_grid_result.grid is None or primary_key(field_list) is None:
+        table["grid_result"] = (
+            "no_primary" if pdf_grid_result.grid is not None else pdf_grid_result.reason
+        )
+    else:
+        try:
+            entries = _grid_path(
+                llm, ctx, field_list, pdf_grid_result.grid, model or llm.catalog.baseline,
+                table, robust,
+            )  # fmt: skip
+        except Exception as exc:  # surfaced (type + code location, no text, R23), then v1.0
+            tb = exc.__traceback__
+            while tb and tb.tb_next:
+                tb = tb.tb_next
+            where = f"{tb.tb_frame.f_code.co_filename}:{tb.tb_lineno}" if tb else "?"
+            log.error("job %s pdf grid error %s at %s", ctx.job_id, type(exc).__name__, where)
+            table["grid_result"] = "error"
+            table["error"] = type(exc).__name__
+    table["grid_fallback"] = entries is None
+    extraction = {"path": "table", "method": "grid", "pipeline": PIPELINE, "table": table}
+    log.info(
+        "job %s pdf grid result=%s fallback=%s",
+        ctx.job_id,
+        table.get("grid_result"),
+        "yes" if entries is None else "no",
+    )
+    if entries is not None:
+        return baseline.BaselineOutcome(
+            entries, None, {"pipeline": PIPELINE, "extraction": extraction}
+        )
+    table["chosen"] = "fallback"
+    if robust:
+        base = baseline.extract(llm, ctx, field_list, blocks, file_type, model, robust=True)
+    else:
+        base = baseline.extract(llm, ctx, field_list, blocks, file_type, model)
+    table["fallback_result"] = "baseline" if base.entries is not None else "skeleton"
+    base.notes["extraction"] = extraction
+    return base
+
+
 def extract(
     llm: LLMClient,
     ctx: CallContext,
@@ -558,8 +767,13 @@ def extract(
     file_type: str,
     model: str | None = None,
     robust: bool = False,
+    pdf_grid: GridResult | None = None,
 ) -> baseline.BaselineOutcome:
-    """robust (P9b E0, E0_ROBUST): one more spec call on low fill or dropped spec entries."""
+    """robust (P9b E0, E0_ROBUST): one more spec call on low fill or dropped spec entries.
+    pdf_grid (P9c, PDF_TABLE_METHOD=grid): the worker's grid for a table field list on a
+    text-layer PDF; None (the default, `single`) = the v1.0 path."""
+    if pdf_grid is not None and file_type == "pdf":
+        return extract_grid(llm, ctx, field_list, blocks, file_type, model, robust, pdf_grid)
     ok, why, wp = applies(field_list, blocks, file_type)
     if not ok or wp is None:  # T-3/T-4: the current path, unchanged
         if robust:
@@ -616,5 +830,42 @@ def plan(
         est_usd_fuse=round((1 + MAX_REPAIRS + MAX_RETRIES) * spec.cost(est, SPEC_MAX_TOKENS), 6),
         est_usd_realistic=round(spec.cost(math.ceil(est * 0.8), SPEC_OUT_REALISTIC), 6),
         heuristic=summary(h) if h else None,
+    )
+    return rec
+
+
+def plan_grid(
+    field_list: dict[str, Any], result: GridResult, catalog: ModelCatalog
+) -> dict[str, Any]:
+    """P9c dry run (PDF_TABLE_METHOD=grid): grid counts, preview tokens, est. $, and the
+    heuristic spec's rows and grid checks on the virtual sheet. No call."""
+    rec: dict[str, Any] = {"why": "pdf_grid", "grid": {"reason": result.reason, **result.stats}}
+    if result.grid is None or primary_key(field_list) is None:
+        rec["path"] = "baseline"
+        return rec
+    wp = profile_blocks(result.grid.blocks)
+    rec["data_lines"] = wp.data_line_count()
+    if wp.data_line_count() == 0:
+        rec["path"] = "baseline"
+        return rec
+    spec = catalog.get(catalog.baseline)
+    messages = build_messages(field_list, wp, "pdf")
+    est = catalog.estimate.tokens(messages, None)
+    cands, _info = candidates(field_list, wp, None)
+    h = cands.get("heuristic")
+    rec.update(
+        path="table_spec",
+        preview_chars=len(messages[1]["content"]),
+        est_tokens_in=est,
+        calls_planned=1,
+        calls_max=1 + MAX_REPAIRS + MAX_RETRIES,
+        est_usd_fuse=round((1 + MAX_REPAIRS + MAX_RETRIES) * spec.cost(est, SPEC_MAX_TOKENS), 6),
+        est_usd_realistic=round(spec.cost(math.ceil(est * 0.8), SPEC_OUT_REALISTIC), 6),
+        heuristic=summary(h) if h else None,
+        heuristic_grid_checks=(
+            {k: v for k, v in grid_checks(h, wp, field_list, result.grid).items() if k != "passed"}
+            if h
+            else None
+        ),
     )
     return rec

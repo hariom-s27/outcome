@@ -27,6 +27,7 @@ from app.llm import CallContext, LLMClient, LLMSettings
 from app.pipeline import baseline, baseline_located, single_value, table_spec
 from app.readers import ReaderError, read_document
 from app.results import stub_result
+from app.tables import pdf_grid
 
 log = logging.getLogger("app.worker")
 
@@ -94,6 +95,11 @@ def choose_pipeline(settings: Settings, field_list: dict[str, Any]) -> ModuleTyp
     return baseline
 
 
+def has_scan(blocks: list) -> bool:
+    """P9c Z-48: a PDF with any page image keeps the v1.0 path (scanned tables are out)."""
+    return any(b.kind == "image" for b in blocks)
+
+
 def doc_call_cap(llm: LLMClient, file_type: str, blocks: list) -> int:
     """P5 D-4: PDFs max(LLM_MAX_CALLS_PER_DOC, base + per_batch x ceil(pages / 8)); other
     file types LLM_MAX_CALLS_PER_DOC. The $ fuse is unchanged."""
@@ -131,6 +137,8 @@ def process(
         return "PARTIAL", stub_result(
             job.field_list, queue.latency_ms(job.created_at), "read_failed"
         )
+    # P9c: the grid needs word positions, so the bytes are kept only when it may run
+    grid_src = content if settings.pdf_table_method == "grid" and file_type == "pdf" else None
     del content
     hb.check()
     ctx = CallContext(
@@ -143,7 +151,14 @@ def process(
     model = lab.sv_model_for(settings, field_list, debug_model)
     pipeline = choose_pipeline(settings, field_list)
     # P9b E0: only these two pipelines take `robust`; off -> the v1.0 call exactly
-    extra = {"robust": True} if settings.e0_robust and pipeline in (baseline, table_spec) else {}
+    extra: dict[str, Any] = (
+        {"robust": True} if settings.e0_robust and pipeline in (baseline, table_spec) else {}
+    )
+    # P9c Z-42/Z-48: grid only for a table field list on a PDF with no scanned page;
+    # PDF_TABLE_METHOD=single (default) -> no kwarg, the v1.0 call exactly
+    if grid_src is not None and pipeline is table_spec and not has_scan(docmap.blocks):
+        extra["pdf_grid"] = pdf_grid.build(grid_src)
+    del grid_src
     if model is None:
         out = pipeline.extract(llm, ctx, field_list, docmap.blocks, file_type, **extra)
     else:
@@ -263,7 +278,7 @@ def main() -> None:  # pragma: no cover - container entry point
         log.warning("LLM_API_KEY not set: jobs get the P1 skeleton (PARTIAL), R17")
     log.info(
         "worker %s started (pipeline=%s, single_value_path=%s, table_path=%s, scan_pages=%s, "
-        "cache_mode=%s, sv_model=%s, lab_mode=%s, e0_robust=%s)",
+        "cache_mode=%s, sv_model=%s, lab_mode=%s, e0_robust=%s, pdf_table=%s)",
         wid,
         baseline.PIPELINE if llm else "stub",
         settings.single_value_path,
@@ -273,6 +288,7 @@ def main() -> None:  # pragma: no cover - container entry point
         settings.sv_model or (llm.catalog.baseline if llm else "-"),
         "on" if settings.lab_mode else "off",
         "on" if settings.e0_robust else "off",
+        settings.pdf_table_method,
     )
     threading.Thread(target=_sweep_loop, args=(settings, wid), name="sweeper", daemon=True).start()
     backoff = settings.worker_poll_s

@@ -11,6 +11,7 @@ DEFAULT_DATABASE_URL = "postgresql://docextract:docextract@db:5432/docextract"
 SINGLE_VALUE_PATHS = ("baseline", "smart")
 TABLE_PATHS = ("baseline", "spec")
 SCAN_PAGE_METHODS = ("first", "locate")
+PDF_TABLE_METHODS = ("single", "grid")
 E0_OFF = ("0", "false", "no", "off")  # Z-35: E0_ROBUST values that turn E0 off; unset = on
 
 
@@ -48,8 +49,17 @@ class Settings:
     # fill < 0.5 or a spec entry was dropped, higher fill kept. Z-35: default ON (its gate
     # passed, runs 105-106); E0_ROBUST=0 (or false/no/off) turns it off = the v1.0 path.
     e0_robust: bool = True
+    # P9c Z-42: table field lists on a text-layer PDF. "single" = the v1.0 call (one baseline
+    # answer); "grid" = PDF -> line grid -> virtual sheet -> the spec path, v1.0 call when the
+    # grid fails its checks. env PDF_TABLE_METHOD.
+    pdf_table_method: str = "single"
 
     def __post_init__(self) -> None:
+        if self.pdf_table_method not in PDF_TABLE_METHODS:
+            raise ValueError(
+                f"PDF_TABLE_METHOD must be one of {PDF_TABLE_METHODS}, "
+                f"got {self.pdf_table_method!r}"
+            )
         if self.sv_model is not None and self.sv_model not in ALLOWED_MODEL_IDS:
             raise ValueError(f"SV_MODEL must be an allowed model id, got {self.sv_model!r}")
         if self.scan_page_method not in SCAN_PAGE_METHODS:
@@ -92,4 +102,5 @@ class Settings:
             sv_model=(env.get("SV_MODEL") or "").strip() or None,
             lab_mode=(env.get("LAB_MODE") or "").strip().lower() in ("1", "true", "yes"),
             e0_robust=(env.get("E0_ROBUST") or "").strip().lower() not in E0_OFF,
+            pdf_table_method=(env.get("PDF_TABLE_METHOD") or "single").strip().lower(),
         )

@@ -64,6 +64,8 @@ services:
       SCAN_PAGE_METHOD: ${SCAN_PAGE_METHOD:-first}
       # P9b Z-35: robust parsing on (gate passed, runs 105-106); 0 turns it off
       E0_ROBUST: ${E0_ROBUST:-1}
+      # P9c Z-42: PDF tables; single = v1.0, grid = line grid -> spec path (lab only so far)
+      PDF_TABLE_METHOD: ${PDF_TABLE_METHOD:-single}
     depends_on:
       db:
         condition: service_healthy
