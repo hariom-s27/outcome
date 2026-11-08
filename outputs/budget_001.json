@@ -4,82 +4,105 @@
   "entries": [
     {
       "budget": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": 7488382,
+        "citation": "[Page 1] 6101-0000 | Minimum Base Rent | 7,481,754 | 7,488,382",
+        "confidence": 0.9
       },
       "gl_code": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": "6101-0000",
+        "citation": "[Page 1] 6101-0000 | Minimum Base Rent",
+        "confidence": 0.97
       },
       "section": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": "Rent Revenue",
+        "citation": "[Page 1] Rent Revenue",
+        "confidence": 0.95
       },
       "line_item": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": "Minimum Base Rent",
+        "citation": "[Page 1] 6101-0000 | Minimum Base Rent",
+        "confidence": 0.97
       },
       "budget_year": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": 2021,
+        "citation": "[Page 1] 2021 Budget",
+        "confidence": 0.9
       },
       "property_rsf": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": 339050,
+        "citation": "[Page 1] Property RSF: | 339,050",
+        "confidence": 0.98
       },
       "property_name": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": "Lakeview Tower",
+        "citation": "[Page 1] Lakeview Tower",
+        "confidence": 0.97
       },
       "prior_year_budget": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": 7481754,
+        "citation": "[Page 1] 6101-0000 | Minimum Base Rent | 7,481,754",
+        "confidence": 0.9
       },
       "prior_year_reforecast": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": 7165444,
+        "citation": "[Page 1] 7,165,444",
+        "confidence": 0.85
       },
       "explanation_of_variance": {
         "value": null,
         "citation": "",
-        "confidence": 0.0
+        "confidence": 0.85
       },
       "budget_vs_reforecast_pct": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": -4.31,
+        "citation": "[Page 1] -4.31%",
+        "confidence": 0.85
       },
       "budget_vs_reforecast_variance": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": 322938,
+        "citation": "[Page 1] 7,488,382 vs 7,165,444",
+        "confidence": 0.8
       },
       "reforecast_vs_prior_budget_pct": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": 0.09,
+        "citation": "[Page 1] 0.09%",
+        "confidence": 0.8
       },
       "reforecast_vs_prior_budget_variance": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": -6628,
+        "citation": "[Page 1] 6,628",
+        "confidence": 0.7
       }
     }
   ],
   "metadata": {
-    "cost_usd": 0.0,
-    "tokens_in": 0,
-    "latency_ms": 228,
-    "tokens_out": 0,
-    "model_calls": 0
+    "models": {
+      "anthropic/claude-haiku-5.5": {
+        "calls": 1,
+        "cost_usd": 0.001364,
+        "tokens_in": 9873,
+        "tokens_out": 753
+      }
+    },
+    "call_cap": 8,
+    "cost_usd": 0.001364,
+    "pipeline": "baseline-v1",
+    "tokens_in": 9873,
+    "truncated": false,
+    "cache_mode": "off",
+    "latency_ms": 9033,
+    "tokens_out": 753,
+    "blocks_sent": 78,
+    "images_sent": 0,
+    "model_calls": 1,
+    "models_returned": [
+      "anthropic/claude-haiku-5.5"
+    ],
+    "input_tokens_est": 9151,
+    "reasoning_effort": "none",
+    "tokens_estimated": 9909,
+    "tokens_reasoning": 0,
+    "cost_computed_usd": 0.001364,
+    "cost_reported_usd": 0.001364
   }
 }

@@ -6,210 +6,298 @@
       "late_fee": {
         "value": null,
         "citation": "",
-        "confidence": 0.0
+        "confidence": 0.3
       },
       "premises": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": "Suite 500",
+        "citation": "[Page 3] Suite 500 in the building",
+        "confidence": 0.95
       },
       "tenant_name": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": "KRESTMOOR INCORPORATED",
+        "citation": "[Page 3] KRESTMOOR INCORPORATED, an Illinois corporation",
+        "confidence": 0.97
       },
       "broker_names": {
         "value": null,
         "citation": "",
-        "confidence": 0.0
+        "confidence": 0.4
       },
       "holdover_rent": {
         "value": null,
         "citation": "",
-        "confidence": 0.0
+        "confidence": 0.4
       },
       "permitted_use": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": "operation of law office or other general office purpose",
+        "citation": "[Page 6] Tenant shall use and occupy the Premises for the operation of law office or other general office purpose.",
+        "confidence": 0.95
       },
       "property_name": {
         "value": null,
         "citation": "",
-        "confidence": 0.0
+        "confidence": 0.5
       },
       "guarantor_name": {
         "value": null,
         "citation": "",
-        "confidence": 0.0
+        "confidence": 0.6
       },
       "parking_spaces": {
         "value": null,
         "citation": "",
-        "confidence": 0.0
+        "confidence": 0.6
       },
       "pro_rata_share": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": 12.855,
+        "citation": "[Page 6] Tenant's Proportionate Share for purposes of Additional Rent is 12.855%.",
+        "confidence": 0.95
       },
       "base_year_taxes": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": 2011,
+        "citation": "[Page 3] Base Year of 2011",
+        "confidence": 0.9
       },
       "right_to_sublet": {
         "value": null,
         "citation": "",
-        "confidence": 0.0
+        "confidence": 0.3
       },
       "total_base_rent": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": 1449828.0,
+        "citation": "[Page 3] monthly base rent schedule over 10 years 7 months",
+        "confidence": 0.7
       },
       "building_address": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": "250 South Harbor Street, Chicago, Illinois 60606",
+        "citation": "[Page 3] 250 South Harbor Street, Chicago, Illinois 60606",
+        "confidence": 0.97
       },
       "free_rent_months": {
-        "value": null,
+        "value": 0,
         "citation": "",
-        "confidence": 0.0
+        "confidence": 0.6
       },
       "expense_structure": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": "base year 2011 (expense increase over base year)",
+        "citation": "[Page 3] over the Operating Expenses incurred in the Base Year of 2011",
+        "confidence": 0.9
       },
       "lease_term_months": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": 127,
+        "citation": "[Page 3] for the term of Ten (10) years Seven (7) months",
+        "confidence": 0.95
       },
       "base_year_expenses": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": 2011,
+        "citation": "[Page 4] Base Year of 2011",
+        "confidence": 0.9
       },
       "ti_allowance_total": {
         "value": null,
         "citation": "",
-        "confidence": 0.0
+        "confidence": 0.5
       },
       "landlord_legal_name": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": "250 S. HARBOR LLC",
+        "citation": "[Page 3] 250 S. HARBOR LLC, an Illinois limited liability company",
+        "confidence": 0.97
       },
       "renewal_term_months": {
         "value": null,
         "citation": "",
-        "confidence": 0.0
+        "confidence": 0.5
       },
       "base_rent_escalation": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": "fixed steps per schedule",
+        "citation": "[Page 3] monthly base rent schedule increasing annually",
+        "confidence": 0.85
       },
       "lease_execution_date": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": "2010-03-04",
+        "citation": "[Page 3] made as of the 4th day of March, 2010",
+        "confidence": 0.95
       },
       "electricity_provision": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": "separately metered and billed by Landlord to Tenant as Additional Rent",
+        "citation": "[Page 6] Electricity ... shall be separately metered and shall be billed by Landlord and paid by Tenant as Additional Rent",
+        "confidence": 0.93
       },
       "lease_expiration_date": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": "2021-02-28",
+        "citation": "[Page 3] terminating on the 28th day of February, 2021",
+        "confidence": 0.97
       },
       "renewal_notice_months": {
         "value": null,
         "citation": "",
-        "confidence": 0.0
+        "confidence": 0.5
       },
       "renewal_option_exists": {
-        "value": null,
+        "value": false,
         "citation": "",
-        "confidence": 0.0
+        "confidence": 0.5
       },
       "renewal_options_count": {
-        "value": null,
+        "value": 0,
         "citation": "",
-        "confidence": 0.0
+        "confidence": 0.5
       },
       "parking_monthly_charge": {
         "value": null,
         "citation": "",
-        "confidence": 0.0
+        "confidence": 0.6
       },
       "rent_commencement_date": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": "2010-08-01",
+        "citation": "[Page 3] commencing on the 1st day of August, 2010",
+        "confidence": 0.85
       },
       "early_termination_right": {
-        "value": null,
+        "value": false,
         "citation": "",
-        "confidence": 0.0
+        "confidence": 0.5
       },
       "lease_commencement_date": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": "2010-08-01",
+        "citation": "[Page 3] commencing on the 1st day of August, 2010",
+        "confidence": 0.97
       },
       "rent_schedule_end_dates": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": [
+          "2011-07-31",
+          "2012-07-31",
+          "2013-07-31",
+          "2014-07-31",
+          "2015-07-31",
+          "2016-07-31",
+          "2017-07-31",
+          "2018-07-31",
+          "2019-07-31",
+          "2020-07-31",
+          "2021-02-28"
+        ],
+        "citation": "[Page 3] August 1, 2010 through July 31, 2011 ... August 1, 2020 through February 28, 2021",
+        "confidence": 0.93
       },
       "rentable_square_footage": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": 6840,
+        "citation": "[Page 3] approximately 6,840 rentable square feet",
+        "confidence": 0.97
       },
       "security_deposit_amount": {
         "value": null,
         "citation": "",
-        "confidence": 0.0
+        "confidence": 0.5
       },
       "letter_of_credit_required": {
-        "value": null,
+        "value": false,
         "citation": "",
-        "confidence": 0.0
+        "confidence": 0.5
       },
       "rent_schedule_start_dates": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": [
+          "2010-08-01",
+          "2011-08-01",
+          "2012-08-01",
+          "2013-08-01",
+          "2014-08-01",
+          "2015-08-01",
+          "2016-08-01",
+          "2017-08-01",
+          "2018-08-01",
+          "2019-08-01",
+          "2020-08-01"
+        ],
+        "citation": "[Page 3] Base Rent period schedule",
+        "confidence": 0.93
       },
       "rent_schedule_monthly_rent": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": [
+          11934.0,
+          12196.0,
+          12458.0,
+          12720.0,
+          12982.0,
+          13244.0,
+          13506.0,
+          13768.0,
+          14030.0,
+          14292.0,
+          14554.0
+        ],
+        "citation": "[Page 3] MONTHLY BASE RENT column",
+        "confidence": 0.95
       },
       "termination_fee_description": {
         "value": null,
         "citation": "",
-        "confidence": 0.0
+        "confidence": 0.5
       },
       "rent_schedule_annual_rent_per_rsf": {
-        "value": null,
-        "citation": "",
-        "confidence": 0.0
+        "value": [
+          20.94,
+          21.4,
+          21.86,
+          22.32,
+          22.78,
+          23.23,
+          23.7,
+          24.15,
+          24.62,
+          25.07,
+          25.54
+        ],
+        "citation": "[Page 3] computed: monthly rent x 12 / 6,840 RSF",
+        "confidence": 0.85
       }
     }
   ],
   "metadata": {
-    "cost_usd": 0.0,
-    "tokens_in": 0,
-    "latency_ms": 657,
-    "tokens_out": 0,
-    "model_calls": 0
+    "models": {
+      "anthropic/claude-haiku-5.5": {
+        "calls": 2,
+        "cost_usd": 0.004479,
+        "tokens_in": 21488,
+        "tokens_out": 4660
+      }
+    },
+    "call_cap": 10,
+    "cost_usd": 0.004479,
+    "pipeline": "baseline-v1",
+    "tokens_in": 21488,
+    "truncated": true,
+    "cache_mode": "off",
+    "latency_ms": 22908,
+    "tokens_out": 4660,
+    "blocks_sent": 8,
+    "images_sent": 8,
+    "model_calls": 2,
+    "json_repaired": true,
+    "pages_dropped": [
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21
+    ],
+    "blocks_dropped": 13,
+    "models_returned": [
+      "anthropic/claude-haiku-5.5"
+    ],
+    "input_tokens_est": 22251,
+    "reasoning_effort": "none",
+    "tokens_estimated": 30021,
+    "tokens_reasoning": 0,
+    "cost_computed_usd": 0.004479,
+    "cost_reported_usd": 0.004479
   }
 }

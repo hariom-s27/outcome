@@ -6,26 +6,26 @@
       "city": {
         "value": "Fairhaven",
         "citation": "[Page 1] 7420 E 52ND AVE., FAIRHAVEN, CO 80271",
-        "confidence": 0.99
+        "confidence": 0.98
       },
       "state": {
         "value": "CO",
         "citation": "[Page 1] FAIRHAVEN, CO 80271",
-        "confidence": 0.99
+        "confidence": 0.98
       },
       "units": {
         "value": 188,
-        "citation": "[Page 2] Number of Units 188",
+        "citation": "[Page 2] Number of Units | 188",
         "confidence": 0.99
       },
       "county": {
         "value": "Harlan",
-        "citation": "[Page 3] County Harlan",
-        "confidence": 0.98
+        "citation": "[Page 3] County | Harlan",
+        "confidence": 0.95
       },
       "address": {
         "value": "7420 E 52nd Ave.",
-        "citation": "[Page 2] Address 7420 E 52nd Ave. Fairhaven, CO 80271",
+        "citation": "[Page 2] Address | 7420 E 52nd Ave. Fairhaven, CO 80271",
         "confidence": 0.98
       },
       "noi_t12": {
@@ -35,22 +35,22 @@
       },
       "stories": {
         "value": "2 & 3",
-        "citation": "[Page 2] Number of Stories 2 & 3",
-        "confidence": 0.97
+        "citation": "[Page 2] Number of Stories | 2 & 3",
+        "confidence": 0.98
       },
       "zip_code": {
         "value": "80271",
-        "citation": "[Page 2] Fairhaven, CO 80271",
+        "citation": "[Page 2] Address | 7420 E 52nd Ave. Fairhaven, CO 80271",
         "confidence": 0.99
       },
       "submarket": {
         "value": "Fairhaven International Airport submarket",
-        "citation": "[Page 18] Property is located in Harlan County in the Fairhaven International Airport submarket.",
+        "citation": "[Page 18] [13] | Property is located in Harlan County in the Fairhaven International Airport submarket.",
         "confidence": 0.9
       },
       "site_acres": {
         "value": 9.52,
-        "citation": "[Page 2] Site Area 9.520 acres",
+        "citation": "[Page 2] Site Area | 9.520 acres",
         "confidence": 0.99
       },
       "unit_types": {
@@ -64,27 +64,27 @@
           "Hazel w/ Attached Garage",
           "Ironwood"
         ],
-        "citation": "[Page 13] Unit Mix Summary: Aspen, Birch, Cedar w/ Attached Garage, Dogwood w/ Attached Garage (2), Elm, Fir w/ Attached Garage, Hazel w/ Attached Garage, Ironwood",
-        "confidence": 0.98
+        "citation": "[Page 13] Unit Mix Summary | Aspen | 1 Bed 1 Bath | 26 ...",
+        "confidence": 0.97
       },
       "year_built": {
         "value": 2022,
-        "citation": "[Page 3] Year Built 2022",
+        "citation": "[Page 3] Year Built | 2022",
         "confidence": 0.99
       },
       "broker_name": {
         "value": "Ridgeline Capital Advisors",
         "citation": "[Page 2] Ridgeline Capital Advisors is pleased to present",
-        "confidence": 0.98
+        "confidence": 0.99
       },
       "market_rent": {
         "value": 2260,
-        "citation": "[Page 2] Market Rent $2,260",
-        "confidence": 0.98
+        "citation": "[Page 2] Market Rent | $2,260",
+        "confidence": 0.97
       },
       "rentable_sf": {
         "value": 190142,
-        "citation": "[Page 2] Rentable SF 190,142 SF",
+        "citation": "[Page 2] Rentable SF | 190,142 SF",
         "confidence": 0.99
       },
       "asking_price": {
@@ -94,32 +94,32 @@
       },
       "noi_proforma": {
         "value": 3521352,
-        "citation": "[Page 14] Net Operating Income $3,521,352 $18,731",
+        "citation": "[Page 14] Net Operating Income | $3,521,352 | $18,731",
         "confidence": 0.95
       },
       "building_type": {
         "value": "Garden",
-        "citation": "[Page 2] Building Type Garden",
+        "citation": "[Page 2] Building Type | Garden",
         "confidence": 0.99
       },
       "occupancy_pct": {
         "value": 71,
-        "citation": "[Page 19] Marlowe Park Modern Apartments is 71% leased as of the 9/13/2023 rent roll",
+        "citation": "[Page 19] **Marlowe Park Modern Apartments is 71% leased as of the 9/13/2023 rent roll",
         "confidence": 0.95
       },
       "parking_ratio": {
         "value": 1.41,
-        "citation": "[Page 2] Parking Ratio (per unit) 1.41/unit",
+        "citation": "[Page 2] Parking Ratio (per unit) | 1.41/unit",
         "confidence": 0.99
       },
       "property_name": {
         "value": "Marlowe Park Modern Apartments",
-        "citation": "[Page 3] Property Name Marlowe Park Modern Apartments",
+        "citation": "[Page 3] Property Name | Marlowe Park Modern Apartments",
         "confidence": 0.99
       },
       "parking_spaces": {
         "value": 266,
-        "citation": "[Page 4] Total Parking Spaces 266",
+        "citation": "[Page 2] Total Parking Spaces* | 266 spaces",
         "confidence": 0.99
       },
       "price_per_unit": {
@@ -139,22 +139,22 @@
       },
       "average_unit_sf": {
         "value": 1011,
-        "citation": "[Page 2] Avg. Unit Size 1,011 SF",
-        "confidence": 0.98
+        "citation": "[Page 2] Avg. Unit Size | 1,011 SF",
+        "confidence": 0.99
       },
       "market_rent_psf": {
         "value": 2.23,
-        "citation": "[Page 2] Market Rent PSF $2.23",
-        "confidence": 0.98
+        "citation": "[Page 2] Market Rent PSF | $2.23",
+        "confidence": 0.97
       },
       "number_of_buildings": {
         "value": 13,
-        "citation": "[Page 2] Number of Buildings 13",
+        "citation": "[Page 2] Number of Buildings | 13",
         "confidence": 0.99
       },
       "average_in_place_rent": {
         "value": 2228,
-        "citation": "[Page 19] S Marlowe Park Modern Apartments ... $2,228",
+        "citation": "[Page 19] Marlowe Park Modern Apartments | Fairhaven | 2022 | 188 | 71%** | 1,011 | $2,228 | $2.20",
         "confidence": 0.85
       }
     }
@@ -162,26 +162,32 @@
   "metadata": {
     "models": {
       "anthropic/claude-haiku-5.5": {
-        "calls": 1,
-        "cost_usd": 0.002592,
-        "tokens_in": 17738,
-        "tokens_out": 1636
+        "calls": 2,
+        "cost_usd": 0.003915,
+        "tokens_in": 22024,
+        "tokens_out": 3425
       }
     },
-    "cost_usd": 0.002592,
+    "call_cap": 10,
+    "cost_usd": 0.003915,
     "pipeline": "baseline-v1",
-    "tokens_in": 17738,
+    "tokens_in": 22024,
     "truncated": false,
-    "latency_ms": 8276,
-    "tokens_out": 1636,
+    "cache_mode": "off",
+    "latency_ms": 16418,
+    "tokens_out": 3425,
+    "blocks_sent": 199,
     "images_sent": 1,
-    "model_calls": 1,
+    "model_calls": 2,
+    "json_repaired": true,
     "models_returned": [
       "anthropic/claude-haiku-5.5"
     ],
-    "input_tokens_est": 13042,
+    "input_tokens_est": 18462,
     "reasoning_effort": "none",
+    "tokens_estimated": 20384,
     "tokens_reasoning": 0,
-    "cost_computed_usd": 0.002592
+    "cost_computed_usd": 0.003915,
+    "cost_reported_usd": 0.003915
   }
 }

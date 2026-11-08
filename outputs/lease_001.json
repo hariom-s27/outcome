@@ -15,7 +15,7 @@
       },
       "tenant_name": {
         "value": "M.J. Delacroix & Associates, P.C.",
-        "citation": "[Page 2] TENANT: M.J. Delacroix & Associates, P.C. an Illinois corporation",
+        "citation": "[Page 2] TENANT: M.J. Delacroix & Associates, P.C.",
         "confidence": 0.95
       },
       "broker_names": {
@@ -48,7 +48,7 @@
       "parking_spaces": {
         "value": null,
         "citation": "",
-        "confidence": 0.8
+        "confidence": 0.6
       },
       "pro_rata_share": {
         "value": 0.91,
@@ -61,9 +61,9 @@
         "confidence": 0.93
       },
       "right_to_sublet": {
-        "value": "with prior written consent of Landlord, not to be unreasonably withheld",
-        "citation": "[Page 6] without the prior written consent of Landlord, and such restrictions shall be binding",
-        "confidence": 0.6
+        "value": "with prior written Landlord consent, which may be withheld in Landlord's sole discretion; Landlord recapture option applies",
+        "citation": "[Page 4] Tenant shall not have the right to assign ... without the prior written consent of Landlord",
+        "confidence": 0.8
       },
       "total_base_rent": {
         "value": null,
@@ -72,18 +72,18 @@
       },
       "building_address": {
         "value": "1850 Hollis Road, Fairmont Hills, Illinois 60517",
-        "citation": "[Page 2] 1850 Hollis Road Fairmont Hills, Illinois 60517",
-        "confidence": 0.9
+        "citation": "[Page 2] 1850 Hollis Road Fairmount Hills, Illinois 60517",
+        "confidence": 0.85
       },
       "free_rent_months": {
-        "value": 0,
+        "value": null,
         "citation": "",
-        "confidence": 0.3
+        "confidence": 0.2
       },
       "expense_structure": {
-        "value": "base year 1993",
+        "value": "base year 1993 (direct expenses)",
         "citation": "[Page 2] BASE YEAR (DIRECT EXPENSES): 19 93",
-        "confidence": 0.9
+        "confidence": 0.85
       },
       "lease_term_months": {
         "value": 60,
@@ -98,22 +98,22 @@
       "ti_allowance_total": {
         "value": null,
         "citation": "",
-        "confidence": 0.8
+        "confidence": 0.6
       },
       "landlord_legal_name": {
         "value": "TRENT MA-II HOLLIS OFFICE PLAZA, INC.",
-        "citation": "[Page 2] LANDLORD: TRENT MA-II HOLLIS OFFICE PLAZA, INC. a Delaware corporation",
-        "confidence": 0.95
+        "citation": "[Page 2] LANDLORD: TRENT MA-II HOLLIS OFFICE PLAZA, INC., a Delaware corporation",
+        "confidence": 0.93
       },
       "renewal_term_months": {
         "value": null,
         "citation": "",
-        "confidence": 0.8
+        "confidence": 0.6
       },
       "base_rent_escalation": {
         "value": "none",
         "citation": "",
-        "confidence": 0.3
+        "confidence": 0.4
       },
       "lease_execution_date": {
         "value": "1993-03-05",
@@ -121,8 +121,8 @@
         "confidence": 0.8
       },
       "electricity_provision": {
-        "value": "for lighting, convenience outlets and other direct uses included in services; excess usage metered and billed to Tenant",
-        "citation": "[Page 7] (f) electricity for lighting, convenience outlets and other direct uses",
+        "value": "included for lighting, convenience outlets and other direct uses; excess use metered and billed to Tenant at local utility rates",
+        "citation": "[Page 6] (f) electricity for lighting, convenience outlets and other direct uses",
         "confidence": 0.6
       },
       "lease_expiration_date": {
@@ -133,32 +133,32 @@
       "renewal_notice_months": {
         "value": null,
         "citation": "",
-        "confidence": 0.8
+        "confidence": 0.6
       },
       "renewal_option_exists": {
         "value": false,
         "citation": "",
-        "confidence": 0.8
+        "confidence": 0.6
       },
       "renewal_options_count": {
         "value": 0,
         "citation": "",
-        "confidence": 0.8
+        "confidence": 0.6
       },
       "parking_monthly_charge": {
         "value": null,
         "citation": "",
-        "confidence": 0.8
+        "confidence": 0.6
       },
       "rent_commencement_date": {
         "value": "1993-05-01",
         "citation": "[Page 2] COMMENCEMENT DATE: May 1, 19 93",
-        "confidence": 0.8
+        "confidence": 0.7
       },
       "early_termination_right": {
         "value": true,
-        "citation": "[Page 2] option to terminate this Lease unless said delay ... (Article 2 delayed possession)",
-        "confidence": 0.5
+        "citation": "[Page 3] Landlord ... fails ... Tenant shall have the option to terminate this Lease",
+        "confidence": 0.7
       },
       "lease_commencement_date": {
         "value": "1993-05-01",
@@ -177,8 +177,8 @@
       },
       "security_deposit_amount": {
         "value": 2150,
-        "citation": "[Page 2] SECURITY DEPOSIT: $2,400 (struck) 2150 handwritten, initialed",
-        "confidence": 0.7
+        "citation": "[Page 2] SECURITY DEPOSIT: $2,400 (struck) 2150 handwritten",
+        "confidence": 0.8
       },
       "letter_of_credit_required": {
         "value": false,
@@ -211,17 +211,20 @@
     "models": {
       "anthropic/claude-haiku-5.5": {
         "calls": 1,
-        "cost_usd": 0.00306,
+        "cost_usd": 0.003068,
         "tokens_in": 19106,
-        "tokens_out": 2299
+        "tokens_out": 2315
       }
     },
-    "cost_usd": 0.00306,
+    "call_cap": 12,
+    "cost_usd": 0.003068,
     "pipeline": "baseline-v1",
     "tokens_in": 19106,
     "truncated": true,
-    "latency_ms": 15414,
-    "tokens_out": 2299,
+    "cache_mode": "off",
+    "latency_ms": 13617,
+    "tokens_out": 2315,
+    "blocks_sent": 8,
     "images_sent": 8,
     "model_calls": 1,
     "pages_dropped": [
@@ -247,9 +250,11 @@
     "models_returned": [
       "anthropic/claude-haiku-5.5"
     ],
-    "input_tokens_est": 19926,
+    "input_tokens_est": 22307,
     "reasoning_effort": "none",
+    "tokens_estimated": 30021,
     "tokens_reasoning": 0,
-    "cost_computed_usd": 0.00306
+    "cost_computed_usd": 0.003068,
+    "cost_reported_usd": 0.003068
   }
 }

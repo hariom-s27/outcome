@@ -10679,6 +10679,7 @@
             },
             "filled": 1.0,
             "hard_fail": false,
+            "doc_filled": 1,
             "duplicates": 0,
             "field_sources": {
               "gl_code": "key",
@@ -10735,6 +10736,7 @@
             },
             "filled": 0.0,
             "hard_fail": false,
+            "doc_filled": 0,
             "duplicates": 0,
             "field_sources": {
               "gl_code": "key",
@@ -10764,7 +10766,7 @@
       "cache_mode": "off",
       "cache_replays": 0
     },
-    "latency_ms": 3129,
+    "latency_ms": 3642,
     "tokens_out": 423,
     "model_calls": 1,
     "models_returned": [
