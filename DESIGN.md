@@ -81,8 +81,16 @@ is no shared volume between api and worker.
   old 0.700), lease_002 0.708 (0.700, 0.775), om_001 0.920 (0.908, 0.966). Mean 0.740 vs the
   0.8385 bar, so the default stays `baseline`. `loc_unknown` is now 0 in every run. 0
   hallucinations, $0.0403 for 9 doc-runs (`logs/P5b_report.md`).
-- **Tables plan:** big tables need chunking (rentroll_001 returns 2–3 of 325 rows in one
-  call); planned for P6.
+
+**Long tables: the table recipe (shipped, P6–P8b)**
+
+| Decision | Why | Evidence |
+|---|---|---|
+| For a long table, the model sees a preview and writes a small recipe (header row, column → field map, document-level cells); code runs it over every row. A heuristic recipe is built too; the one with more checks passed and more rows filled wins (`EXTRACT_TABLE_PATH=spec`) | one call can't return 325 rows (the baseline returned 2–36 of them); a recipe costs one call whatever the length | P6b, 3 live runs: rentroll_001 0.9298 / 0.9886 / 0.9298 (baseline 0.006–0.110), t12_001 0.5485 every run (baseline 0.046), boxscore_001 0.95 / 0.95 / 0.88; ≈ $0.001/doc (`logs/P6b_report.md`) |
+| Ship rule judged against a **live** floor | the box score's "old 1.000" came from a cache replay; live, the old one-call path was cut off at the 8,192-token output cap with 1 of 10 rows | old path, 3 live runs: 0.100 each (P6 and P8b runs 21–23, flag `truncated_output`). Recipe 3-run mean 0.950 ≥ 0.100 − 0.025, so tables ship (`logs/P8b_part1_report.md`) |
+| `parse` on recipe cells (date range / date / number from a cell's text) and a merge guard (a merged document field must normalise to its type) | header cells like a week or period range hold the only date | works on invented sheets (tests); **no live gain on DEV**: the box-score `date` and t12 period fields stay null |
+| Recipe prompt keeps the P6b wording (Z-17b) | the P8b wording that explained `parse` coincided with a t12 drop to 0.1571 (n = 1) vs 0.5485 in 5 of 5 runs on the P6b wording | sum of the two table docs' means: P6b wording 1.4635 vs P8b wording ≤ 1.3680 (best case). A planned 0.925 box bar sat inside the measured 0.88–0.95 spread (planning error, stated in the report) |
+| Scan page choice (`SCAN_PAGE_METHOD=locate`) **not shipped** | P4's spike suggested picking pages beats sending the first 8 | lease_001, 3 live runs: 0.850 / 0.825 / 0.250, mean 0.642 vs bar 0.675 + 0.025 = 0.700 (old path live 0.650 / 0.700). Unstable, so the default stays `first` |
 
 **Confidence (P5-17, placeholder until calibrated):** a hand rule over how each value was
 verified, not the model's own number. Exact quote with the value in it 0.90 · fuzzy quote 0.75 ·
@@ -94,7 +102,8 @@ computed from verified parts 0.80 · read from a page image 0.70 · null 0.60; t
 
 Sample set split (D03): 6 development documents, 2 held out (one lease, and the only document
 using the budget field list, to simulate an unseen field list). Prompts and rules are tuned on
-the 6 only; the held-out 2 are scored once, at the end. Score = `tools/validate.py` `score()`
+the 6 only; the held-out 2 were run and scored once, inside the sealed final run, and nothing
+was changed after seeing them. Score = `tools/validate.py` `score()`
 (strict match after normalisation); n is stated with every number; a difference of ≤ 0.025 is
 noise (P4). Cost is counted as max(reported, computed), because one gateway reported $0.
 
@@ -108,23 +117,47 @@ strictly, an unseen-data score.
 ## Results
 
 <!-- AUTO:results -->
-| Pipeline | Path | Date | Docs | Runs | Mean score | Per document | All VALID |
-|---|---|---|---|---|---|---|---|
-| baseline-v1 | baseline | 2026-11-07 | 6 | 1 | **0.579** | boxscore_001 1.000, lease_001 0.700, lease_002 0.775, om_001 0.948, rentroll_001 0.006, t12_001 0.046 | yes |
-| single-value-v1 | smart | 2026-11-08 | 3 | 3 | **0.740** | lease_001 0.592, lease_002 0.708, om_001 0.920 | yes |
+| Document | Set | Path | Score |
+|---|---|---|---|
+| boxscore_001 | DEV | table:heuristic | 0.880 |
+| lease_001 | DEV | baseline | 0.650 |
+| lease_002 | DEV | baseline | 0.775 |
+| om_001 | DEV | baseline | 0.966 |
+| t12_001 | DEV | table:ai | 0.548 |
+| rentroll_001 | DEV | table:ai | 0.989 |
+| budget_001 | held-out, scored once | baseline | 0.013 |
+| lease_003 | held-out, scored once | baseline | 0.600 |
 
-Score = `tools/validate.py` `score()`: mean over documents of each document's mean of per-field means (strict match after normalisation). DEV documents only; the 2 held-out documents are not scored until the final run. Runs = live runs in the series (a doc's score is the mean over runs). Source: `eval/history.jsonl`, latest series per pipeline + path. Shipped default path: `baseline`.
+**DEV mean 0.801 (n = 6 documents, 1 run)** · held-out (n = 2, scored once): budget_001 0.013, lease_003 0.600 · all VALID: yes · all calls live: yes · $0.00250/document uncached (mean over the 8 documents) · run `c62ed30` run 90, 2026-11-08
+
+The sealed final run (P8b): all 8 sample documents, once, on the shipped settings (`EXTRACT_TABLE_PATH=spec`, `SCAN_PAGE_METHOD=first`, single-value path `baseline`), response cache off; these are the files in `outputs/`. Score = `tools/validate.py` `score()`: a document's mean of per-field means (strict match after normalisation). Held-out documents were run and scored once, inside this run; nothing was changed after. n = 1 run per document; run-to-run spread from earlier repeats is in DESIGN (Where it fails). Source: the `final: true` line in `eval/history.jsonl`.
 <!-- /AUTO:results -->
+
+## Cost vs accuracy
+
+![DEV score vs $/document per pipeline config](docs/cost_vs_accuracy.png)
+
+<!-- AUTO:chart -->
+| Config | DEV score (6-doc) | $/doc uncached | DEV docs measured | Runs |
+|---|---|---|---|---|
+| baseline P2 | 0.599 | $0.00547 | 6 | 1 |
+| smart P5 | 0.518 | $0.00497 | 3 | 3 |
+| smart P5b | 0.563 | $0.00497 | 3 | 3 |
+| hybrid sim P5c | 0.600 | $0.00771 | 3 | 3 |
+| table recipe P6b | 0.811 | $0.00327 | 3 | 3 |
+| final (shipped) | 0.801 | $0.00250 | 6 | 1 |
+
+Each point is a 6-document DEV mean: a config measured on fewer DEV documents is completed with the P2 baseline's score (and $) for the others. Hybrid sim = an offline re-score of the P5b runs (`logs/P5c_hybrid_sim.md`); its $ is both calls. The final point's $ is the sealed run's mean over all 8 documents. Held-out documents are not in the chart. Source: `scripts/plot_cost_accuracy.py`.
+<!-- /AUTO:chart -->
+
+The table recipe is what moved the score: it lifted the two long tables with one small call
+per table, so it also lowered $/doc. The smart path scored lower than the baseline at a
+similar cost; the hybrid matched the baseline's score at a higher cost (two calls).
 
 ## Cost
 
 <!-- AUTO:cost -->
-| Pipeline | Path | Runs | $/document (uncached) |
-|---|---|---|---|
-| baseline-v1 | baseline | 1 | $0.00492 |
-| single-value-v1 | smart | 3 | $0.00448 |
-
-Total spend of the 11 eval runs in `eval/history.jsonl`: $0.2133 (cost as the gateway billed it; spikes and pilots outside the eval script are in the phase reports). Uncached = a cached answer priced at the call that filled the cache, as a grader's run has no cache.
+Final run: **$0.00250 per document** (uncached, mean over 8 documents), $0.02004 for the whole run. Total spend of the 34 eval runs in `eval/history.jsonl`: $0.3003 (cost as the gateway billed it; spikes and pilots outside the eval script are in the phase reports). Uncached = a cached answer priced at the call that filled the cache, as a grader's run has no cache.
 <!-- /AUTO:cost -->
 
 All model spend by phase (from the phase reports):
@@ -139,14 +172,18 @@ All model spend by phase (from the phase reports):
 | P5 smart path (10 doc-runs) | $0.0446 (`logs/P5_report.md`) |
 | P5b checker fix (9 doc-runs, 21 calls) | $0.0403 (`logs/P5b_report.md`) |
 | P8a load, cold check, zip, docs | $0 (fake model only) |
-| **Running total** | **$0.480041** (`logs/P5b_report.md`) |
+| P6 table recipe (10 calls) | $0.013947 (`logs/P6_report.md`) |
+| P6b table recipe fixes (9 calls) | $0.009597 (`logs/P6b_report.md`) |
+| P8b live floors, re-tests, Z-17 (S1) | $0.04349 (`logs/P8b_part1_report.md`) |
+| P8b sealed final run (8 docs) | $0.020041 (`logs/P8b_report.md`) |
+| **Running total** | **$0.567116** (`logs/P8b_report.md`) |
 
 ## Load
 
 <!-- AUTO:load -->
 | Scenario | Workers | n | Terminal % | VALID % | p50 s | p95 s | max s | jobs/min | Lost | Dup | POST max s | 5xx | Pass |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| L1 | 1 | 20 | 100.0 | 100.0 | 52.15 | 63.95 | 65.47 | 11.04 | 0 | 0 | 0.297 | 0 | PASS |
+| L1 | 1 | 20 | 100.0 | 100.0 | 59.17 | 71.47 | 75.34 | 8.51 | 0 | 0 | 0.64 | 0 | PASS |
 | L2 | 2 | 10 | 100.0 | 100.0 | 13.44 | 53.74 | 77.55 | 7.74 | 0 | 0 | 0.234 | 0 | PASS |
 | L3 | 1 | 20 | 100.0 | 100.0 | 52.98 | 65.22 | 65.45 | 11.29 | 0 | 0 | 0.235 | 0 | PASS |
 | L3 | 2 | 20 | 100.0 | 100.0 | 23.59 | 28.74 | 30.66 | 23.39 | 0 | 0 | 0.218 | 0 | PASS |
@@ -155,20 +192,40 @@ All model spend by phase (from the phase reports):
 
 L2: a worker holding a lease was SIGKILLed; its job was claimed 2 times, ended SUCCESS with 1 terminal event(s), 66.44 s after the kill.
 
-Throwaway stack with a fake LLM (seeded 1-6 s latency, ~8 % 429 with Retry-After), so times measure the queue and service, not real model latency. Time = submit to first poll that sees a terminal status (client clock, polls every 2 s). VALID = JobStatus shape + the frozen contract check. Lost/dup from the DB event log and a re-GET of every job. Source: `eval/load.jsonl`, latest line per scenario + workers (`scripts/load_test.py`). Code: 6f2da24-dirty.
+Throwaway stack with a fake LLM (seeded 1-6 s latency, ~8 % 429 with Retry-After), so times measure the queue and service, not real model latency. Time = submit to first poll that sees a terminal status (client clock, polls every 2 s). VALID = JobStatus shape + the frozen contract check. Lost/dup from the DB event log and a re-GET of every job. Source: `eval/load.jsonl`, latest line per scenario + workers (`scripts/load_test.py`). Code: 6f2da24-dirty, c62ed30-dirty.
 <!-- /AUTO:load -->
 
 These runs (P8a, fake model) are the evidence for the 2-worker default: throughput rose from
 1 to 2 and 3 workers, no job was lost or duplicated, and a SIGKILLed worker's job finished
-once after the lease ran out (`logs/P8a_load_report.md`).
+once after the lease ran out (`logs/P8a_load_report.md`). L1 was re-run on the final code
+(P8b, same fake model; `logs/P8b_load_tables.md`).
 
 ## Where it fails
 
-- **Big tables:** one call returns a handful of rows from a 325-row rent roll; rentroll_001
-  and t12_001 score near 0 on the baseline.
-- **Smart path (P5 lessons):** after the checker fix, what remains is mostly the model
-  returning null (10–12 fields per lease) and short text or dates not inside their quote
-  (4–6 per lease); computed fields with no parts (lease term) stay 0 (`logs/P5b_report.md`).
+Numbers below are from live runs; n is given each time.
+
+- **Held-out budget (unseen field list): 0.013, scored once.** The run recorded path
+  `baseline` (one call) and 1 of 55 rows. INFERENCE: PDF table on the old path (recipes
+  cover spreadsheets only). Its per-field detail was not opened. No change was made after
+  seeing the score (Z-8).
+- **Held-out lease: 0.600, scored once** (DEV leases in the same run: 0.650 and 0.775). Same
+  shipped path as the DEV leases.
+- **Smart path: tested 3 times, not shipped.** Ship bar 0.8385 (old 3-doc mean + 0.025):
+  P5 0.650, P5b 0.740 (3 live runs per doc each), and the P5c hybrid simulation 0.8155. What
+  remains is mostly the model returning null (10–12 fields per lease) and short text or dates
+  not inside their quote (`logs/P5b_report.md`, `logs/P5c_hybrid_sim.md`).
+- **Scanned leases see only the first pages** on the shipped path (8 of 25 pages for
+  lease_001). Picking pages first was unstable (0.850 / 0.825 / 0.250, n = 3) and not shipped.
+- **Table header dates:** the box-score `date` is null in every live run on the shipped
+  prompt (n = 5: P6b 11–13, P8b 36, final) and the t12 period fields are null; the `parse`
+  feature showed no live gain. On the shipped prompt the box score is 0.95 or 0.88 run to
+  run (n = 5: 0.95, 0.95, 0.88, 0.88, 0.88); in the final run `property_name` and `date`
+  are missed in all 10 rows and two percentage fields are wrong in 2 rows each.
+- **PDF and long tables on the old one-call path** get cut off at the output cap (box score
+  1 of 10 rows, flag `truncated_output`, 3 of 3 live runs). The flag fires; the
+  repetition-loop flag did not (threshold 10 %).
+- **Measure live:** a cached replay once stood in for a live score (box score "1.000" vs
+  0.100 live). Every ship decision since uses `--expect-live` runs with the cache off.
 - **A value can pass the quote check and still be wrong:** the checker proves the value is
   in the quoted text, not that the model quoted the right passage. In the offline hybrid
   simulation (P5c, 3 runs per doc), 4 fields took a checked smart value that scored below the
@@ -184,4 +241,10 @@ once after the lease ran out (`logs/P8a_load_report.md`).
 
 ## Next steps
 
-(filled in at the end)
+- Recipes for tables outside spreadsheets (the held-out budget took the one-call path and
+  returned 1 of 55 rows; cause not verified).
+- Record each recipe cell's `parse` in the metadata, so a null header date can be explained.
+- Page choice for long scans needs a steadier locator before it can ship.
+- A killable parse step (child process with its own timeout) instead of relying on the job
+  deadline.
+- Calibrate confidence against accuracy (still the hand rule above).

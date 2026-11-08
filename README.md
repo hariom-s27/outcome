@@ -49,7 +49,9 @@ variables use the `${VAR:-}` form, so an unset variable is empty, never an error
 | `MAX_PENDING` | 500 | compose | `429` + `Retry-After: 30` when this many jobs wait |
 | `LEASE_S` / `HEARTBEAT_S` | 60 / 15 | compose | worker lease and heartbeat |
 | `SWEEP_EVERY_S` | 5 | compose | how often a worker checks deadlines and dead leases |
+| `EXTRACT_TABLE_PATH` | `spec` | compose (worker) | long tables: the model writes a small extraction recipe from a preview and code runs it over every row; `baseline` = one call with the whole table |
 | `EXTRACT_SINGLE_VALUE_PATH` | `baseline` | compose (worker) | `smart` turns on the evidence-checked path (measured, not shipped) |
+| `SCAN_PAGE_METHOD` | `first` | compose (worker) | scanned PDFs send their first pages; `locate` lets the model pick pages first (measured, not shipped) |
 | `DOCX_PAGE_METHOD` | `none` | compose (worker) | DOCX has no pages; `estimate` guesses them |
 | `APP_VERSION` | `dev` | compose | shown by `/health` |
 | `LLM_MAX_CONCURRENCY` | 4 | code default | model calls in flight per worker |
@@ -62,25 +64,32 @@ never part of the shipped stack.
 ## Scores on the sample set
 
 <!-- AUTO:scores -->
-| Pipeline | Path | Date | Docs | Runs | Mean score | Per document | All VALID |
-|---|---|---|---|---|---|---|---|
-| baseline-v1 | baseline | 2026-11-07 | 6 | 1 | **0.579** | boxscore_001 1.000, lease_001 0.700, lease_002 0.775, om_001 0.948, rentroll_001 0.006, t12_001 0.046 | yes |
-| single-value-v1 | smart | 2026-11-08 | 3 | 3 | **0.740** | lease_001 0.592, lease_002 0.708, om_001 0.920 | yes |
+| Document | Set | Path | Score |
+|---|---|---|---|
+| boxscore_001 | DEV | table:heuristic | 0.880 |
+| lease_001 | DEV | baseline | 0.650 |
+| lease_002 | DEV | baseline | 0.775 |
+| om_001 | DEV | baseline | 0.966 |
+| t12_001 | DEV | table:ai | 0.548 |
+| rentroll_001 | DEV | table:ai | 0.989 |
+| budget_001 | held-out, scored once | baseline | 0.013 |
+| lease_003 | held-out, scored once | baseline | 0.600 |
 
-Score = `tools/validate.py` `score()`: mean over documents of each document's mean of per-field means (strict match after normalisation). DEV documents only; the 2 held-out documents are not scored until the final run. Runs = live runs in the series (a doc's score is the mean over runs). Source: `eval/history.jsonl`, latest series per pipeline + path. Shipped default path: `baseline`.
+**DEV mean 0.801 (n = 6 documents, 1 run)** · held-out (n = 2, scored once): budget_001 0.013, lease_003 0.600 · all VALID: yes · all calls live: yes · $0.00250/document uncached (mean over the 8 documents) · run `c62ed30` run 90, 2026-11-08
+
+The sealed final run (P8b): all 8 sample documents, once, on the shipped settings (`EXTRACT_TABLE_PATH=spec`, `SCAN_PAGE_METHOD=first`, single-value path `baseline`), response cache off; these are the files in `outputs/`. Score = `tools/validate.py` `score()`: a document's mean of per-field means (strict match after normalisation). Held-out documents were run and scored once, inside this run; nothing was changed after. n = 1 run per document; run-to-run spread from earlier repeats is in DESIGN (Where it fails). Source: the `final: true` line in `eval/history.jsonl`.
 <!-- /AUTO:scores -->
 
-The shipped `outputs/` files for the DEV documents come from the P2 baseline run (0.599 on
-DEV, n = 6, `logs/P2_eval.md`); the P3 re-run of the same baseline scored lower, so the P2
-files were kept. Per-run detail: `logs/P2_eval.md`, `logs/P3_eval.md`, `logs/P5_report.md`,
-`logs/P5b_report.md`.
+All 8 files in `outputs/` come from this one sealed run. Per-field detail (field names and
+counts only): `logs/eval_p8b_final.md`. How each config scored on the way here, with cost:
+[DESIGN.md](DESIGN.md#cost-vs-accuracy) and `docs/cost_vs_accuracy.png`.
 
 ## Load results
 
 <!-- AUTO:load -->
 | Scenario | Workers | n | Terminal % | VALID % | p50 s | p95 s | max s | jobs/min | Lost | Dup | POST max s | 5xx | Pass |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| L1 | 1 | 20 | 100.0 | 100.0 | 52.15 | 63.95 | 65.47 | 11.04 | 0 | 0 | 0.297 | 0 | PASS |
+| L1 | 1 | 20 | 100.0 | 100.0 | 59.17 | 71.47 | 75.34 | 8.51 | 0 | 0 | 0.64 | 0 | PASS |
 | L2 | 2 | 10 | 100.0 | 100.0 | 13.44 | 53.74 | 77.55 | 7.74 | 0 | 0 | 0.234 | 0 | PASS |
 | L3 | 1 | 20 | 100.0 | 100.0 | 52.98 | 65.22 | 65.45 | 11.29 | 0 | 0 | 0.235 | 0 | PASS |
 | L3 | 2 | 20 | 100.0 | 100.0 | 23.59 | 28.74 | 30.66 | 23.39 | 0 | 0 | 0.218 | 0 | PASS |
@@ -89,7 +98,7 @@ files were kept. Per-run detail: `logs/P2_eval.md`, `logs/P3_eval.md`, `logs/P5_
 
 L2: a worker holding a lease was SIGKILLed; its job was claimed 2 times, ended SUCCESS with 1 terminal event(s), 66.44 s after the kill.
 
-Throwaway stack with a fake LLM (seeded 1-6 s latency, ~8 % 429 with Retry-After), so times measure the queue and service, not real model latency. Time = submit to first poll that sees a terminal status (client clock, polls every 2 s). VALID = JobStatus shape + the frozen contract check. Lost/dup from the DB event log and a re-GET of every job. Source: `eval/load.jsonl`, latest line per scenario + workers (`scripts/load_test.py`). Code: 6f2da24-dirty.
+Throwaway stack with a fake LLM (seeded 1-6 s latency, ~8 % 429 with Retry-After), so times measure the queue and service, not real model latency. Time = submit to first poll that sees a terminal status (client clock, polls every 2 s). VALID = JobStatus shape + the frozen contract check. Lost/dup from the DB event log and a re-GET of every job. Source: `eval/load.jsonl`, latest line per scenario + workers (`scripts/load_test.py`). Code: 6f2da24-dirty, c62ed30-dirty.
 <!-- /AUTO:load -->
 
 Detail and method: [logs/P8a_load_report.md](logs/P8a_load_report.md).
@@ -115,13 +124,16 @@ uv run python scripts/make_zip.py         # submission zip with safety checks (c
 
 ## Known limitations
 
-- **Big tables:** the one-call baseline returns only a few rows of a large rent roll or
-  operating statement (scores near 0 on those two DEV documents). Table documents need
-  chunking.
+- **Held-out budget (unseen field list):** it took the one-call path and returned 1 of its
+  55 rows (score 0.013). INFERENCE: PDF table on the old path (recipes cover spreadsheets
+  only). See DESIGN, Where it fails.
+- **Table header dates:** dates that sit only in a header cell (a week or period range) come
+  back null on the DEV tables.
+- **Scanned PDFs** send only their first pages to the model; fields on later pages are missed.
 - **DOCX page numbers:** none. A DOCX has no pages, and the LibreOffice renderer that could
   place them was not added (image size, start-up time).
-- **Smart path not shipped:** the evidence-checked path scored below the baseline in 3 live
-  runs per document, so it stays behind a switch.
+- **Smart path and page choice not shipped:** both scored below their ship rule in live runs,
+  so they stay behind switches.
 - **A stuck parser** (a hostile or huge file) is bounded only by the job deadline, which ends
   the job `PARTIAL`; there is no separate parse timeout.
 - **Load numbers use a fake model** (1-6 s replies); real model latency is longer.
@@ -129,16 +141,28 @@ uv run python scripts/make_zip.py         # submission zip with safety checks (c
 
 ## AI assistance
 
-Built with Claude Code as a coding assistant. Every design decision, review and commit is
-mine. How it was used:
+Built with AI assistance. Every design decision, review and commit is mine. How it was used:
 
+- **Who did what:** Claude (chat) for planning, decision tables and reviewing reports;
+  Claude Code for implementation, tests and the measured runs.
 - **Workflow:** each phase had a written plan and a decision table that I approved before
   any code. The agent implemented only approved rows, wrote tests first where listed, and
   stopped at fixed points for my review. I wrote every commit.
 - **Guard rails:** deny rules and a pre-tool hook kept the agent away from secrets, the
   answer files and the held-out documents. When a guard blocked it, the agent stopped and
   reported instead of finding another route.
-- **Corrections I made (examples):**
+- **Corrections caught in review (examples):**
+  - P8b: the box-score "old 1.000" that a ship rule leaned on was a cache replay; measured
+    live (3 runs) it was 0.100, cut off at the output cap. The bar was re-set from live runs,
+    with the formula unchanged.
+  - P5: the plan wrote the two-digit-year window two ways ("−50/+49" vs its own example
+    "00–76 → 20xx"); the agent flagged it and the example's window was used and tested.
+  - P1–P8a: guard false positives (a field key that equals an answer value elsewhere; the
+    bare words `cache` / `.env` inside a grep pattern). Each was stopped and reported, never
+    worked around; the sample-values guard was then fixed with my approval.
+  - P8b: a ship bar set in planning (0.925 on the box score) sat inside that doc's measured
+    spread, so it tested noise; I overruled the result and decided on both affected documents.
+- **Corrections I made (earlier examples):**
   - P5b: the checker kept the model's number when a quote matched within tolerance; I had it
     output the number the source states instead, and treat an empty list as a null answer.
   - P5b: I narrowed the free-text rule to "the model's value as found inside the source span,
