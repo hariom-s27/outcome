@@ -91,6 +91,12 @@ def test_e0_robust_defaults_to_on(compose):
     assert env["E0_ROBUST"] == "${E0_ROBUST:-1}"
 
 
+def test_pdf_table_method_defaults_to_single(compose):
+    # P9c Z-42: shipped = the v1.0 PDF table call until the grid passes its gate
+    env = _env(compose["services"]["worker"])
+    assert env["PDF_TABLE_METHOD"] == "${PDF_TABLE_METHOD:-single}"
+
+
 def test_two_worker_replicas_by_default(compose):
     assert compose["services"]["worker"]["deploy"]["replicas"] == 2
 
@@ -104,6 +110,7 @@ def test_settings_from_shipped_env(compose, monkeypatch):
         "EXTRACT_TABLE_PATH",
         "SCAN_PAGE_METHOD",
         "E0_ROBUST",
+        "PDF_TABLE_METHOD",
     ):
         monkeypatch.delenv(var, raising=False)
     for k, v in _resolve_empty_shell(_env(compose["services"]["worker"])).items():
@@ -120,3 +127,4 @@ def test_settings_from_shipped_env(compose, monkeypatch):
     assert Settings.from_env().sv_model is None
     assert Settings.from_env().lab_mode is False
     assert Settings.from_env().e0_robust is True  # Z-35: E0 on in the shipped config
+    assert Settings.from_env().pdf_table_method == "single"  # P9c: v1.0 PDF table call
