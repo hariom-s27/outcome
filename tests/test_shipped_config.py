@@ -97,10 +97,10 @@ def test_pdf_table_method_defaults_to_grid(compose):
     assert env["PDF_TABLE_METHOD"] == "${PDF_TABLE_METHOD:-grid}"
 
 
-def test_table_cleanup_defaults_to_off(compose):
-    # P9c Z-51: shipped = no cleanup rules until their gate passes
+def test_table_cleanup_defaults_to_on(compose):
+    # P9c Z-60: shipped = cleanup rules on (cleared on runs 154-157, 161-166)
     env = _env(compose["services"]["worker"])
-    assert env["TABLE_CLEANUP"] == "${TABLE_CLEANUP:-0}"
+    assert env["TABLE_CLEANUP"] == "${TABLE_CLEANUP:-1}"
 
 
 def test_two_worker_replicas_by_default(compose):
@@ -135,4 +135,4 @@ def test_settings_from_shipped_env(compose, monkeypatch):
     assert Settings.from_env().lab_mode is False
     assert Settings.from_env().e0_robust is True  # Z-35: E0 on in the shipped config
     assert Settings.from_env().pdf_table_method == "grid"  # P9c: grid on (gate passed)
-    assert Settings.from_env().table_cleanup is False  # P9c Z-51: off until its gate
+    assert Settings.from_env().table_cleanup is True  # P9c Z-60: cleared, default on

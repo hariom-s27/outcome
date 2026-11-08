@@ -189,10 +189,11 @@ def test_grid_path_cleanup(cleanup):
 
 
 @pytest.mark.parametrize(
-    "raw, on", [(None, False), ("", False), ("0", False), ("1", True), ("true", True), ("ON", True)]
+    "raw, on",
+    [(None, True), ("", True), ("1", True), ("0", False), ("false", False), ("OFF", False)],
 )
-def test_switch_defaults_off(monkeypatch, raw, on):
-    assert Settings().table_cleanup is False
+def test_switch_defaults_on_and_can_be_turned_off(monkeypatch, raw, on):  # Z-60
+    assert Settings().table_cleanup is True
     if raw is None:
         monkeypatch.delenv("TABLE_CLEANUP", raising=False)
     else:
