@@ -225,12 +225,17 @@ def test_default_off_keeps_b5_only():
 # --- worker wiring + switch ---
 
 
-def test_e0_switch_defaults_off_and_reads_env(monkeypatch):
-    assert Settings().e0_robust is False
-    monkeypatch.setenv("E0_ROBUST", "1")
-    assert Settings.from_env().e0_robust is True
-    monkeypatch.delenv("E0_ROBUST")
-    assert Settings.from_env().e0_robust is False
+@pytest.mark.parametrize(
+    "raw, on",
+    [(None, True), ("", True), ("1", True), ("0", False), ("false", False), ("OFF", False)],
+)
+def test_e0_switch_defaults_on_and_can_be_turned_off(monkeypatch, raw, on):  # Z-35
+    assert Settings().e0_robust is True
+    if raw is None:
+        monkeypatch.delenv("E0_ROBUST", raising=False)
+    else:
+        monkeypatch.setenv("E0_ROBUST", raw)
+    assert Settings.from_env().e0_robust is on
 
 
 @pytest.mark.parametrize("on", [False, True])

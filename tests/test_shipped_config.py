@@ -24,7 +24,6 @@ DEV_ONLY = (
     "LLM_REASONING_OVERRIDE",
     "SV_MODEL",  # P9b: lab only; shipped = the YAML baseline model
     "LAB_MODE",  # P9b: lab only; shipped = no per-job debug_model
-    "E0_ROBUST",  # P9b E0: off until its gate passes
 )
 
 
@@ -86,6 +85,12 @@ def test_scan_page_method_defaults_to_first(compose):
     assert env["SCAN_PAGE_METHOD"] == "${SCAN_PAGE_METHOD:-first}"
 
 
+def test_e0_robust_defaults_to_on(compose):
+    # P9b Z-35: shipped = robust parsing on (gate passed, runs 105-106); 0 turns it off
+    env = _env(compose["services"]["worker"])
+    assert env["E0_ROBUST"] == "${E0_ROBUST:-1}"
+
+
 def test_two_worker_replicas_by_default(compose):
     assert compose["services"]["worker"]["deploy"]["replicas"] == 2
 
@@ -98,6 +103,7 @@ def test_settings_from_shipped_env(compose, monkeypatch):
         "EXTRACT_SINGLE_VALUE_PATH",
         "EXTRACT_TABLE_PATH",
         "SCAN_PAGE_METHOD",
+        "E0_ROBUST",
     ):
         monkeypatch.delenv(var, raising=False)
     for k, v in _resolve_empty_shell(_env(compose["services"]["worker"])).items():
@@ -113,4 +119,4 @@ def test_settings_from_shipped_env(compose, monkeypatch):
     # P9b: the model switch is off in the shipped config
     assert Settings.from_env().sv_model is None
     assert Settings.from_env().lab_mode is False
-    assert Settings.from_env().e0_robust is False
+    assert Settings.from_env().e0_robust is True  # Z-35: E0 on in the shipped config
