@@ -348,7 +348,8 @@ def image_pages(messages) -> list[int]:
 
 
 def test_switch_defaults_to_first_and_validates():
-    assert Settings().scan_page_method == "first"
+    assert Settings().scan_page_method == "all"  # P9e: lab default since Z-56 passed
+    assert Settings(scan_page_method="first").scan_page_method == "first"
     assert Settings(scan_page_method="locate").scan_page_method == "locate"
     assert Settings(scan_page_method="all").scan_page_method == "all"  # P9e Z-53
     with pytest.raises(ValueError):
@@ -359,7 +360,7 @@ def test_switch_from_env(monkeypatch):
     monkeypatch.setenv("SCAN_PAGE_METHOD", " Locate ")
     assert Settings.from_env().scan_page_method == "locate"
     monkeypatch.delenv("SCAN_PAGE_METHOD")
-    assert Settings.from_env().scan_page_method == "first"
+    assert Settings.from_env().scan_page_method == "all"  # P9e default
 
 
 def test_switch_routes_single_value_lists_only():

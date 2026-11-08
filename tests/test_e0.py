@@ -251,7 +251,9 @@ def test_worker_passes_robust_only_when_switched_on(
 
     monkeypatch.setattr(baseline, "extract", spy)
     llm, _ = _client(database_url, [GOOD])
-    s = settings.__class__(**{**settings.__dict__, "e0_robust": on})
+    # P9e: scan_page_method pinned to first so only the E0 kwarg is under test (all is the
+    # lab default and adds scan_all; tests/test_p9e.py covers that kwarg)
+    s = settings.__class__(**{**settings.__dict__, "e0_robust": on, "scan_page_method": "first"})
     jid = _post(client, "").json()["job_id"]
     assert worker.process_one(s, "w1", llm) is True
     assert seen == ([{"robust": True}] if on else [{}])

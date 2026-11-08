@@ -79,10 +79,11 @@ def test_table_path_defaults_to_spec(compose):
     assert env["EXTRACT_TABLE_PATH"] == "${EXTRACT_TABLE_PATH:-spec}"
 
 
-def test_scan_page_method_defaults_to_first(compose):
-    # P8b Z-13: shipped = first pages until Z-14 says otherwise
+def test_scan_page_method_defaults_to_all(compose):
+    # P9e Z-56: lab default = every scan page (gate passed, runs 171-173; full set run 174);
+    # SCAN_PAGE_METHOD=first = the v1.0 first 8 pages
     env = _env(compose["services"]["worker"])
-    assert env["SCAN_PAGE_METHOD"] == "${SCAN_PAGE_METHOD:-first}"
+    assert env["SCAN_PAGE_METHOD"] == "${SCAN_PAGE_METHOD:-all}"
 
 
 def test_e0_robust_defaults_to_on(compose):
@@ -129,7 +130,7 @@ def test_settings_from_shipped_env(compose, monkeypatch):
     assert llm.api_key == ""
     assert Settings.from_env().single_value_path == "baseline"
     assert Settings.from_env().table_path == "spec"
-    assert Settings.from_env().scan_page_method == "first"
+    assert Settings.from_env().scan_page_method == "all"
     # P9b: the model switch is off in the shipped config
     assert Settings.from_env().sv_model is None
     assert Settings.from_env().lab_mode is False

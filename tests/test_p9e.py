@@ -182,11 +182,12 @@ def test_short_scan_with_all_is_the_v1_call():
     assert baseline.scan_page_total(scan_pages(9)) == 9
 
 
-def test_switch_accepts_all_from_env(monkeypatch):
-    monkeypatch.setenv("SCAN_PAGE_METHOD", " ALL ")
-    assert Settings.from_env().scan_page_method == "all"
-    monkeypatch.delenv("SCAN_PAGE_METHOD")
+def test_switch_defaults_to_all_and_first_turns_it_off(monkeypatch):  # Z-56 passed
+    assert Settings().scan_page_method == "all"
+    monkeypatch.setenv("SCAN_PAGE_METHOD", " FIRST ")
     assert Settings.from_env().scan_page_method == "first"
+    monkeypatch.delenv("SCAN_PAGE_METHOD")
+    assert Settings.from_env().scan_page_method == "all"
 
 
 @pytest.mark.parametrize("method", ["first", "all"])
