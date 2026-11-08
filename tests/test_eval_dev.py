@@ -193,3 +193,41 @@ def test_history_is_append_only(monkeypatch, tmp_path):
     assert eval_dev.main() == 0
     lines = (tmp_path / "history.jsonl").read_text(encoding="utf-8").splitlines()
     assert lines[0] == '{"old": 1}' and len(lines) == 2
+
+
+# --- P8b Z-7/Z-8: the sealed final run ------------------------------------------------------------
+
+
+def test_final_sealed_default_runs_every_manifest_doc_without_typed_ids():
+    rows = {"d1": {}, **{h: {} for h in eval_dev.HELD_OUT}, "d2": {}}
+    assert eval_dev.default_docs(rows, final_sealed=False) == ["d1", "d2"]
+    assert eval_dev.default_docs(rows, final_sealed=True) == list(rows)
+
+
+def test_dry_run_gate_never_opens_a_held_out_doc(monkeypatch):
+    seen: list[list[str]] = []
+    monkeypatch.setattr(eval_dev.run_gates, "clean_tree_gate", lambda *a, **k: (True, "clean"))
+    monkeypatch.setattr(eval_dev.dry_run, "run", lambda docs: seen.append(docs) or (True, []))
+    ok, gates = eval_dev.paid_run_gates(["d1", *sorted(eval_dev.HELD_OUT)], False, False)
+    assert ok and gates["dry_run"] == "passed" and seen == [["d1"]]
+
+
+def test_final_sealed_run_records_final_and_reports_dev_and_held_out_apart(monkeypatch, tmp_path):
+    held = sorted(eval_dev.HELD_OUT)
+    jobs = {"d1": _job(), "d2": _job(), **{h: _job() for h in held}}
+    scored = _fake_run(monkeypatch, tmp_path, jobs, [])
+    report = tmp_path / "report.md"
+    monkeypatch.setattr(sys, "argv", ["eval_dev.py", "--final-sealed", "--expect-live",
+                                      "--report", str(report)])  # fmt: skip
+    assert eval_dev.main() == 0 and scored == list(jobs)  # no --docs: every manifest doc
+    h = json.loads((tmp_path / "history.jsonl").read_text(encoding="utf-8").splitlines()[-1])
+    assert h["final"] is True and h["n_docs"] == 4 and h["n_dev"] == 2
+    assert set(h["held_out_per_doc"]) == set(held) and "dev_mean_score" in h
+    assert "held-out (scored once)" in report.read_text(encoding="utf-8")
+
+
+def test_an_ordinary_run_is_not_final(monkeypatch, tmp_path):
+    _fake_run(monkeypatch, tmp_path, {"d1": _job()}, [])
+    assert eval_dev.main() == 0
+    h = json.loads((tmp_path / "history.jsonl").read_text(encoding="utf-8").splitlines()[-1])
+    assert h["final"] is False and h["n_dev"] == 1 and h["held_out_per_doc"] == {}
