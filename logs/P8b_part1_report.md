@@ -179,3 +179,112 @@ this: runs 31–32 alone would pass. I applied the rule as written, with no runs
    - step 2: 3 × $0.00091 + $0.00126 + $0.00567 + $0.00574 + $0.00550 = $0.02090;
    - session total **$0.04026** (cap $0.07).
    - **RUNNING TOTAL $0.503585 + $0.04026 = $0.543845.**
+
+---
+
+## Addendum — Z-17 prompt revert test (approved by Hariom after STOP 2)
+
+**What was tested:**
+- The table-spec prompt reverted to the P6b wording: `SYSTEM` byte-identical to `4aa72a9`,
+  checked by an AST comparison.
+- Grammar, executor, merge guard and heuristic `parse` kept.
+- Committed by Hariom as `20e1d24`; stack rebuilt, start lines
+  `table_path=spec, scan_pages=first, cache_mode=off`, tree clean.
+
+**Pre-registered rule (Hariom):** keep the revert if t12 2-run mean ≥ 0.524 **and**
+box ≥ 0.925; otherwise revert the revert (the Part A wording stays) and report.
+
+| run | doc | score | rows pred/truth | calls | in / out tokens | path | cost $ |
+|---|---|---|---|---|---|---|---|
+| 34 | t12_001 | 0.5485 | 119/119 | 1 | 9,538 / 447 | table:ai | 0.00118 |
+| 35 | t12_001 | 0.5485 | 119/119 | 1 | 9,538 / 423 | table:ai | 0.00117 |
+| 36 | boxscore_001 | 0.880 | 10/10 | 1 | 6,532 / 447 | table:heuristic | 0.00088 |
+
+All 3 runs: live (0 replays), valid = True, no `--write-outputs`. Runs 35–36 are recorded as
+`20e1d24-dirty` (history file changed by run 34; `--allow-dirty` not used).
+
+**Arithmetic:**
+- t12 mean = (0.5485 + 0.5485) / 2 = **0.5485 ≥ 0.524** → pass.
+- box = **0.880 < 0.925** → fail.
+- **Rule result: FAIL → revert the revert.**
+
+**Applied:**
+- `app/pipeline/table_spec.py` and `tests/test_p8b.py` restored with Edit to the Part A wording.
+- `git diff 20e1d24~1 -- app/pipeline/table_spec.py tests/test_p8b.py` is empty: identical to
+  the code before the revert.
+- 581 passed, ruff clean, pre-commit all passed.
+- The running stack still has the reverted prompt (`20e1d24` image), so it needs a rebuild
+  before S2.
+
+**What the numbers say (for S2, no action taken):**
+- **Box score run 36** lost exactly what P6b run 13 lost:
+  - `property_name` and `date` missed (10 each);
+  - `percent_occupied` / `p_occ_wornonrev` 2 wrong each;
+  - same tokens as P6b run 13.
+  - The heuristic spec was chosen (doc_filled tie-break or rank; the metadata is in the job
+    result only).
+  - On the P6b prompt the box score is now 0.95, 0.95, 0.88, 0.88 (n = 4, mean 0.915). On
+    the Part A prompt it is 0.95, 0.95, 0.95 (n = 3).
+- **t12:**
+  - Part A prompt: 0.1571 (n = 1).
+  - P6b prompt: 0.5485 in 5 of 5 runs (P6b 11–13, here 34–35).
+- So each prompt has a known weak spot: the Part A wording on t12 (1 of 1 run), the P6b
+  wording on the box score (2 of 4 runs). Both n are small. The box condition (≥ 0.925) is
+  what decided it, as pre-registered.
+- **`date` and the t12 period fields are null on both prompts.** The Z-2 `parse` feature has
+  shown no live gain on DEV.
+
+**Spend:** $0.00118 + $0.00117 + $0.00088 = $0.00323. Session total $0.04026 + $0.00323 =
+**$0.04349** (cap $0.07). **RUNNING TOTAL $0.543845 + $0.00323 = $0.547075.**
+
+**SELF-AUDIT (addendum):**
+- Runs exactly as pre-registered (34, 35, 36) and the rule applied as written.
+- The restore was done with Edit only.
+- No `.env`, `cache/`, answer or held-out files read.
+- No sample values in this addendum.
+- No stack restart, no commits.
+
+---
+
+## Z-17b — decision overruled: keep the P6b wording (Hariom, after the addendum)
+
+**Decision:** the table-spec prompt keeps the **P6b wording** (commit `20e1d24`). Hariom ran
+`git restore` on `app/pipeline/table_spec.py` and `tests/test_p8b.py`, so the "revert the
+revert" in the addendum is undone. The Z-2 grammar, executor, Z-3 merge guard and heuristic
+`parse` stay; only the prompt's `parse` explanation and example are gone. The running stack
+is the `20e1d24` image (`table_path=spec, scan_pages=first, cache_mode=off`), so no rebuild
+is needed.
+
+**Why the Z-17 rule was mis-set (planner's error, not a data result):**
+- The box bar of 0.925 sat **inside the spread already measured** for the P6b wording on the
+  box score: 0.95 / 0.95 / 0.88 in P6b runs 11–13, so a range of 0.88–0.95.
+- One more run on that wording had a known chance of landing at 0.88. So the bar tested
+  noise, not the revert.
+- The t12 bar (0.524) was set correctly, below a spread that had never varied (0.5485 every
+  run).
+
+**Decision on both docs** (sum of per-doc means, the two tables the prompt change affects;
+live runs only):
+
+| wording | boxscore_001 mean | t12_001 mean | sum |
+|---|---|---|---|
+| P6b (`20e1d24`) | (0.95 + 0.95 + 0.88 + 0.88) / 4 = 0.915 (n = 4: P6b 11–13, P8b 36) | 0.5485 (n = 5: P6b 11–13, P8b 34–35) | **1.4635** |
+| Part A, best case | 0.950 (n = 3: P8b 24–26) | (0.1571 + 2 × 0.5485) / 3 = 0.4180 (run 27, plus 2 assumed runs at the P6b value) | **1.3680** |
+
+- 1.4635 > 1.3680. The "best case" for Part A assumes its next 2 t12 runs would match the P6b
+  value. The measured Part A t12 run is 0.1571, so the real gap is likely larger.
+- **Effect on the T-16b ship decision:** none. Condition 3 (box ≥ 0.075) still passes:
+  0.915 ≥ 0.075. Conditions 1–2 use the P6b means, which are the same wording.
+- **Effect on outputs:** none. `boxscore_001` stays from run 24; `rentroll_001` / `t12_001`
+  stay from P6b run 11 (Z-6). The sealed S2 run regenerates all 8 anyway (Z-7).
+
+**What stays open (for DESIGN "where it fails"):**
+- On the shipped wording, the box score misses `property_name` and `date` in 2 of 4 live runs
+  (0.88), and `date` in all 4.
+- The t12 period fields stay null.
+- The Z-2 `parse` grammar has no live gain on DEV. It remains usable by the AI spec (accepted
+  by the validator) and is used by the heuristic when a labelled header cell holds a date.
+
+**Check:** `git diff 20e1d24 -- app/ tests/` is empty; `uv run pytest` → 581 passed.
+
+**Spend:** none in Z-17b. Session total stays **$0.04349**; **RUNNING TOTAL $0.547075.**
