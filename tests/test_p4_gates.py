@@ -201,3 +201,21 @@ def test_launcher_refuses_dirty_tree(monkeypatch):
     monkeypatch.setattr(launch.run_gates, "dirty_paths", lambda git=None: ["?? x"])
     monkeypatch.setattr(launch.subprocess, "run", lambda *a, **k: pytest.fail("no docker"))
     assert launch.main(["b1", "--max-usd", "0.01"]) == 2
+
+
+def test_dry_run_defaults_are_the_shipped_settings():
+    # P9f: run() and the CLI plan spec + grid + every scan page unless told otherwise
+    import inspect
+
+    d = {k: v.default for k, v in inspect.signature(dry_run.run).parameters.items()}
+    assert (d["table_path"], d["scan_pages"], d["pdf_table"]) == ("spec", "all", "grid")
+
+
+def test_dry_run_main_shipped_and_v10_plans(invented_doc, capsys):
+    assert dry_run.main(["--docs", "doc_a"]) == 0
+    assert "path=baseline why=single_value" in capsys.readouterr().out  # routed as the worker
+    assert (
+        dry_run.main(["--docs", "doc_a", "--table-path", "baseline", "--scan-pages", "first"]) == 0
+    )
+    with pytest.raises(SystemExit):
+        dry_run.main(["--docs", "doc_a", "--path", "smart"])  # smart plans alone

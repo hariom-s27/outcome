@@ -201,3 +201,54 @@ def test_hybrid_means_reads_the_bold_column(tmp_path):
         "| doc_001 | 0.1 | 0.2 | 0.3 | **0.2000** | 0.5 |\n| x | y |\n", encoding="utf-8"
     )
     assert pca.hybrid_means(log) == {"doc_001": 0.2}
+
+
+# --- P9f: v1.1 blocks (invented runs and docs) ------------------------------------------------
+
+
+def _v11_history(monkeypatch):
+    monkeypatch.setattr(rd, "V11_BASE_RUNS", (1, 2, 3, 4))
+    monkeypatch.setattr(rd, "V11_RUN", 9)
+    return [
+        _hist("p", "x", 1, {"d1": 0.4, "dh": 0.9}, held_out_per_doc={"dh": 0.9}),
+        _hist("p", "x", 2, {"d1": 0.6}, set="dev"),
+        _hist("p", "x", 3, {"s1": 0.2}, set="syn"),
+        _hist("p", "x", 4, {"s1": 0.4}, set="syn"),
+        _hist("p", "x", 9, {"d1": 0.8, "s1": 1.0}, set="all", usd_per_doc=0.002),
+    ]
+
+
+def test_v11_block_compares_base_and_shipped_run(monkeypatch):
+    out = rd.render_v11(_v11_history(monkeypatch), [])
+    assert "| d1 | DEV | 0.500 | 0.800 | +0.300 |" in out
+    assert "| s1 | SYN | 0.300 | 1.000 | +0.700 |" in out
+    assert "DEV+SYN (n = 2) 0.400 → **0.900**" in out
+    assert "dh" not in out  # held-out never shown
+    assert "SCAN_PAGE_METHOD=all" in out and "SPEC_RETRY_FEEDBACK=0" in out
+
+
+def test_v11_block_without_the_run(monkeypatch):
+    hist = _v11_history(monkeypatch)[:-1]
+    assert rd.render_v11(hist, []).startswith("_No v1.1")
+
+
+def test_gates_block_means_and_run_labels(monkeypatch):
+    hist = _v11_history(monkeypatch)
+    gate = ("Thing", "Z-0", (((1, 2), ("d1",)), ((3, 4), None)), (9,), None, "PASS", "src")
+    monkeypatch.setattr(rd, "GATES", (gate,))
+    out = rd.render_gates(hist, [])
+    # base: d1 mean(0.4, 0.6) = 0.5, s1 mean(0.2, 0.4) = 0.3 -> 0.4; cand: (0.8 + 1.0) / 2
+    assert "| Thing (Z-0) | 2 | 1, 2 + 3, 4 → 0.400 | 9 → **0.900** | PASS | src |" in out
+    assert rd._runs_label((141, 142, 143)) == "141–143"
+    assert rd._runs_label((90, 103, 101, 102)) == "90, 103, 101, 102"
+
+
+def test_gates_block_refuses_a_missing_run(monkeypatch):
+    gate = ("T", "Z", (((7,), None),), (9,), None, "PASS", "s")
+    monkeypatch.setattr(rd, "GATES", (gate,))
+    with pytest.raises(SystemExit):
+        rd.render_gates(_v11_history(monkeypatch), [])
+
+
+def test_final_def_labels_the_sealed_run_v10():
+    assert "v1.0" in rd.FINAL_DEF and "no v1.1 held-out run" in rd.FINAL_DEF
