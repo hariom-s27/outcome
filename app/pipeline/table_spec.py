@@ -39,6 +39,7 @@ from app.pipeline import baseline
 from app.readers import Block
 from app.tables import heuristic
 from app.tables.checks import TYPE_FIT_MIN, run_checks, spec_score
+from app.tables.cleanup import clean_entries
 from app.tables.execute import (
     NUMERIC_TYPES,
     Execution,
@@ -519,9 +520,11 @@ def _spec_path(
     table: dict[str, Any],
     robust: bool = False,
     keep: dict[str, Any] | None = None,
+    cleanup: bool = False,
 ) -> list[dict[str, Any]] | None:
     """`keep` (P9c grid only): receives the candidates, the chosen name and the model's call
-    status, so the grid checks can run on them; None (every other caller) changes nothing."""
+    status, so the grid checks can run on them; None (every other caller) changes nothing.
+    `cleanup` (P9c Z-51, TABLE_CLEANUP): the two cleanup rules on the chosen entries."""
     ai_info: dict[str, Any] = {"calls": 0}
     ai_spec = ask_spec(llm, ctx, model, field_list, wp, file_type, ai_info)
     table["calls"] = ai_info.pop("calls")
@@ -552,7 +555,7 @@ def _spec_path(
         table["fallback_reason"] = "no_spec_passed" if cands else "no_valid_spec"
         return None
     cand = cands[chosen]
-    entries = entries_with_confidence(cand["ex"], confidence(cand, chosen))
+    entries = finalise(cand, chosen, field_list, cleanup, table)
     if not entries or contract_errors({"entries": entries, "metadata": _zero_meta()}, field_list):
         table["chosen"] = "fallback"
         table["fallback_reason"] = "contract_errors"
@@ -641,11 +644,32 @@ def _grid_pick(
     return max(ok)[-1] if ok else None
 
 
+def finalise(
+    cand: dict[str, Any],
+    name: str,
+    field_list: dict[str, Any],
+    cleanup: bool = False,
+    table: dict[str, Any] | None = None,
+) -> list[dict[str, Any]]:
+    """The chosen spec's entries with confidences; P9c Z-51 cleanup rules when switched on
+    (counts go to table["cleanup"])."""
+    entries = entries_with_confidence(cand["ex"], confidence(cand, name))
+    if cleanup:
+        entries, counts = clean_entries(entries, field_list, cand["ex"].field_sources, CONF_NULL)
+        if table is not None:
+            table["cleanup"] = counts
+    return entries
+
+
 def _grid_entries(
-    cand: dict[str, Any], name: str, field_list: dict[str, Any], grid: Grid
+    cand: dict[str, Any],
+    name: str,
+    field_list: dict[str, Any],
+    grid: Grid,
+    cleanup: bool = False,
+    table: dict[str, Any] | None = None,
 ) -> list[dict[str, Any]] | None:
-    entries = to_pdf_cells(entries_with_confidence(cand["ex"], confidence(cand, name)),
-                                    grid)  # fmt: skip
+    entries = to_pdf_cells(finalise(cand, name, field_list, cleanup, table), grid)
     if not entries or contract_errors({"entries": entries, "metadata": _zero_meta()}, field_list):
         return None
     return entries
@@ -659,6 +683,7 @@ def _grid_path(
     model: str,
     table: dict[str, Any],
     robust: bool,
+    cleanup: bool = False,
 ) -> list[dict[str, Any]] | None:
     """Spec path on the virtual sheet, then the Z-45 checks: chosen spec -> another candidate
     that passes -> one E0 spec retry (only if E0 has not already made its call) -> None."""
@@ -669,6 +694,7 @@ def _grid_path(
         return None
     keep: dict[str, Any] = {}
     _spec_path(llm, ctx, field_list, wp, "pdf", model, table, robust, keep=keep)
+    table.pop("cleanup", None)  # counted again on the entries actually returned
     cands: dict[str, dict[str, Any]] = keep.get("cands", {})
     pick = _grid_pick(cands, keep.get("chosen"), wp, field_list, grid, table)
     reachable = keep.get("llm_status") not in ("stopped", "failed")
@@ -690,7 +716,7 @@ def _grid_path(
         table["grid_failed"] = failed
         log.info("job %s pdf grid: checks failed %s", ctx.job_id, ",".join(failed) or "-")
         return None
-    entries = _grid_entries(cands[pick], pick, field_list, grid)
+    entries = _grid_entries(cands[pick], pick, field_list, grid, cleanup, table)
     if entries is None:
         table["grid_result"] = "contract_errors"
         return None
@@ -711,6 +737,7 @@ def extract_grid(
     model: str | None,
     robust: bool,
     pdf_grid_result: GridResult,
+    cleanup: bool = False,
 ) -> baseline.BaselineOutcome:
     """P9c: a table field list on a text-layer PDF. Any grid or check failure -> the v1.0 call
     (`single`) for this job, so the job is never worse than v1.0. Metadata: counts only."""
@@ -727,7 +754,7 @@ def extract_grid(
         try:
             entries = _grid_path(
                 llm, ctx, field_list, pdf_grid_result.grid, model or llm.catalog.baseline,
-                table, robust,
+                table, robust, cleanup,
             )  # fmt: skip
         except Exception as exc:  # surfaced (type + code location, no text, R23), then v1.0
             tb = exc.__traceback__
@@ -768,12 +795,16 @@ def extract(
     model: str | None = None,
     robust: bool = False,
     pdf_grid: GridResult | None = None,
+    cleanup: bool = False,
 ) -> baseline.BaselineOutcome:
     """robust (P9b E0, E0_ROBUST): one more spec call on low fill or dropped spec entries.
-    pdf_grid (P9c, PDF_TABLE_METHOD=grid): the worker's grid for a table field list on a
-    text-layer PDF; None (the default, `single`) = the v1.0 path."""
+    pdf_grid (P9c, PDF_TABLE_METHOD): the worker's grid for a table field list on a
+    text-layer PDF; None = the v1.0 path. cleanup (P9c Z-51, TABLE_CLEANUP): the two
+    cleanup rules on code-copied rows (spec path only; the v1.0 call is untouched)."""
     if pdf_grid is not None and file_type == "pdf":
-        return extract_grid(llm, ctx, field_list, blocks, file_type, model, robust, pdf_grid)
+        return extract_grid(
+            llm, ctx, field_list, blocks, file_type, model, robust, pdf_grid, cleanup
+        )
     ok, why, wp = applies(field_list, blocks, file_type)
     if not ok or wp is None:  # T-3/T-4: the current path, unchanged
         if robust:
@@ -783,7 +814,9 @@ def extract(
     table: dict[str, Any] = {"data_lines": wp.data_line_count(), "why": why}
     entries: list[dict[str, Any]] | None = None
     try:
-        entries = _spec_path(llm, ctx, field_list, wp, file_type, model, table, robust)
+        entries = _spec_path(
+            llm, ctx, field_list, wp, file_type, model, table, robust, cleanup=cleanup
+        )
     except Exception as exc:  # surfaced (type + code location, no text, R23), then fallback
         tb = exc.__traceback__
         while tb and tb.tb_next:

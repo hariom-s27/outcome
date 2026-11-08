@@ -159,6 +159,8 @@ def process(
     if grid_src is not None and pipeline is table_spec and not has_scan(docmap.blocks):
         extra["pdf_grid"] = pdf_grid.build(grid_src)
     del grid_src
+    if settings.table_cleanup and pipeline is table_spec:  # P9c Z-51; off -> no kwarg
+        extra["cleanup"] = True
     if model is None:
         out = pipeline.extract(llm, ctx, field_list, docmap.blocks, file_type, **extra)
     else:
@@ -278,7 +280,8 @@ def main() -> None:  # pragma: no cover - container entry point
         log.warning("LLM_API_KEY not set: jobs get the P1 skeleton (PARTIAL), R17")
     log.info(
         "worker %s started (pipeline=%s, single_value_path=%s, table_path=%s, scan_pages=%s, "
-        "cache_mode=%s, sv_model=%s, lab_mode=%s, e0_robust=%s, pdf_table=%s)",
+        "cache_mode=%s, sv_model=%s, lab_mode=%s, e0_robust=%s, pdf_table=%s, "
+        "table_cleanup=%s)",
         wid,
         baseline.PIPELINE if llm else "stub",
         settings.single_value_path,
@@ -289,6 +292,7 @@ def main() -> None:  # pragma: no cover - container entry point
         "on" if settings.lab_mode else "off",
         "on" if settings.e0_robust else "off",
         settings.pdf_table_method,
+        "on" if settings.table_cleanup else "off",
     )
     threading.Thread(target=_sweep_loop, args=(settings, wid), name="sweeper", daemon=True).start()
     backoff = settings.worker_poll_s
