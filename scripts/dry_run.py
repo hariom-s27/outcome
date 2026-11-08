@@ -1,13 +1,17 @@
 """Dry run (R-A, P4-05): every DEV doc through the reader + baseline prompt builder, no LLM.
 
-    uv run python scripts/dry_run.py                    # all DEV docs
+    uv run python scripts/dry_run.py                    # all DEV docs, shipped v1.1 settings
     uv run python scripts/dry_run.py --docs om_001      # a given list
     uv run python scripts/dry_run.py --path smart       # P5: plan the smart single-value path
     uv run python scripts/dry_run.py --table-path spec  # P6: plan the long-table spec path
     uv run python scripts/dry_run.py --scan-pages locate  # P8b: plan locate page choice
     uv run python scripts/dry_run.py --scan-pages all   # P9e: every scan page (cap 40)
     uv run python scripts/dry_run.py --set syn          # P9a: the invented SYN set
-    uv run python scripts/dry_run.py --table-path spec --pdf-table grid  # P9c: PDF line grid
+    uv run python scripts/dry_run.py --table-path baseline --scan-pages first  # v1.0 plan
+
+Defaults = the shipped v1.1 settings (P9f): EXTRACT_TABLE_PATH=spec, PDF_TABLE_METHOD=grid,
+SCAN_PAGE_METHOD=all, single-value path baseline. Each doc is planned as the worker routes it:
+table field lists -> the spec / grid plan, single-value lists -> baseline with every scan page.
 
 Same steps as the worker before its call: read_document(file_type, bytes) ->
 baseline.build_messages(field_list, blocks, file_type, est=catalog.estimate) -> the fuse's
@@ -149,13 +153,18 @@ def dry_run_smart(doc_id: str, row: dict[str, str], catalog: ModelCatalog) -> di
 
 
 def dry_run_table(
-    doc_id: str, row: dict[str, str], catalog: ModelCatalog, pdf_table: str = "single"
+    doc_id: str,
+    row: dict[str, str],
+    catalog: ModelCatalog,
+    pdf_table: str = "single",
+    scan_all: bool = False,
 ) -> dict[str, Any]:
     """P6: EXTRACT_TABLE_PATH=spec. Table field lists -> table_spec.plan (path chosen, preview
     tokens, calls, est. $, the heuristic spec's checks); a doc that keeps the baseline also
     gets the baseline record. Single-value lists -> the baseline record (path unchanged).
-    P9c pdf_table="grid": a table list on a PDF with no scanned page -> table_spec.plan_grid."""
-    rec = dry_run_doc(doc_id, row, catalog)
+    P9c pdf_table="grid": a table list on a PDF with no scanned page -> table_spec.plan_grid.
+    scan_all (P9f): single-value lists get the SCAN_PAGE_METHOD=all baseline record."""
+    rec = dry_run_doc(doc_id, row, catalog, scan_all=scan_all)
     try:
         path = _doc_file(row)
         file_type = path.suffix.lower().lstrip(".")
@@ -240,6 +249,8 @@ def fmt_table(r: dict[str, Any]) -> str:
             f"rep_headers={g.get('repeated_headers', '-')} h_grid_failed={hc.get('failed', '-')} "
             f"h_key_lines={hc.get('key_lines', '-')} h_missing={hc.get('missing', '-')}"
         )
+    if r.get("scan_all"):  # P9f: single-value list on a scan, every page (SCAN_PAGE_METHOD=all)
+        head += f" scan_all images={r.get('images_sent')}/{r.get('images_total')}"
     if t.get("path") != "table_spec":
         return (
             f"{head} data_lines={t.get('data_lines', '-')} baseline_est_tokens="
@@ -276,11 +287,12 @@ def fmt_smart(r: dict[str, Any]) -> str:
 def run(
     docs: list[str] | None = None,
     path: str = "baseline",
-    table_path: str = "baseline",
-    scan_pages: str = "first",
+    table_path: str = "spec",
+    scan_pages: str = "all",
     set_name: str = "dev",
-    pdf_table: str = "single",
+    pdf_table: str = "grid",
 ) -> tuple[bool, list[dict[str, Any]]]:
+    """Defaults = the shipped v1.1 settings (P9f). pdf_table only applies with table_path spec."""
     rows = manifest() if set_name == "dev" else doc_sets.rows_for(set_name)
     docs = docs or [d for d in rows if d not in HELD_OUT]
     sealed = [d for d in docs if d in HELD_OUT]
@@ -292,11 +304,11 @@ def run(
     catalog = ModelCatalog.load()
     one = dry_run_smart if path == "smart" else dry_run_doc
     if table_path == "spec":
-        one = functools.partial(dry_run_table, pdf_table=pdf_table)
+        one = functools.partial(dry_run_table, pdf_table=pdf_table, scan_all=scan_pages == "all")
+    elif scan_pages == "all":
+        one = functools.partial(dry_run_doc, scan_all=True)
     if scan_pages == "locate":
         one = dry_run_scan
-    if scan_pages == "all":
-        one = functools.partial(dry_run_doc, scan_all=True)
     records = [one(d, rows[d], catalog) for d in docs]
     return all(r["ok"] for r in records), records
 
@@ -326,36 +338,34 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument(
         "--table-path",
         choices=["baseline", "spec"],
-        default="baseline",
-        help="EXTRACT_TABLE_PATH to plan for (P6)",
+        default="spec",
+        help="EXTRACT_TABLE_PATH to plan for (P6; shipped spec)",
     )
     ap.add_argument(
         "--scan-pages",
         choices=["first", "locate", "all"],
-        default="first",
-        help="SCAN_PAGE_METHOD to plan for (P8b; all = P9e)",
+        default="all",
+        help="SCAN_PAGE_METHOD to plan for (P8b; all = P9e, shipped)",
     )
     ap.add_argument("--set", choices=doc_sets.SETS, default="dev", help="P9a document set")
     ap.add_argument(
         "--pdf-table",
         choices=["single", "grid"],
-        default="single",
-        help="PDF_TABLE_METHOD to plan for (P9c; needs --table-path spec)",
+        default=None,
+        help="PDF_TABLE_METHOD to plan for (P9c; default grid with --table-path spec, shipped)",
     )
     args = ap.parse_args(argv)
+    if args.pdf_table is None:
+        args.pdf_table = "grid" if args.table_path == "spec" else "single"
     if args.pdf_table == "grid" and args.table_path != "spec":
         ap.error("--pdf-table grid needs --table-path spec")
-    switches = [args.path == "smart", args.table_path == "spec", args.scan_pages != "first"]
-    if sum(switches) > 1:
-        ap.error("plan one switch at a time: --path smart, --table-path spec or --scan-pages")
-    if args.pdf_table == "grid":
-        ok, records = run(
-            args.docs, args.path, args.table_path, args.scan_pages, args.set, args.pdf_table
-        )
-    elif args.set == "dev":
-        ok, records = run(args.docs, args.path, args.table_path, args.scan_pages)
-    else:
-        ok, records = run(args.docs, args.path, args.table_path, args.scan_pages, args.set)
+    if args.path == "smart" and (args.table_path == "spec" or args.scan_pages != "first"):
+        ap.error("--path smart plans alone: add --table-path baseline --scan-pages first")
+    if args.scan_pages == "locate" and args.table_path == "spec":
+        ap.error("--scan-pages locate plans alone: add --table-path baseline")
+    ok, records = run(
+        args.docs, args.path, args.table_path, args.scan_pages, args.set, args.pdf_table
+    )
     for r in records:
         if args.scan_pages == "locate":
             print(fmt_scan(r))

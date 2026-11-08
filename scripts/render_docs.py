@@ -9,6 +9,8 @@ else is left byte for byte. Blocks:
   cost              $/doc of the same series + total eval spend recorded in history
   load              latest line per (scenario, workers) from eval/load.jsonl
   chart             the points of docs/cost_vs_accuracy.png (scripts/plot_cost_accuracy.py)
+  v11               v1.0 base runs vs the v1.1 full-set run, per document (P9f, V11_*)
+  gates             each shipped v1.1 change: its gate runs vs its base runs (P9f, GATES)
 Once a sealed final run exists (`final: true`, P8b), scores/results show that run (DEV and
 held-out apart) and cost shows its $/doc; the final line is never part of a series.
 A "run series" is the latest line of a group plus the lines just before it in that group that
@@ -41,10 +43,19 @@ SCORE_DEF = (
     "score is the mean over runs). Source: `eval/history.jsonl`, latest series per "
     "pipeline + path. Shipped default path: `baseline`."
 )
+# P9f: the settings `docker compose up` ships in v1.1 (compose.yaml; tests/test_shipped_config.py)
+SHIPPED_SETTINGS = (
+    "`EXTRACT_TABLE_PATH=spec`, `PDF_TABLE_METHOD=grid`, `TABLE_CLEANUP=1`, `E0_ROBUST=1`, "
+    "`SCAN_PAGE_METHOD=all`, `SPEC_RETRY_FEEDBACK=0`, single-value path `baseline`"
+)
+V10_SETTINGS = (
+    "`EXTRACT_TABLE_PATH=spec`, `SCAN_PAGE_METHOD=first`, single-value path `baseline`; "
+    "no E0, no PDF grid, no table cleanup"
+)
 FINAL_DEF = (
-    "The sealed final run (P8b): all 8 sample documents, once, on the shipped settings "
-    "(`EXTRACT_TABLE_PATH=spec`, `SCAN_PAGE_METHOD=first`, single-value path `baseline`), "
-    "response cache off; these are the files in `outputs/`. Score = `tools/validate.py` "
+    "The sealed **v1.0** final run (P8b): all 8 sample documents, once, on the v1.0 settings "
+    f"({V10_SETTINGS}), no response caching. It is the only run that scored the 2 held-out "
+    "documents; no v1.1 held-out run exists (the gateway key expired). Score = `tools/validate.py` "
     "`score()`: a document's mean of per-field means (strict match after normalisation). "
     "Held-out documents were run and scored once, inside this run; nothing was changed "
     "after. n = 1 run per document; run-to-run spread from earlier repeats is in DESIGN "
@@ -283,12 +294,139 @@ def render_chart(history: list[dict], load: list[dict]) -> str:
     )
 
 
+# ---------- v1.1 (P9f) ----------
+
+V11_BASE_RUNS = (90, 103, 101, 102)  # v1.0 base, n = 2 runs per doc (logs/P9a_report.md)
+V11_RUN = 174  # last full set on the shipped v1.1 settings (logs/P9e_report.md)
+# (change, decision, base parts [(runs, docs or None)], cand runs, docs or None, verdict, source)
+GATES: tuple[tuple, ...] = (
+    ("E0 robust parsing", "Z-34/Z-35", (((90, 103, 101, 102), None),), (105, 106), None,
+     "PASS", "logs/P9b_report.md §4"),
+    ("PDF table grid", "Z-47/Z-50", (((104, 105, 106), ("syn_budget_pdf", "syn_rentroll_pdf")),),
+     (141, 142, 143), ("syn_budget_pdf", "syn_rentroll_pdf"), "PASS",
+     "logs/P9c_report.md; full set run 144"),
+    ("Table cleanup", "Z-59/Z-60",
+     (((141, 142, 143), ("syn_budget_pdf", "syn_rentroll_pdf")),
+      ((104, 105, 106), ("rentroll_001", "syn_rentroll_xlsx"))),
+     (154, 155, 156), ("syn_budget_pdf", "syn_rentroll_pdf", "rentroll_001", "syn_rentroll_xlsx"),
+     "PASS (targeted cells)", "logs/P9c_report.md; full set run 157"),
+    ("All scan pages", "Z-56", (((104, 105, 106), ("lease_001", "syn_lease_scan")),),
+     (171, 172, 173), ("lease_001", "syn_lease_scan"), "PASS", "logs/P9e_report.md; run 174"),
+)  # fmt: skip
+
+
+def _by_index(history: list[dict]) -> dict[int, dict]:
+    """run_index -> the latest non-aborted line with that index."""
+    out: dict[int, dict] = {}
+    for r in history:
+        if r.get("run_index") is not None and not r.get("aborted"):
+            out[int(r["run_index"])] = r
+    return out
+
+
+def runs_per_doc(
+    rows: dict[int, dict], runs: tuple[int, ...], docs: tuple[str, ...] | None = None
+) -> dict[str, list[float]]:
+    """Per doc, its scores over the given runs (held-out docs never included)."""
+    acc: dict[str, list[float]] = {}
+    for i in runs:
+        if i not in rows:
+            raise SystemExit(f"run {i} not in eval/history.jsonl")
+        r = rows[i]
+        held = r.get("held_out_per_doc") or {}
+        for d, v in (r.get("per_doc") or {}).items():
+            if d not in held and (docs is None or d in docs):
+                acc.setdefault(d, []).append(float(v))
+    return acc
+
+
+def _runs_label(runs: tuple[int, ...]) -> str:
+    """'141–143' for 3+ consecutive run indexes, else '90, 103, 101, 102'."""
+    consecutive = list(runs) == list(range(runs[0], runs[0] + len(runs)))
+    return f"{runs[0]}–{runs[-1]}" if consecutive and len(runs) > 2 else ", ".join(map(str, runs))
+
+
+def _mean_of_doc_means(acc: dict[str, list[float]]) -> float:
+    return statistics.fmean(statistics.fmean(v) for v in acc.values()) if acc else 0.0
+
+
+def render_v11(history: list[dict], load: list[dict]) -> str:
+    del load
+    rows = _by_index(history)
+    if V11_RUN not in rows:
+        return "_No v1.1 full-set run recorded yet._"
+    base = runs_per_doc(rows, V11_BASE_RUNS)
+    cand = runs_per_doc(rows, (V11_RUN,))
+    syn = {d for i in V11_BASE_RUNS if rows[i].get("set") == "syn" for d in rows[i]["per_doc"]}
+    docs = [d for d in cand if d in base]
+    lines = [
+        "| Document | Set | v1.0 (n = 2) | v1.1 run 174 (n = 1) | Change |",
+        "|---|---|---|---|---|",
+    ]
+    for d in docs:
+        b, c = statistics.fmean(base[d]), cand[d][0]
+        lines.append(f"| {d} | {'SYN' if d in syn else 'DEV'} | {b:.3f} | {c:.3f} | {c - b:+.3f} |")
+    means = []
+    for name, keep in (("DEV", lambda d: d not in syn), ("SYN", lambda d: d in syn),
+                       ("DEV+SYN", lambda d: True)):  # fmt: skip
+        sel = [d for d in docs if keep(d)]
+        b = _mean_of_doc_means({d: base[d] for d in sel})
+        c = _mean_of_doc_means({d: cand[d] for d in sel})
+        means.append(f"{name} (n = {len(sel)}) {b:.3f} → **{c:.3f}**")
+    r = rows[V11_RUN]
+    lines += [
+        "",
+        " · ".join(means) + f" · v1.1 all VALID: {'yes' if r.get('all_valid') else 'no'} · "
+        f"${float(r.get('usd_per_doc') or 0.0):.5f}/document · run `{r.get('run_id')}` "
+        f"run {V11_RUN}, {str(r.get('date') or '')[:10]}",
+        "",
+        f"v1.1 = the shipped settings ({SHIPPED_SETTINGS}). v1.0 base = runs "
+        f"{', '.join(map(str, V11_BASE_RUNS))} (sealed run 90 + run 103 for DEV, 101 + 102 for "
+        "SYN; a doc's score is its mean over its 2 runs). SYN = 8 invented documents "
+        "(`scripts/make_syn.py`). Held-out documents are in neither column. n = 1 for v1.1, so "
+        "single-doc changes carry run-to-run noise (DESIGN, Where it fails). Source: "
+        "`eval/history.jsonl` by run index.",
+    ]
+    return "\n".join(lines)
+
+
+def render_gates(history: list[dict], load: list[dict]) -> str:
+    del load
+    rows = _by_index(history)
+    lines = [
+        "| Change (decision) | Docs | Base runs → mean | Gate runs → mean | Verdict | Source |",
+        "|---|---|---|---|---|---|",
+    ]
+    for change, dec, base_parts, cand_runs, docs, verdict, src in GATES:
+        base: dict[str, list[float]] = {}
+        for runs, part_docs in base_parts:
+            base.update(runs_per_doc(rows, runs, part_docs))
+        cand = runs_per_doc(rows, cand_runs, docs)
+        base_runs = " + ".join(_runs_label(r) for r, _ in base_parts)
+        lines.append(
+            f"| {change} ({dec}) | {len(cand)} | {base_runs} → {_mean_of_doc_means(base):.3f} | "
+            f"{_runs_label(cand_runs)} → **{_mean_of_doc_means(cand):.3f}** | {verdict} | "
+            f"{src} |"
+        )
+    lines += [
+        "",
+        "Mean = per-doc mean over the runs, then over the docs; DEV+SYN docs, held-out never. "
+        "Each gate also checked VALID, hallucinations, $/doc and (scans) latency; the verdict "
+        "is the one recorded in the source report. Not switched on: `SPEC_RETRY_FEEDBACK` "
+        "(P9g; its live gate could not run, run 175 excluded: HTTP 401). Source: "
+        "`eval/history.jsonl` by run index.",
+    ]
+    return "\n".join(lines)
+
+
 RENDERERS: dict[str, Callable[[list[dict], list[dict]], str]] = {
     "scores": render_scores,
     "results": render_scores,
     "cost": render_cost,
     "load": render_load,
     "chart": render_chart,
+    "v11": render_v11,
+    "gates": render_gates,
 }
 
 
