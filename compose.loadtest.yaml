@@ -1,0 +1,37 @@
+# P8a load stack overlay (A-3, A-4). Never used by `docker compose up`. Always run as:
+#   docker compose -p loadtest --env-file tests/load/loadtest.env \
+#     -f compose.yaml -f compose.loadtest.yaml up -d --build
+# and finish with the same prefix + `down -v`. Separate project (own db volume), api on host
+# port 18080, its own image tag (the main stack's docextract:local is not rebuilt), a fake
+# LLM container and a fake key. Shipped settings otherwise: no dev budget, no cache.
+services:
+  fakellm:
+    build: .
+    image: docextract-loadtest:local
+    command:
+      - python
+      - -m
+      - app.devtools.fake_llm
+      - --host=0.0.0.0
+      - --port=9999
+      - --latency-min=1
+      - --latency-max=6
+      - --rate-429=0.08
+      - --retry-after=2
+      - --field-aware
+      - --seed=8
+    restart: unless-stopped
+
+  api:
+    image: docextract-loadtest:local
+    ports: !override
+      - "18080:8080"
+
+  worker:
+    image: docextract-loadtest:local
+    environment:
+      LLM_BASE_URL: http://fakellm:9999/v1
+      LLM_API_KEY: ${LOADTEST_LLM_API_KEY:?pass --env-file tests/load/loadtest.env}
+    depends_on:
+      fakellm:
+        condition: service_started

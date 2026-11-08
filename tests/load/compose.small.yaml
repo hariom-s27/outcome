@@ -1,0 +1,8 @@
+# P8a scenario L4 (small machine, A-5): add after compose.loadtest.yaml.
+#   docker compose -p loadtest --env-file tests/load/loadtest.env \
+#     -f compose.yaml -f compose.loadtest.yaml -f tests/load/compose.small.yaml up -d
+# 3g, not 4g: the Docker Desktop VM has ~3.8 GB, so a 4g limit would never bite (Hariom, S1).
+services:
+  worker:
+    cpus: 2
+    mem_limit: 3g
