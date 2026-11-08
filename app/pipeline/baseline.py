@@ -29,6 +29,11 @@ PIPELINE = "baseline-v1"
 MAX_TOKENS = 8192  # output; the wrapper retries once with 2x on finish_reason=length
 INPUT_TOKEN_CAP = 60_000  # P2-16: stays well below Haiku's 100k price cliff (R22)
 MAX_IMAGES = 8  # R13
+# P9e Z-53/Z-54 (SCAN_PAGE_METHOD=all): a scan with more page images than MAX_IMAGES sends
+# every page image up to this cap in the same one call; INPUT_TOKEN_CAP still applies.
+MAX_SCAN_IMAGES = 40
+PAGES_SENT = "_pages_sent"  # private note (scan_all only): pages of the blocks kept
+_PAGE_REF = re.compile(r"\[Page\s+(\d+)\]", re.IGNORECASE)
 # chars per token per block token class come from config/models.yaml (P3-18: A9 - 10%);
 # erring low keeps every request under the cap, and so under Haiku's 100k price cliff (R22).
 PROMPT_OVERHEAD_TOKENS = 1_500
@@ -101,10 +106,16 @@ def _estimate_tokens(block: Block, est: Estimate | None = None) -> int:
 
 
 def select_blocks(
-    blocks: list[Block], field_text: str, limit: int | None = None, est: Estimate | None = None
+    blocks: list[Block],
+    field_text: str,
+    limit: int | None = None,
+    est: Estimate | None = None,
+    max_images: int = MAX_IMAGES,
+    track_pages: bool = False,
 ) -> tuple[list[Block], dict[str, Any]]:
     """Keep blocks in order within the caps; record what was cut (counts and page numbers).
-    `limit` (P2-36 cost fuse) keeps at most that many blocks."""
+    `limit` (P2-36 cost fuse) keeps at most that many blocks. P9e: `max_images` and
+    `track_pages` (the private PAGES_SENT note) are set only by SCAN_PAGE_METHOD=all."""
     est = est or Estimate()
     field_tokens = math.ceil(len(field_text) / est.chars_per_token)
     budget = INPUT_TOKEN_CAP - PROMPT_OVERHEAD_TOKENS - field_tokens
@@ -114,7 +125,7 @@ def select_blocks(
     full = False
     for b in blocks:
         cost = _estimate_tokens(b, est)
-        if b.kind == "image" and images >= MAX_IMAGES:
+        if b.kind == "image" and images >= max_images:
             dropped.append(b)
             continue
         if limit is not None and len(kept) >= limit:
@@ -137,6 +148,8 @@ def select_blocks(
         "truncated": bool(dropped),
         KIND_CHARS: kind_chars,
     }
+    if track_pages:
+        notes[PAGES_SENT] = sorted({b.page for b in kept if b.page is not None})
     if dropped:
         notes["blocks_dropped"] = len(dropped)
         pages = sorted({b.page for b in dropped if b.page is not None})
@@ -157,11 +170,19 @@ def build_messages(
     file_type: str,
     limit: int | None = None,
     est: Estimate | None = None,
+    page_total: int | None = None,
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    """page_total (P9e, SCAN_PAGE_METHOD=all only): up to MAX_SCAN_IMAGES page images, each
+    after a code tag "PAGE n of <page_total>"; None = the v1.0 prompt exactly."""
     fields = field_list["fields"]
     primary = _primary(fields)
     field_text = _field_lines(fields, primary)
-    kept, notes = select_blocks(blocks, field_text, limit, est)
+    if page_total is None:
+        kept, notes = select_blocks(blocks, field_text, limit, est)
+    else:
+        kept, notes = select_blocks(
+            blocks, field_text, limit, est, max_images=MAX_SCAN_IMAGES, track_pages=True
+        )
     system = RULES + (TABLE_ENTRIES.format(primary=primary) if primary else ONE_ENTRY)
     head = f"FIELDS:\n{field_text}\n\nDOCUMENT ({file_type}; blocks in reading order):\n"
     parts: list[dict[str, Any]] = []
@@ -170,7 +191,12 @@ def build_messages(
         if b.kind != "image":
             buf.append(b.render())
             continue
-        buf.append(f"[{b.address}] (no text layer; page image follows)")
+        if page_total is None:
+            buf.append(f"[{b.address}] (no text layer; page image follows)")
+        else:
+            buf.append(
+                f"[{b.address}] PAGE {b.page} of {page_total} (no text layer; page image follows)"
+            )
         parts.append({"type": "text", "text": "\n".join(buf)})
         buf = []
         url = "data:image/jpeg;base64," + base64.b64encode(b.jpeg or b"").decode("ascii")
@@ -304,8 +330,12 @@ def extract(
     file_type: str,
     model: str | None = None,
     robust: bool = False,
+    scan_all: bool = False,
 ) -> BaselineOutcome:
-    """robust (P9b E0, E0_ROBUST): single-value lists get per-field salvage and one re-call."""
+    """robust (P9b E0, E0_ROBUST): single-value lists get per-field salvage and one re-call.
+    scan_all (P9e, SCAN_PAGE_METHOD=all): a document with more than MAX_IMAGES page images
+    sends them all up to MAX_SCAN_IMAGES, tagged by code; page_numbers come from the
+    citation's [Page n] only when page n was sent. Fewer images -> the v1.0 call exactly."""
     model = model or llm.catalog.baseline
     notes: dict[str, Any] = {"pipeline": PIPELINE}
     if not blocks:
@@ -320,20 +350,98 @@ def extract(
         if not blocks:
             return BaselineOutcome(None, "model_no_vision", notes)
     est = llm.catalog.estimate
-    messages, cut = build_messages(field_list, blocks, file_type, est=est)
-    fitted = fit_to_doc_budget(llm, ctx, model, field_list, blocks, file_type, messages, cut)
+    page_total = scan_page_total(blocks) if scan_all else None
+    if page_total is None:  # v1.0 calls exactly (no extra arguments)
+        messages, cut = build_messages(field_list, blocks, file_type, est=est)
+        fitted = fit_to_doc_budget(llm, ctx, model, field_list, blocks, file_type, messages, cut)
+    else:
+        messages, cut = build_messages(
+            field_list, blocks, file_type, est=est, page_total=page_total
+        )
+        fitted = fit_to_doc_budget(
+            llm, ctx, model, field_list, blocks, file_type, messages, cut, page_total
+        )
     if fitted is None:
         cut.pop(KIND_CHARS, None)
+        cut.pop(PAGES_SENT, None)
         notes.update(cut)
         notes["cost_fuse"] = "skipped"
         return BaselineOutcome(None, "doc_llm_cap", notes)
     messages, cut = fitted
     kind_chars = cut.pop(KIND_CHARS, None)
+    pages_sent = cut.pop(PAGES_SENT, None)
     notes.update(cut)
     if robust and _primary(field_list["fields"]) is None:  # P9b E0: single-value lists only
-        return _extract_robust(llm, ctx, model, field_list, messages, kind_chars, notes)
-    out = llm.complete_json(ctx, model, messages, max_tokens=MAX_TOKENS, kind_chars=kind_chars)
-    return _finish(out, field_list, notes)
+        result = _extract_robust(llm, ctx, model, field_list, messages, kind_chars, notes)
+    else:
+        out = llm.complete_json(ctx, model, messages, max_tokens=MAX_TOKENS, kind_chars=kind_chars)
+        result = _finish(out, field_list, notes)
+    if page_total is not None:
+        _scan_all_finish(ctx, result, blocks, page_total, pages_sent or [])
+    return result
+
+
+# --- P9e: SCAN_PAGE_METHOD=all -----------------------------------------------------------------
+
+
+def scan_page_total(blocks: list[Block]) -> int | None:
+    """N for the "PAGE n of N" tags when the scan_all path applies (more page images than
+    MAX_IMAGES), else None (the v1.0 call)."""
+    if sum(1 for b in blocks if b.kind == "image") <= MAX_IMAGES:
+        return None
+    return max((b.page for b in blocks if b.page is not None), default=0) or None
+
+
+def page_numbers_from_citations(entries: list[dict[str, Any]], sent: set[int]) -> tuple[int, int]:
+    """Set page_numbers on non-null fields from the citation's [Page n] addresses, keeping only
+    pages that were sent; other numbers are dropped (value and citation kept).
+    Returns (fields given page_numbers, page numbers dropped)."""
+    given = dropped = 0
+    for entry in entries:
+        for cell in entry.values():
+            if not isinstance(cell, dict) or cell.get("value") is None:
+                continue
+            cited = {int(n) for n in _PAGE_REF.findall(cell.get("citation") or "")}
+            pages = sorted(p for p in cited if p in sent)
+            dropped += len(cited) - len(pages)
+            if pages:
+                cell["page_numbers"] = pages
+                given += 1
+    return given, dropped
+
+
+def _scan_all_finish(
+    ctx: CallContext,
+    result: BaselineOutcome,
+    blocks: list[Block],
+    page_total: int,
+    pages_sent: list[int],
+) -> None:
+    """page_numbers from code + the `scan_pages` metadata (counts only, R23)."""
+    images = [b for b in blocks if b.kind == "image"]
+    sent = set(pages_sent)
+    info: dict[str, Any] = {
+        "method": "all",
+        "pages_total": page_total,
+        "image_pages": len(images),
+        "pages_sent": sum(1 for b in images if b.page in sent),
+        "cap": MAX_SCAN_IMAGES,
+        "capped": len(images) > MAX_SCAN_IMAGES,
+    }
+    if result.entries is not None:
+        info["page_numbers_set"], info["page_numbers_dropped"] = page_numbers_from_citations(
+            result.entries, sent
+        )
+    result.notes["scan_pages"] = info
+    log.info(
+        "job %s scan_pages method=all pages_total=%d image_pages=%d pages_sent=%d "
+        "page_numbers_dropped=%d",
+        ctx.job_id,
+        page_total,
+        info["image_pages"],
+        info["pages_sent"],
+        info.get("page_numbers_dropped", 0),
+    )
 
 
 def _finish(out: JSONOutcome, field_list: dict[str, Any], notes: dict[str, Any]) -> BaselineOutcome:
@@ -442,9 +550,11 @@ def fit_to_doc_budget(
     file_type: str,
     messages: list[dict[str, Any]],
     cut: dict[str, Any],
+    page_total: int | None = None,
 ) -> tuple[list[dict[str, Any]], dict[str, Any]] | None:
     """P2-36: if the predicted cost would pass LLM_MAX_USD_PER_DOC, keep the longest block
-    prefix that fits (recorded as truncated); None when not even one block fits (skip)."""
+    prefix that fits (recorded as truncated); None when not even one block fits (skip).
+    page_total: P9e scan_all prompt (passed through to build_messages)."""
     est = llm.catalog.estimate
     proj = llm.projection(
         ctx, model, messages, max_tokens=MAX_TOKENS, kind_chars=cut.get(KIND_CHARS)
@@ -456,7 +566,9 @@ def fit_to_doc_budget(
     lo, hi = 1, cut["blocks_sent"] - 1  # largest k in [lo, hi] whose call fits
     while lo <= hi:
         k = (lo + hi) // 2
-        trial = build_messages(field_list, blocks, file_type, limit=k, est=est)
+        trial = build_messages(
+            field_list, blocks, file_type, limit=k, est=est, page_total=page_total
+        )
         p = llm.projection(
             ctx, model, trial[0], max_tokens=MAX_TOKENS, kind_chars=trial[1].get(KIND_CHARS)
         )

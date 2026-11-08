@@ -84,7 +84,8 @@ def choose_pipeline(settings: Settings, field_list: dict[str, Any]) -> ModuleTyp
     P6 T-15: table field lists go to table_spec only when switched on; it keeps the baseline
     itself for PDFs and short tables (T-3, T-4).
     P8b Z-13: single-value lists on the baseline use locate page choice for long scans only
-    when SCAN_PAGE_METHOD=locate."""
+    when SCAN_PAGE_METHOD=locate. P9e: SCAN_PAGE_METHOD=all keeps the baseline (process()
+    passes scan_all)."""
     single = is_single_value(field_list)
     if settings.single_value_path == "smart" and single:
         return single_value
@@ -161,6 +162,10 @@ def process(
     del grid_src
     if settings.table_cleanup and pipeline is table_spec:  # P9c Z-51; off -> no kwarg
         extra["cleanup"] = True
+    # P9e Z-53: SCAN_PAGE_METHOD=all -> a long scan sends every page image (cap 40) on the
+    # single-value baseline; first (default) / locate -> no kwarg, as before
+    if settings.scan_page_method == "all" and pipeline is baseline and is_single_value(field_list):
+        extra["scan_all"] = True
     if model is None:
         out = pipeline.extract(llm, ctx, field_list, docmap.blocks, file_type, **extra)
     else:

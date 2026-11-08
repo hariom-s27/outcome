@@ -10,7 +10,7 @@ from app.llm.models import ALLOWED_MODEL_IDS
 DEFAULT_DATABASE_URL = "postgresql://docextract:docextract@db:5432/docextract"
 SINGLE_VALUE_PATHS = ("baseline", "smart")
 TABLE_PATHS = ("baseline", "spec")
-SCAN_PAGE_METHODS = ("first", "locate")
+SCAN_PAGE_METHODS = ("first", "locate", "all")
 PDF_TABLE_METHODS = ("single", "grid")
 E0_OFF = ("0", "false", "no", "off")  # Z-35: E0_ROBUST values that turn E0 off; unset = on
 
@@ -35,8 +35,9 @@ class Settings:
     # default since P8b (T-16b passed with the live floor, Z-5). env EXTRACT_TABLE_PATH.
     table_path: str = "spec"
     # P8b Z-13: the baseline single-value path on a scan with more page images than it can
-    # send: "first" = the first pages (as before), "locate" = the P5 locator picks them.
-    # env SCAN_PAGE_METHOD.
+    # send: "first" = the first pages (as before), "locate" = the P5 locator picks them,
+    # "all" (P9e Z-53/Z-54) = every page image up to 40, each tagged "PAGE n of N" by code,
+    # in the same one call. env SCAN_PAGE_METHOD.
     scan_page_method: str = "first"
     # P9b Z-29: the model for single-value field lists; None = config/models.yaml `baseline`
     # (v1.0). Table field lists keep the baseline. env SV_MODEL (lab only, never in compose.yaml).
