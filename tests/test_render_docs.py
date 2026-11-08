@@ -190,7 +190,8 @@ def test_chart_points_complete_partial_configs_with_the_p2_baseline():
     p5b = pts["smart P5b"]  # d1 = mean(0.8, 0.6), d2 from the baseline
     assert p5b["score"] == pytest.approx(0.65) and p5b["usd"] == pytest.approx(0.003)
     assert pts["hybrid sim P5c"]["usd"] == pytest.approx((0.006 + 0.004) / 2)
-    assert pts["final (shipped)"]["score"] == pytest.approx(0.9)  # held-out never plotted
+    assert pts[pca.FINAL_LABEL]["score"] == pytest.approx(0.9)  # held-out never plotted
+    assert "v1.0" in pca.FINAL_LABEL and "shipped" not in pca.FINAL_LABEL  # P9f relabel
 
 
 def test_hybrid_means_reads_the_bold_column(tmp_path):
@@ -252,3 +253,11 @@ def test_gates_block_refuses_a_missing_run(monkeypatch):
 
 def test_final_def_labels_the_sealed_run_v10():
     assert "v1.0" in rd.FINAL_DEF and "no v1.1 held-out run" in rd.FINAL_DEF
+
+
+def test_render_text_fills_a_block_name_with_digits(monkeypatch):
+    # P9f: `v11` was skipped by the old [a-z_]+ pattern, leaving the block empty
+    text = "a\n<!-- AUTO:v11 -->\n<!-- /AUTO:v11 -->\nb\n"
+    out = rd.render_text(text, _v11_history(monkeypatch), [])
+    assert "| d1 | DEV |" in out and out.startswith("a\n") and out.endswith("b\n")
+    assert rd.START_RE.findall("<!-- AUTO:v11 -->") == ["v11"]
