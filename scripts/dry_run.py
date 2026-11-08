@@ -5,6 +5,7 @@
     uv run python scripts/dry_run.py --path smart       # P5: plan the smart single-value path
     uv run python scripts/dry_run.py --table-path spec  # P6: plan the long-table spec path
     uv run python scripts/dry_run.py --scan-pages locate  # P8b: plan locate page choice
+    uv run python scripts/dry_run.py --set syn          # P9a: the invented SYN set
 
 Same steps as the worker before its call: read_document(file_type, bytes) ->
 baseline.build_messages(field_list, blocks, file_type, est=catalog.estimate) -> the fuse's
@@ -28,6 +29,7 @@ from typing import Any
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+import doc_sets
 from make_outputs import DOCS, ROOT, SCHEMAS, manifest
 
 from app.extract.compile_fields import is_single_value
@@ -40,14 +42,25 @@ TOKEN_LIMIT = 90_000  # R22: every call stays clearly under the 100k price cliff
 OUT_DIR = ROOT / "cache" / "dry_run"
 
 
+def _doc_file(row: dict[str, str]) -> Path:
+    """DEV rows have no private path keys: DOCS / file, as in v1.0. SYN rows carry theirs."""
+    return Path(row["doc_path"]) if "doc_path" in row else DOCS / row["file"]
+
+
+def _schema_file(row: dict[str, str]) -> Path:
+    if "schema_path" in row:
+        return Path(row["schema_path"])
+    return SCHEMAS / f"{row['schema_name']}.json"
+
+
 def dry_run_doc(doc_id: str, row: dict[str, str], catalog: ModelCatalog) -> dict[str, Any]:
     """One document, as the worker would prepare it. Never raises: errors are recorded."""
     rec: dict[str, Any] = {"doc": doc_id, "ok": False}
     t0 = time.monotonic()
     try:
-        path = DOCS / row["file"]
+        path = _doc_file(row)
         file_type = path.suffix.lower().lstrip(".")
-        field_list = json.loads((SCHEMAS / f"{row['schema_name']}.json").read_text("utf-8"))
+        field_list = json.loads(_schema_file(row).read_text("utf-8"))
         dm = read_document(file_type, path.read_bytes())
         messages, notes = baseline.build_messages(
             field_list, dm.blocks, file_type, est=catalog.estimate
@@ -81,8 +94,8 @@ def dry_run_doc(doc_id: str, row: dict[str, str], catalog: ModelCatalog) -> dict
 def dry_run_smart(doc_id: str, row: dict[str, str], catalog: ModelCatalog) -> dict[str, Any]:
     """P5 smart path: single-value field lists -> every planned call (locate + read) built with
     the real builders; table field lists -> the baseline record above, unchanged (P5-03)."""
-    path = DOCS / row["file"]
-    field_list = json.loads((SCHEMAS / f"{row['schema_name']}.json").read_text("utf-8"))
+    path = _doc_file(row)
+    field_list = json.loads(_schema_file(row).read_text("utf-8"))
     if not is_single_value(field_list):
         rec = dry_run_doc(doc_id, row, catalog)
         spec = catalog.get(catalog.baseline)
@@ -124,9 +137,9 @@ def dry_run_table(doc_id: str, row: dict[str, str], catalog: ModelCatalog) -> di
     gets the baseline record. Single-value lists -> the baseline record (path unchanged)."""
     rec = dry_run_doc(doc_id, row, catalog)
     try:
-        path = DOCS / row["file"]
+        path = _doc_file(row)
         file_type = path.suffix.lower().lstrip(".")
-        field_list = json.loads((SCHEMAS / f"{row['schema_name']}.json").read_text("utf-8"))
+        field_list = json.loads(_schema_file(row).read_text("utf-8"))
         if is_single_value(field_list):
             rec["table"] = {"path": "baseline", "why": "single_value"}
             return rec
@@ -150,9 +163,9 @@ def dry_run_scan(doc_id: str, row: dict[str, str], catalog: ModelCatalog) -> dic
     baseline call is planned on the first 8 pages (the locate answer is unknown)."""
     rec = dry_run_doc(doc_id, row, catalog)
     try:
-        path = DOCS / row["file"]
+        path = _doc_file(row)
         file_type = path.suffix.lower().lstrip(".")
-        field_list = json.loads((SCHEMAS / f"{row['schema_name']}.json").read_text("utf-8"))
+        field_list = json.loads(_schema_file(row).read_text("utf-8"))
         if not is_single_value(field_list):
             rec["scan"] = {"locate": False, "why": "table_list"}
             return rec
@@ -232,8 +245,9 @@ def run(
     path: str = "baseline",
     table_path: str = "baseline",
     scan_pages: str = "first",
+    set_name: str = "dev",
 ) -> tuple[bool, list[dict[str, Any]]]:
-    rows = manifest()
+    rows = manifest() if set_name == "dev" else doc_sets.rows_for(set_name)
     docs = docs or [d for d in rows if d not in HELD_OUT]
     sealed = [d for d in docs if d in HELD_OUT]
     if sealed:
@@ -283,11 +297,15 @@ def main(argv: list[str] | None = None) -> int:
         default="first",
         help="SCAN_PAGE_METHOD to plan for (P8b)",
     )
+    ap.add_argument("--set", choices=doc_sets.SETS, default="dev", help="P9a document set")
     args = ap.parse_args(argv)
     switches = [args.path == "smart", args.table_path == "spec", args.scan_pages == "locate"]
     if sum(switches) > 1:
         ap.error("plan one switch at a time: --path smart, --table-path spec or --scan-pages")
-    ok, records = run(args.docs, args.path, args.table_path, args.scan_pages)
+    if args.set == "dev":
+        ok, records = run(args.docs, args.path, args.table_path, args.scan_pages)
+    else:
+        ok, records = run(args.docs, args.path, args.table_path, args.scan_pages, args.set)
     for r in records:
         if args.scan_pages == "locate":
             print(fmt_scan(r))

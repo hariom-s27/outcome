@@ -11,6 +11,11 @@ over HTTP, score them with tools/validate.py's score(), record the numbers.
 nothing scored or recorded. History lines carry path, cache_mode, run_index, prompt_version,
 all_live (P5 D-2).
 
+--set dev|syn|all (P9a D48): dev (default) = sample/manifest.csv exactly as before; syn = the
+invented SYN set in tests/fixtures/syn/ (its own manifest, answers and field lists); all = both.
+History lines carry `set`.
+    uv run python scripts/eval_dev.py --set syn --expect-live --run-index 101
+
 HTTP only (localhost:8080): submit, poll every 2 s, read result.metadata.cost_usd for the
 --max-usd stop. No key, no DB. Documents run one at a time; the run aborts when the spend
 reaches --max-usd or when 2 documents in a row end with an LLM failure reason.
@@ -37,6 +42,7 @@ from typing import Any
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+import doc_sets
 import dry_run
 import run_gates
 from make_outputs import DOCS, OUT, ROOT, SCHEMAS, TERMINAL, TIMEOUT_S, call, manifest, multipart
@@ -51,6 +57,7 @@ HELD_OUT = frozenset({"lease_003", "budget_001"})  # D03: sealed until the P8 ru
 LLM_FAILURE_REASONS = frozenset(
     {"llm_failed", "circuit_open", "llm_not_configured", "dev_budget_reached", "deadline"}
 )
+SET_LABEL = {"dev": "DEV", "syn": "SYN", "all": "DEV+SYN"}  # P9a D48
 
 
 # --- scoring + error taxonomy -------------------------------------------------------------------
@@ -105,9 +112,24 @@ def taxonomy(result: dict, truth: dict, schema: dict) -> dict[str, Any]:
     }
 
 
-def score_doc(doc_id: str, schema_name: str, job: dict) -> dict[str, Any]:
+def _schema_file(schema_name: str, row: dict | None) -> Path:
+    """DEV rows have no private path keys: SCHEMAS / <name>.json, as in v1.0."""
+    if row and "schema_path" in row:
+        return Path(row["schema_path"])
+    return SCHEMAS / f"{schema_name}.json"
+
+
+def _truth_file(doc_id: str, row: dict | None) -> Path:
+    return Path(row["truth_path"]) if row and "truth_path" in row else TRUTH / f"{doc_id}.json"
+
+
+def _doc_file(row: dict) -> Path:
+    return Path(row["doc_path"]) if "doc_path" in row else DOCS / row["file"]
+
+
+def score_doc(doc_id: str, schema_name: str, job: dict, row: dict | None = None) -> dict[str, Any]:
     v = validator()
-    schema = json.loads((SCHEMAS / f"{schema_name}.json").read_text(encoding="utf-8"))
+    schema = json.loads(_schema_file(schema_name, row).read_text(encoding="utf-8"))
     rec: dict[str, Any] = {"doc": doc_id, "status": job.get("status")}
     if "result" not in job:
         rec.update(valid=False, score=0.0)
@@ -116,7 +138,7 @@ def score_doc(doc_id: str, schema_name: str, job: dict) -> dict[str, Any]:
     meta = result.get("metadata", {})
     shaped = {"schema": schema_name, "document": doc_id, **result}
     rec["valid"] = v.validate_contract(shaped, schema) == []
-    truth = json.loads((TRUTH / f"{doc_id}.json").read_text(encoding="utf-8"))
+    truth = json.loads(_truth_file(doc_id, row).read_text(encoding="utf-8"))
     rep = v.score(result, truth, schema)
     tax = taxonomy(result, truth, schema)
     rec.update(
@@ -200,8 +222,8 @@ def run_folder(rid: str, run_index: int) -> Path:
 
 
 def submit_and_wait(base: str, doc_id: str, row: dict[str, str]) -> dict:
-    schema_text = (SCHEMAS / f"{row['schema_name']}.json").read_text(encoding="utf-8")
-    body, ctype = multipart(DOCS / row["file"], schema_text)
+    schema_text = _schema_file(row["schema_name"], row).read_text(encoding="utf-8")
+    body, ctype = multipart(_doc_file(row), schema_text)
     t0 = time.monotonic()
     status, job = call(base, "POST", "/jobs", body, {"Content-Type": ctype})
     while status == 429:
@@ -242,7 +264,7 @@ def default_docs(rows: dict[str, dict], final_sealed: bool) -> list[str]:
 
 
 def paid_run_gates(
-    live_docs: list[str], allow_dirty: bool, skip_dry_run: bool, git=None
+    live_docs: list[str], allow_dirty: bool, skip_dry_run: bool, git=None, set_name: str = "dev"
 ) -> tuple[bool, dict[str, Any]]:
     """PR-09 + R-A before any paid run. Returns (may run, what the report records)."""
     ok, msg = run_gates.clean_tree_gate(allow_dirty, **({"git": git} if git else {}))
@@ -256,7 +278,11 @@ def paid_run_gates(
         return True, gates
     # P8b Z-7: the dry run never opens a held-out document (dry_run refuses them); held-out
     # documents are opened once, by the sealed run itself.
-    passed, recs = dry_run.run([d for d in live_docs if d not in HELD_OUT])
+    to_plan = [d for d in live_docs if d not in HELD_OUT]
+    if set_name == "dev":
+        passed, recs = dry_run.run(to_plan)
+    else:  # P9a: SYN rows come from their own manifest
+        passed, recs = dry_run.run(to_plan, set_name=set_name)
     for r in recs:
         if not r.get("ok"):
             print(dry_run.fmt(r))
@@ -275,6 +301,7 @@ def summarise(
     gates: dict[str, Any] | None = None,
     run_index: int = 1,
     final: bool = False,
+    set_name: str = "dev",
 ) -> dict:
     from app.pipeline.single_value import PROMPT_VERSION
 
@@ -334,6 +361,8 @@ def summarise(
         # P8b: metadata only (flag names, page-choice result)
         "output_flags_per_doc": {r["doc"]: r.get("output_flags") or [] for r in scored},
         "scan_pages_per_doc": {r["doc"]: r.get("scan_pages", "first") for r in scored},
+        # P9a D48: which document set the run used (dev = sample manifest)
+        "set": set_name,
     }
 
 
@@ -355,7 +384,8 @@ def write_report(records: list[dict], summary: dict, report: Path = REPORT) -> N
         )
     else:
         head = (
-            f"**Mean score {summary['mean_score']:.3f} over n = {summary['n_docs']} DEV docs** · "
+            f"**Mean score {summary['mean_score']:.3f} over n = {summary['n_docs']} "
+            f"{SET_LABEL.get(summary.get('set', 'dev'), 'DEV')} docs** · "
         )
     lines = [
         "# DEV eval (baseline)",
@@ -466,12 +496,20 @@ def main() -> int:
     ap.add_argument(
         "--run-index", type=int, default=1, help="P5: run number (1..n) recorded in history"
     )
+    ap.add_argument(
+        "--set",
+        choices=doc_sets.SETS,
+        default="dev",
+        help="P9a: dev (sample manifest, default), syn (invented SYN set) or all",
+    )
     args = ap.parse_args()
     if args.reuse_from and (args.reuse or not args.docs):
         ap.error("--reuse-from needs --docs and cannot be combined with --reuse")
     report = args.report if args.report.is_absolute() else ROOT / args.report
 
-    rows = manifest()
+    if args.set != "dev" and (args.write_outputs or args.final_sealed):
+        ap.error("--write-outputs and --final-sealed are DEV-only (--set dev)")
+    rows = manifest() if args.set == "dev" else doc_sets.rows_for(args.set)
     docs = args.docs or default_docs(rows, args.final_sealed)
     sealed = [d for d in docs if d in HELD_OUT]
     if sealed and not args.final_sealed:
@@ -483,7 +521,10 @@ def main() -> int:
         return 2
     gates: dict[str, Any] = {}
     if not args.reuse:  # a paid run: clean tree (PR-09) and dry run (R-A) first
-        ok, gates = paid_run_gates(docs, args.allow_dirty, args.skip_dry_run)
+        if args.set == "dev":
+            ok, gates = paid_run_gates(docs, args.allow_dirty, args.skip_dry_run)
+        else:
+            ok, gates = paid_run_gates(docs, args.allow_dirty, args.skip_dry_run, set_name=args.set)
         if not ok:
             return 2
 
@@ -536,7 +577,8 @@ def main() -> int:
             break
 
     for doc_id, job in jobs:
-        rec = score_doc(doc_id, rows[doc_id]["schema_name"], job)
+        own = {"row": rows[doc_id]} if "truth_path" in rows[doc_id] else {}  # SYN rows only
+        rec = score_doc(doc_id, rows[doc_id]["schema_name"], job, **own)
         rec["pipeline"] = _meta(job).get("pipeline")
         records.append(rec)
         print(fmt_doc(rec), flush=True)
@@ -548,7 +590,14 @@ def main() -> int:
             )
 
     summary = summarise(
-        records, rid, args.label, aborted, gates, args.run_index, final=args.final_sealed
+        records,
+        rid,
+        args.label,
+        aborted,
+        gates,
+        args.run_index,
+        final=args.final_sealed,
+        set_name=args.set,
     )
     summary["raw_dir"] = run_dir.relative_to(RUNS).as_posix()
     print(
