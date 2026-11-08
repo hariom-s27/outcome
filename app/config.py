@@ -11,6 +11,7 @@ DEFAULT_DATABASE_URL = "postgresql://docextract:docextract@db:5432/docextract"
 SINGLE_VALUE_PATHS = ("baseline", "smart")
 TABLE_PATHS = ("baseline", "spec")
 SCAN_PAGE_METHODS = ("first", "locate")
+E0_OFF = ("0", "false", "no", "off")  # Z-35: E0_ROBUST values that turn E0 off; unset = on
 
 
 @dataclass(frozen=True)
@@ -44,8 +45,9 @@ class Settings:
     lab_mode: bool = False
     # P9b E0 (Z-33): robust parsing. Single-value: per-field salvage of a broken answer, then
     # one fresh extraction call if still unusable. Table spec: one more spec call when row
-    # fill < 0.5 or a spec entry was dropped, higher fill kept. Off = v1.0. env E0_ROBUST.
-    e0_robust: bool = False
+    # fill < 0.5 or a spec entry was dropped, higher fill kept. Z-35: default ON (its gate
+    # passed, runs 105-106); E0_ROBUST=0 (or false/no/off) turns it off = the v1.0 path.
+    e0_robust: bool = True
 
     def __post_init__(self) -> None:
         if self.sv_model is not None and self.sv_model not in ALLOWED_MODEL_IDS:
@@ -89,5 +91,5 @@ class Settings:
             scan_page_method=(env.get("SCAN_PAGE_METHOD") or "first").strip().lower(),
             sv_model=(env.get("SV_MODEL") or "").strip() or None,
             lab_mode=(env.get("LAB_MODE") or "").strip().lower() in ("1", "true", "yes"),
-            e0_robust=(env.get("E0_ROBUST") or "").strip().lower() in ("1", "true", "yes"),
+            e0_robust=(env.get("E0_ROBUST") or "").strip().lower() not in E0_OFF,
         )

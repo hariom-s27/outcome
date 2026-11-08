@@ -14,8 +14,8 @@ services:
       # P9b Z-29 lab only: empty = v1.0 (YAML baseline model, no per-job debug_model)
       SV_MODEL: ${SV_MODEL:-}
       LAB_MODE: ${LAB_MODE:-}
-      # P9b E0 (Z-33): robust parsing; empty = v1.0
-      E0_ROBUST: ${E0_ROBUST:-}
+      # P9b E0: robust parsing, default on (Z-35); E0_ROBUST=0 turns it off
+      E0_ROBUST: ${E0_ROBUST:-1}
     volumes:
       - ./cache:/cache
   api:
