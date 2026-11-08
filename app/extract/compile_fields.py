@@ -23,6 +23,7 @@ Path rule (P5-04): a field list is single-value unless a field carries the contr
 
 from __future__ import annotations
 
+import datetime as dt
 import hashlib
 import json
 import re
@@ -49,6 +50,7 @@ class FieldSpec:
     null_rule: str = ""
     format_rule: str = ""
     rule: str = ""  # which compiler rule set the type (for tests and metadata)
+    year_range: tuple[int, int] | None = None  # date / month fields: plausible years (DR15)
 
 
 # --- rule patterns (generic CRE / document vocabulary, never sample-document content) ---------
@@ -193,6 +195,24 @@ _ROLE_END = _rx(
     r"\bend\b", r"\bending\b", r"\bexpir", r"\bthrough\b", r"\blast day\b", r"\bterminat"
 )
 _ROLE_START = _rx(r"\bstart", r"\bbegin", r"\bcommence", r"\bfirst day\b", r"\beffective\b")
+# DR15 field range check for dates: events that have already happened when the document
+# exists (built, executed, signed, as of) cannot be later than this year; anything else gets a
+# wide window. A 2-digit year outside the range flips century once (normalise.fit_year_range).
+_PAST_EVENT = _rx(
+    r"\bbuilt\b",
+    r"\brenovat",
+    r"\bconstruct",
+    r"\bfounded\b",
+    r"\bincorporat",
+    r"\bexecut",
+    r"\bsigned\b",
+    r"\bsignature\b",
+    r"\bdated\b",
+    r"\bas of\b",
+    r"\bacquired\b",
+    r"\bacquisition\b",
+)
+YEAR_RANGE_WIDE = (1900, 2100)
 _NULL_SENTENCE = re.compile(r"[^.]*\b(?:null|empty list|0 if none|none if|n/a)\b[^.]*\.?", re.I)
 
 _FORMAT_RULES = {
@@ -332,6 +352,10 @@ def compile_field(key: str, field: Any) -> FieldSpec:
     item_type = _item_type(desc, label) if type_ == "list" else None
     role_type = item_type if type_ == "list" else type_
     role = _date_role(f"{label} {desc}") if role_type in ("date", "month") else None
+    year_range = None
+    if role_type in ("date", "month"):
+        past = _PAST_EVENT.search(label) or _PAST_EVENT.search(desc)
+        year_range = (1800, dt.date.today().year) if past else YEAR_RANGE_WIDE
     nulls = _NULL_SENTENCE.findall(desc)
     null_rule = " ".join(s.strip() for s in nulls) or _NULL_RULES.get(type_, _DEFAULT_NULL)
     fmt = _FORMAT_RULES[type_]
@@ -350,6 +374,7 @@ def compile_field(key: str, field: Any) -> FieldSpec:
         null_rule=null_rule,
         format_rule=fmt,
         rule=rid,
+        year_range=year_range,
     )
 
 

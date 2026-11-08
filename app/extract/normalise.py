@@ -4,8 +4,8 @@ Every function returns (value | None, reason_code). A rule that cannot be sure r
 with a reason, never a guess: a wrong value costs more than a null (brief §4, R24).
 
 Reason codes: ok, ok_hedged, empty, no_date, partial_date, ambiguous_date, range_unresolved,
-no_month, no_year, ambiguous_year, no_number, ambiguous_number, ambiguous_separator,
-words_numerals_mismatch, not_integer, unparseable, item_dropped, not_a_list.
+no_month, no_year, ambiguous_year, year_out_of_range, no_number, ambiguous_number,
+ambiguous_separator, words_numerals_mismatch, not_integer, unparseable, item_dropped, not_a_list.
 
 `round_trip(value, quote, type)` re-reads the quote with the same parsers and checks the
 normalised value is one of the values the quote states (R36: compare parsed values, not raw
@@ -44,6 +44,11 @@ TYPES = (
 )
 DATE_ROLES = (None, "start", "end", "period_end")
 
+# P5 D-3 (DR15): fixed 2-digit year pivot, never computed from today's date.
+# 00..76 -> 20xx, 77..99 -> 19xx. Mirrors config/models.yaml `two_digit_year_pivot` (the
+# pipeline passes the configured value in DocHints; a test keeps the two equal).
+TWO_DIGIT_PIVOT = 76
+
 
 @dataclass(frozen=True)
 class DocHints:
@@ -51,9 +56,15 @@ class DocHints:
 
     date_order: str | None = None  # "MDY" | "DMY" | None (no vote)
     decimal_comma: bool = False  # "1.234,56" style numbers
+    two_digit_pivot: int = TWO_DIGIT_PIVOT
 
 
 NO_HINTS = DocHints()
+
+
+def pivot_of(hints: DocHints) -> int:
+    return hints.two_digit_pivot
+
 
 # --- shared text prep ------------------------------------------------------------------------
 
@@ -227,13 +238,38 @@ class DateCand:
     date: dt.date | None = None
     month: tuple[int, int] | None = None
     options: tuple[dt.date, ...] = ()  # "amb": (month-first reading, day-first reading)
+    two_digit: bool = False  # year written with 2 digits: the century may be flipped once
 
 
-def _year2(yy: str) -> int:
+def _year2(yy: str, pivot: int | None = None) -> int:
+    """DR15 2-digit year: 00..pivot -> 20xx, above -> 19xx (pivot fixed, default 76).
+    4-digit years pass through. Never depends on today's date."""
     n = int(yy)
     if len(yy) == 4:
         return n
-    return 1900 + n if n >= 50 else 2000 + n
+    p = TWO_DIGIT_PIVOT if pivot is None else pivot
+    return 2000 + n if n <= p else 1900 + n
+
+
+def _shift_century(d: dt.date, years: int) -> dt.date | None:
+    try:
+        return d.replace(year=d.year + years)
+    except ValueError:  # 29 Feb in a non-leap target year
+        return None
+
+
+def fit_year_range(
+    d: dt.date, two_digit: bool, year_range: tuple[int, int] | None
+) -> tuple[dt.date | None, str]:
+    """Field range check (DR15): in range -> as is; a 2-digit year out of range -> flip the
+    century once and re-check; else None ('year_out_of_range')."""
+    if year_range is None or year_range[0] <= d.year <= year_range[1]:
+        return d, "ok"
+    if two_digit:
+        alt = _shift_century(d, -100 if d.year > year_range[1] else 100)
+        if alt is not None and year_range[0] <= alt.year <= year_range[1]:
+            return alt, "ok"
+    return None, "year_out_of_range"
 
 
 def _mon(name: str) -> int:
@@ -256,8 +292,9 @@ def _mask(t: str, m: re.Match[str]) -> str:
     return t[: m.start()] + " " * (m.end() - m.start()) + t[m.end() :]
 
 
-def extract_dates(text: str) -> list[DateCand]:
-    """Every date / month-year / ambiguous numeric date stated in text, in reading order."""
+def extract_dates(text: str, pivot: int | None = None) -> list[DateCand]:
+    """Every date / month-year / ambiguous numeric date stated in text, in reading order.
+    pivot: 2-digit years 00..pivot -> 20xx, above -> 19xx (None = TWO_DIGIT_PIVOT, 76)."""
     t = _prep_dates(text)
     out: list[DateCand] = []
 
@@ -290,22 +327,25 @@ def extract_dates(text: str) -> list[DateCand]:
         return DateCand(m.start(), "date", date=d) if d else None
 
     def named(m: re.Match[str]) -> DateCand | None:
-        d = _mkdate(_year2(m["year"]), _mon(m["mon"]), int(m["day"]))
-        return DateCand(m.start(), "date", date=d) if d else None
+        d = _mkdate(_year2(m["year"], pivot), _mon(m["mon"]), int(m["day"]))
+        yy = len(m["year"]) == 2
+        return DateCand(m.start(), "date", date=d, two_digit=yy) if d else None
 
     def numeric(m: re.Match[str]) -> DateCand | None:
-        a, b, y = int(m["a"]), int(m["b"]), _year2(m["year"])
+        a, b, y = int(m["a"]), int(m["b"]), _year2(m["year"], pivot)
+        yy = len(m["year"]) == 2
         mdy, dmy = _mkdate(y, a, b), _mkdate(y, b, a)
         if mdy and dmy and mdy != dmy:
-            return DateCand(m.start(), "amb", options=(mdy, dmy))
+            return DateCand(m.start(), "amb", options=(mdy, dmy), two_digit=yy)
         d = mdy or dmy
-        return DateCand(m.start(), "date", date=d) if d else None
+        return DateCand(m.start(), "date", date=d, two_digit=yy) if d else None
 
     def month_year(m: re.Match[str]) -> DateCand | None:
         mon = _mon(m["mon"]) if "mon" in m.groupdict() and m["mon"] else int(m["m"])
         if not 1 <= mon <= 12:
             return None
-        return DateCand(m.start(), "month", month=(_year2(m["year"]), mon))
+        yy = len(m["year"]) == 2
+        return DateCand(m.start(), "month", month=(_year2(m["year"], pivot), mon), two_digit=yy)
 
     scan(_LEGAL, legal)
     scan(_ISO, iso)
@@ -352,18 +392,26 @@ def _resolve(c: DateCand, hints: DocHints) -> dt.date | None:
     return None
 
 
-def norm_date(value: Any, *, hints: DocHints = NO_HINTS, role: str | None = None) -> Result:
+def norm_date(
+    value: Any,
+    *,
+    hints: DocHints = NO_HINTS,
+    role: str | None = None,
+    year_range: tuple[int, int] | None = None,
+) -> Result:
     """ISO date. role: start / end pick from a range; period_end lets a month-year mean the
-    month's last day. A missing day / month / year is never filled from today (R24)."""
+    month's last day. A missing day / month / year is never filled from today (R24).
+    year_range: the field's plausible years; a 2-digit year outside it flips century once."""
     if role not in DATE_ROLES:
         raise ValueError(f"unknown date role {role!r}")
     if _is_blank(value):
         return None, "empty"
     if isinstance(value, dt.datetime):
-        return value.date().isoformat(), "ok"
+        value = value.date()
     if isinstance(value, dt.date):
-        return value.isoformat(), "ok"
-    cands = extract_dates(str(value))
+        d0, why = fit_year_range(value, False, year_range)
+        return (d0.isoformat(), "ok") if d0 else (None, why)
+    cands = extract_dates(str(value), pivot_of(hints))
     if not cands:
         return None, "no_date"
     if len(cands) > 1:
@@ -379,21 +427,33 @@ def norm_date(value: Any, *, hints: DocHints = NO_HINTS, role: str | None = None
     c = cands[0]
     if c.kind == "month":
         if role == "period_end" and c.month:
-            return month_end(*c.month).isoformat(), "ok"
+            d1, why = fit_year_range(month_end(*c.month), c.two_digit, year_range)
+            if d1 is None:
+                return None, why
+            return month_end(d1.year, d1.month).isoformat(), "ok"
         return None, "partial_date"
     d = _resolve(c, hints)
     if d is None:
         return None, "ambiguous_date"
-    return d.isoformat(), "ok"
+    d2, why = fit_year_range(d, c.two_digit, year_range)
+    return (d2.isoformat(), "ok") if d2 else (None, why)
 
 
-def norm_month(value: Any, *, hints: DocHints = NO_HINTS, role: str | None = None) -> Result:
+def norm_month(
+    value: Any,
+    *,
+    hints: DocHints = NO_HINTS,
+    role: str | None = None,
+    year_range: tuple[int, int] | None = None,
+) -> Result:
     """'YYYY-MM' (only for fields that explicitly ask for a month; the compiler decides)."""
     if _is_blank(value):
         return None, "empty"
-    cands = extract_dates(str(value))
+    cands = extract_dates(str(value), pivot_of(hints))
     months: list[tuple[int, int] | None] = []
+    two: list[bool] = []
     for c in cands:
+        two.append(c.two_digit)
         if c.kind == "month":
             months.append(c.month)
         else:
@@ -404,17 +464,21 @@ def norm_month(value: Any, *, hints: DocHints = NO_HINTS, role: str | None = Non
                 months.append((d.year, d.month) if d else None)
     if not months:
         return None, "no_month"
+    pick = 0
     if len(set(months)) > 1:
         if role in ("end", "period_end"):
-            months = [months[-1]]
+            pick = len(months) - 1
         elif role == "start":
-            months = [months[0]]
+            pick = 0
         else:
             return None, "range_unresolved"
-    if months[0] is None:
+    if months[pick] is None:
         return None, "ambiguous_date"
-    y, m = months[0]
-    return f"{y:04d}-{m:02d}", "ok"
+    y, m = months[pick]  # type: ignore[misc]
+    d, why = fit_year_range(dt.date(y, m, 1), two[pick], year_range)
+    if d is None:
+        return None, why
+    return f"{d.year:04d}-{d.month:02d}", "ok"
 
 
 _YEAR_TOKEN = re.compile(r"(?<!\d)(1[89]\d{2}|2[01]\d{2})(?!\d)")
@@ -751,7 +815,12 @@ _BULLET = re.compile(r"^(?:[-*–]\s+|\(?\w{1,3}[.)]\s+)")
 
 
 def norm_list(
-    value: Any, *, hints: DocHints = NO_HINTS, item_type: str = "text", role: str | None = None
+    value: Any,
+    *,
+    hints: DocHints = NO_HINTS,
+    item_type: str = "text",
+    role: str | None = None,
+    year_range: tuple[int, int] | None = None,
 ) -> Result:
     """Split only on structural delimiters (line breaks, ';', bullets, '|'), never on commas
     (names contain them). Items normalised by item_type, deduplicated, order kept."""
@@ -770,7 +839,10 @@ def norm_list(
     seen: set[str] = set()
     dropped = 0
     for item in raw:
-        v, _r = fn(item, hints=hints, role=role)
+        if item_type in ("date", "month"):
+            v, _r = fn(item, hints=hints, role=role, year_range=year_range)
+        else:
+            v, _r = fn(item, hints=hints, role=role)
         if v is None:
             dropped += 1
             continue
@@ -804,13 +876,14 @@ def normalise(
     hints: DocHints = NO_HINTS,
     role: str | None = None,
     item_type: str = "text",
+    year_range: tuple[int, int] | None = None,
 ) -> Result:
     """Dispatch by field type. Unknown types are treated as free text (never crash)."""
     if type_ == "list":
-        return norm_list(value, hints=hints, item_type=item_type, role=role)
+        return norm_list(value, hints=hints, item_type=item_type, role=role, year_range=year_range)
     fn = NORMALISERS.get(type_, norm_text)
     if type_ in ("date", "month"):
-        return fn(value, hints=hints, role=role)
+        return fn(value, hints=hints, role=role, year_range=year_range)
     return fn(value, hints=hints)
 
 
@@ -826,16 +899,25 @@ def _close(a: float, b: float) -> bool:
     return abs(a - b) <= max(0.005, 1e-9 * abs(b))
 
 
-def _date_values(quote: str) -> tuple[set[dt.date], set[tuple[int, int]]]:
+def _date_values(
+    quote: str, hints: DocHints = NO_HINTS
+) -> tuple[set[dt.date], set[tuple[int, int]]]:
     dates: set[dt.date] = set()
     months: set[tuple[int, int]] = set()
-    for c in extract_dates(quote):
+    for c in extract_dates(quote, pivot_of(hints)):
+        found: list[dt.date] = []
         if c.kind == "date" and c.date:
-            dates.add(c.date)
+            found = [c.date]
         elif c.kind == "amb":
-            dates.update(c.options)  # presence check: either reading may be the one
+            found = list(c.options)  # presence check: either reading may be the one
         elif c.kind == "month" and c.month:
             months.add(c.month)
+            if c.two_digit:  # the range check may have flipped the century once
+                months.update({(c.month[0] - 100, c.month[1]), (c.month[0] + 100, c.month[1])})
+        for d in found:
+            dates.add(d)
+            if c.two_digit:
+                dates.update(x for x in (_shift_century(d, -100), _shift_century(d, 100)) if x)
     return dates, months
 
 
@@ -866,21 +948,21 @@ def round_trip(
             d = dt.date.fromisoformat(str(value))
         except ValueError:
             return False
-        dates, months = _date_values(q)
+        dates, months = _date_values(q, hints)
         return d in dates or ((d.year, d.month) in months and d == month_end(d.year, d.month))
     if type_ == "month":
         m = re.fullmatch(r"(\d{4})-(\d{2})", str(value))
         if not m:
             return False
         ym = (int(m.group(1)), int(m.group(2)))
-        dates, months = _date_values(q)
+        dates, months = _date_values(q, hints)
         return ym in months or any((d.year, d.month) == ym for d in dates)
     if type_ == "year":
         try:
             y = int(value)
         except (TypeError, ValueError):
             return False
-        dates, months = _date_values(q)
+        dates, months = _date_values(q, hints)
         found = {int(t) for t in _YEAR_TOKEN.findall(unify(q))}
         return y in found or any(d.year == y for d in dates) or any(m[0] == y for m in months)
     if type_ == "code":
