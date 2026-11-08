@@ -104,6 +104,12 @@ def test_table_cleanup_defaults_to_on(compose):
     assert env["TABLE_CLEANUP"] == "${TABLE_CLEANUP:-1}"
 
 
+def test_spec_retry_feedback_defaults_to_off(compose):
+    # P9g Z-61: off until the Z-62 gate passes; 1 turns it on
+    env = _env(compose["services"]["worker"])
+    assert env["SPEC_RETRY_FEEDBACK"] == "${SPEC_RETRY_FEEDBACK:-0}"
+
+
 def test_two_worker_replicas_by_default(compose):
     assert compose["services"]["worker"]["deploy"]["replicas"] == 2
 
@@ -119,6 +125,7 @@ def test_settings_from_shipped_env(compose, monkeypatch):
         "E0_ROBUST",
         "PDF_TABLE_METHOD",
         "TABLE_CLEANUP",
+        "SPEC_RETRY_FEEDBACK",
     ):
         monkeypatch.delenv(var, raising=False)
     for k, v in _resolve_empty_shell(_env(compose["services"]["worker"])).items():
@@ -137,3 +144,4 @@ def test_settings_from_shipped_env(compose, monkeypatch):
     assert Settings.from_env().e0_robust is True  # Z-35: E0 on in the shipped config
     assert Settings.from_env().pdf_table_method == "grid"  # P9c: grid on (gate passed)
     assert Settings.from_env().table_cleanup is True  # P9c Z-60: cleared, default on
+    assert Settings.from_env().spec_retry_feedback is False  # P9g: off until Z-62 passes
