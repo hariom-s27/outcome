@@ -103,6 +103,7 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--docs", nargs="+", default=DEFAULT_DOCS)
     ap.add_argument("--report", type=Path, default=None)
+    ap.add_argument("--title", default="P6 Part B: free table gate ($0, no LLM calls)")
     args = ap.parse_args()
     rows = manifest()
     if any(d in HELD_OUT for d in args.docs + SHIP_DOCS):
@@ -112,7 +113,7 @@ def main() -> int:
     olds = {d: old_score(d, rows[d]["schema_name"])["score"] for d in SHIP_DOCS}
 
     lines = [
-        "# P6 Part B: free table gate ($0, no LLM calls)",
+        f"# {args.title}",
         "",
         "Heuristic spec (header match, no model) -> executor on every line -> checks -> "
         "`eval_dev.score_doc` (tools/validate.py `score()`, mean of per-field means). Old = the "
