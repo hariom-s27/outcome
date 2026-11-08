@@ -37,8 +37,9 @@ class Settings:
     # P8b Z-13: the baseline single-value path on a scan with more page images than it can
     # send: "first" = the first pages (as before), "locate" = the P5 locator picks them,
     # "all" (P9e Z-53/Z-54) = every page image up to 40, each tagged "PAGE n of N" by code,
-    # in the same one call. env SCAN_PAGE_METHOD.
-    scan_page_method: str = "first"
+    # in the same one call. env SCAN_PAGE_METHOD. P9e: default all on lab (Z-56 gate passed,
+    # runs 171-173; must-not-error full set run 174); first = the v1.0 first 8 pages.
+    scan_page_method: str = "all"
     # P9b Z-29: the model for single-value field lists; None = config/models.yaml `baseline`
     # (v1.0). Table field lists keep the baseline. env SV_MODEL (lab only, never in compose.yaml).
     sv_model: str | None = None
@@ -104,7 +105,7 @@ class Settings:
             version=env.get("APP_VERSION") or "dev",
             single_value_path=(env.get("EXTRACT_SINGLE_VALUE_PATH") or "baseline").strip().lower(),
             table_path=(env.get("EXTRACT_TABLE_PATH") or "spec").strip().lower(),
-            scan_page_method=(env.get("SCAN_PAGE_METHOD") or "first").strip().lower(),
+            scan_page_method=(env.get("SCAN_PAGE_METHOD") or "all").strip().lower(),
             sv_model=(env.get("SV_MODEL") or "").strip() or None,
             lab_mode=(env.get("LAB_MODE") or "").strip().lower() in ("1", "true", "yes"),
             e0_robust=(env.get("E0_ROBUST") or "").strip().lower() not in E0_OFF,
