@@ -270,6 +270,33 @@ Base per doc (mean over 104–106): budget 0.016, rent roll 0.044.
     hallucinations strictly fewer, instead of +0.025.
   - (c) Fix rule 1, rerun, and accept the gate result whatever it is.
 
+### Z-59 (c): placeholder rule fix + targeted-fix gate (build, $0)
+
+- **Fix.** Rule 1 now also applies to weakly typed fields whose cell holds text: same lexicon,
+  whole cell only, never the row key, never a number (`app/tables/cleanup.py`, using
+  `execute.weak_type`).
+- **Tests** (invented data, `tests/test_p9c_cleanup.py`):
+  - a weak `integer` field holding "VACANT" / "Unoccupied" becomes null; a number in that field
+    is kept; "Vacant from June" is kept
+  - a strongly typed number field is never touched
+  - a row key that is a placeholder is never nulled
+  - spreadsheet path on and off
+  - gate script: targeted-cell counter and rule logic
+- **Gate.** Pre-registered by Hariom before runs 154–156 and implemented in
+  `scripts/gate_cleanup.py`. Bases are fixed in code: grid runs 141–143 for the two PDF docs,
+  runs 104–106 for rentroll_001 and syn_rentroll_xlsx.
+  - (i) no declared doc's mean below its base mean
+  - (ii) targeted error cells strictly fewer in total. A targeted cell is a mismatched cell in a
+    matched row whose predicted text is a whole-cell placeholder where the truth is null, or
+    carries a trailing continued-marker.
+  - (iii) paired hallucinations ≤ base
+  - all VALID
+  - (iv) then one full `--set all` must-not-error run
+- **Base targeted cells** (mean per run, measured by the script): syn_budget_pdf 8.0,
+  syn_rentroll_pdf 7.0, rentroll_001 22.0, syn_rentroll_xlsx 0.0; total 37.0.
+- **Sanity run** of the script on the old runs 151–153 (unfixed rule; not the gate's runs): 29.0
+  vs 37.0, verdict PASS on the section fix alone. The gate applies only to runs 154–156.
+
 ## Decision (before Z-50)
 
 - As pre-registered: the full `--set all` must-not-error run was **not** made (Part B step 3 needs
