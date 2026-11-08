@@ -64,7 +64,10 @@ KILL_AFTER_S = 10.0  # L2
 JOB_KEYS = {"job_id", "status", "created_at", "updated_at"}
 JOB_OPTIONAL = {"stage", "result", "error"}
 RESULT_KEYS = {"entries", "metadata"}
-STARTED_RE = re.compile(r"started \(pipeline=(\S+), single_value_path=(\w+), cache_mode=(\w+)\)")
+# P8b: tolerant of the switches logged between single_value_path and cache_mode
+STARTED_RE = re.compile(
+    r"started \(pipeline=(\S+), single_value_path=(\w+),[^)]*?cache_mode=(\w+)\)"
+)
 
 EVAL_OUT = ROOT / "eval" / "load.jsonl"
 JOBS_OUT = ROOT / "logs" / "P8a_load_jobs.jsonl"

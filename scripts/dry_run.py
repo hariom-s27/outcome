@@ -4,6 +4,7 @@
     uv run python scripts/dry_run.py --docs om_001      # a given list
     uv run python scripts/dry_run.py --path smart       # P5: plan the smart single-value path
     uv run python scripts/dry_run.py --table-path spec  # P6: plan the long-table spec path
+    uv run python scripts/dry_run.py --scan-pages locate  # P8b: plan locate page choice
 
 Same steps as the worker before its call: read_document(file_type, bytes) ->
 baseline.build_messages(field_list, blocks, file_type, est=catalog.estimate) -> the fuse's
@@ -31,7 +32,7 @@ from make_outputs import DOCS, ROOT, SCHEMAS, manifest
 
 from app.extract.compile_fields import is_single_value
 from app.llm.models import ModelCatalog
-from app.pipeline import baseline, single_value, table_spec
+from app.pipeline import baseline, baseline_located, single_value, table_spec
 from app.readers import read_document
 
 HELD_OUT = frozenset({"lease_003", "budget_001"})  # D03
@@ -143,6 +144,51 @@ def dry_run_table(doc_id: str, row: dict[str, str], catalog: ModelCatalog) -> di
     return rec
 
 
+def dry_run_scan(doc_id: str, row: dict[str, str], catalog: ModelCatalog) -> dict[str, Any]:
+    """P8b Z-13: SCAN_PAGE_METHOD=locate. The baseline record, plus, for a single-value list on
+    a scan with more than 8 page images, the planned locate calls (real builders, no LLM). The
+    baseline call is planned on the first 8 pages (the locate answer is unknown)."""
+    rec = dry_run_doc(doc_id, row, catalog)
+    try:
+        path = DOCS / row["file"]
+        file_type = path.suffix.lower().lstrip(".")
+        field_list = json.loads((SCHEMAS / f"{row['schema_name']}.json").read_text("utf-8"))
+        if not is_single_value(field_list):
+            rec["scan"] = {"locate": False, "why": "table_list"}
+            return rec
+        dm = read_document(file_type, path.read_bytes())
+        info = baseline_located.plan_pages(dm.blocks)
+        calls = []
+        if info["locate"]:
+            images = [b for b in dm.blocks if b.kind == "image"]
+            thumbs = [single_value.thumbnail(b) for b in images]
+            n = len(field_list.get("fields", {}))
+            for i in range(0, len(thumbs), single_value.MAX_IMAGES):
+                group = thumbs[i : i + single_value.MAX_IMAGES]
+                msgs = single_value.locate_messages(field_list, group)
+                calls.append(single_value._call_line("locate", msgs, None, group, n, catalog))
+        rec["scan"] = {**info, "locate_calls": calls}
+        worst = max((c["est_tokens_in"] for c in calls), default=0)
+        if worst >= TOKEN_LIMIT:
+            rec["ok"] = False
+            rec["error"] = f"locate estimate {worst} >= {TOKEN_LIMIT}"
+    except Exception as exc:  # recorded and fails the gate; the type only (no content, R23)
+        rec["ok"] = False
+        rec["error"] = f"{type(exc).__name__}"
+        rec["detail"] = str(exc)[:300]  # cache file only, never printed
+    return rec
+
+
+def fmt_scan(r: dict[str, Any]) -> str:
+    s = r.get("scan") or {}
+    calls = s.get("locate_calls") or []
+    usd = sum(c.get("est_usd_realistic", 0.0) for c in calls)
+    return (
+        f"{fmt(r)} scan_locate={s.get('locate', False)} image_pages={s.get('image_pages', '-')} "
+        f"locate_calls={len(calls)} locate_est$={usd:.4f}"
+    )
+
+
 def fmt_table(r: dict[str, Any]) -> str:
     t = r.get("table") or {}
     if not t:
@@ -158,7 +204,8 @@ def fmt_table(r: dict[str, Any]) -> str:
         f"{head} data_lines={t['data_lines']} preview_tokens={t['est_tokens_in']} "
         f"calls={t['calls_planned']} (max {t['calls_max']}) est$={t['est_usd_realistic']:.4f} "
         f"(fuse {t['est_usd_fuse']:.4f}) heuristic_score={h.get('score', '-')} "
-        f"heuristic_hard_fail={h.get('hard_fail', '-')} rows={h.get('rows', '-')}"
+        f"heuristic_hard_fail={h.get('hard_fail', '-')} rows={h.get('rows', '-')} "
+        f"heuristic_doc_filled={h.get('doc_filled', '-')}"
         + (f" error={r['error']}" if r.get("error") else "")
     )
 
@@ -181,7 +228,10 @@ def fmt_smart(r: dict[str, Any]) -> str:
 
 
 def run(
-    docs: list[str] | None = None, path: str = "baseline", table_path: str = "baseline"
+    docs: list[str] | None = None,
+    path: str = "baseline",
+    table_path: str = "baseline",
+    scan_pages: str = "first",
 ) -> tuple[bool, list[dict[str, Any]]]:
     rows = manifest()
     docs = docs or [d for d in rows if d not in HELD_OUT]
@@ -195,6 +245,8 @@ def run(
     one = dry_run_smart if path == "smart" else dry_run_doc
     if table_path == "spec":
         one = dry_run_table
+    if scan_pages == "locate":
+        one = dry_run_scan
     records = [one(d, rows[d], catalog) for d in docs]
     return all(r["ok"] for r in records), records
 
@@ -225,12 +277,21 @@ def main(argv: list[str] | None = None) -> int:
         default="baseline",
         help="EXTRACT_TABLE_PATH to plan for (P6)",
     )
+    ap.add_argument(
+        "--scan-pages",
+        choices=["first", "locate"],
+        default="first",
+        help="SCAN_PAGE_METHOD to plan for (P8b)",
+    )
     args = ap.parse_args(argv)
-    if args.path == "smart" and args.table_path == "spec":
-        ap.error("plan one switch at a time: --path smart or --table-path spec")
-    ok, records = run(args.docs, args.path, args.table_path)
+    switches = [args.path == "smart", args.table_path == "spec", args.scan_pages == "locate"]
+    if sum(switches) > 1:
+        ap.error("plan one switch at a time: --path smart, --table-path spec or --scan-pages")
+    ok, records = run(args.docs, args.path, args.table_path, args.scan_pages)
     for r in records:
-        if args.table_path == "spec":
+        if args.scan_pages == "locate":
+            print(fmt_scan(r))
+        elif args.table_path == "spec":
             print(fmt_table(r))
         else:
             print(fmt_smart(r) if args.path == "smart" else fmt(r))

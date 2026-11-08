@@ -142,8 +142,17 @@ def score_doc(doc_id: str, schema_name: str, job: dict) -> dict[str, Any]:
         path=doc_path(job),
         cache_mode=meta.get("cache_mode", "unknown"),
         replays=replays(job),
+        # P8b: baseline cut-off / loop flags (P6b B-6) and the scan page choice (Z-13)
+        output_flags=list(meta.get("output_flags") or []),
+        scan_pages=scan_pages(meta),
     )
     return rec
+
+
+def scan_pages(meta: dict) -> str:
+    """'first' (default path), or 'locate:<result>' when the Z-13 page choice ran."""
+    sp = meta.get("scan_pages")
+    return f"locate:{sp.get('result', '?')}" if isinstance(sp, dict) else "first"
 
 
 # --- P5 D-1 / D-2: live runs and what a history line records ------------------------------------
@@ -220,7 +229,9 @@ def fmt_doc(r: dict) -> str:
         f"reasoning={r.get('tokens_reasoning', 0)} cost=${r.get('cost_usd', 0):.5f} "
         f"(computed ${r.get('cost_computed_usd', 0):.5f}, "
         f"uncached ${r.get('cost_uncached_usd', 0):.5f}) latency={r.get('latency_ms', 0)}ms "
-        f"model={','.join(r.get('models_returned') or []) or '-'}"
+        f"model={','.join(r.get('models_returned') or []) or '-'} "
+        f"flags={','.join(r.get('output_flags') or []) or '-'} "
+        f"scan_pages={r.get('scan_pages', 'first')}"
     )
 
 
@@ -304,7 +315,20 @@ def summarise(
         "run_index": int(run_index),
         "prompt_version": PROMPT_VERSION,
         "all_live": bool(scored) and all(r.get("replays", 0) == 0 for r in scored),
+        # P8b: metadata only (flag names, page-choice result)
+        "output_flags_per_doc": {r["doc"]: r.get("output_flags") or [] for r in scored},
+        "scan_pages_per_doc": {r["doc"]: r.get("scan_pages", "first") for r in scored},
     }
+
+
+def reason_extras(r: dict) -> str:
+    """P8b: output flags and a non-default page choice, appended to the reason column."""
+    out = ""
+    if r.get("output_flags"):
+        out += " flags=" + ",".join(r["output_flags"])
+    if r.get("scan_pages", "first") != "first":
+        out += " scan_pages=" + r["scan_pages"]
+    return out
 
 
 def write_report(records: list[dict], summary: dict, report: Path = REPORT) -> None:
@@ -334,7 +358,7 @@ def write_report(records: list[dict], summary: dict, report: Path = REPORT) -> N
             f"{r.get('extra_rows', 0)}/{r.get('missing_rows', 0)} | "
             f"{r.get('cost_usd', 0):.5f} | {r.get('cost_uncached_usd', 0):.5f} | "
             f"{r.get('latency_ms', 0) / 1000:.1f} | "
-            f"{r.get('terminal_reason') or ''} |"
+            f"{r.get('terminal_reason') or ''}{reason_extras(r)} |"
         )
     lines += [
         "",
