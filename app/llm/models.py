@@ -121,9 +121,31 @@ class OutputBudget:
         return max(int(current), min(self.cap, 2 * int(current)))
 
 
+@dataclass(frozen=True)
+class CallCap:
+    """P5 D-4: per-document call cap (config `call_cap:`). PDFs: max(floor, base + per_batch x
+    ceil(pages / 8)), e.g. 25 pages -> 12, 60 -> 20; other file types: the floor
+    (LLM_MAX_CALLS_PER_DOC, 8). The per-document $ fuse is separate and unchanged."""
+
+    calls_base: int = 4
+    calls_per_batch: int = 2
+    pages_per_batch: int = 8  # R13: <= 8 images per request
+
+    def for_doc(self, file_type: str, pages: int, floor: int) -> int:
+        if file_type != "pdf" or pages <= 0:
+            return floor
+        batches = math.ceil(pages / self.pages_per_batch)
+        return max(floor, self.calls_base + self.calls_per_batch * batches)
+
+
+TWO_DIGIT_PIVOT = 76  # P5 D-3 default; config/models.yaml `two_digit_year_pivot` sets it
+
+
 class ModelCatalog:
     estimate: Estimate = Estimate()
     output: OutputBudget = OutputBudget()
+    call_cap: CallCap = CallCap()
+    two_digit_pivot: int = TWO_DIGIT_PIVOT
 
     def __init__(self, specs: dict[str, ModelSpec], baseline: str, fallback_order: list[str]):
         for mid in [*specs, baseline, *fallback_order]:
@@ -182,6 +204,15 @@ class ModelCatalog:
             per_field=int(out.get("per_field", OutputBudget.per_field)),
             cap=int(out.get("cap", OutputBudget.cap)),
         )
+        cc = raw.get("call_cap") or {}
+        catalog.call_cap = CallCap(
+            calls_base=int(cc.get("calls_base", CallCap.calls_base)),
+            calls_per_batch=int(cc.get("calls_per_batch", CallCap.calls_per_batch)),
+        )
+        pivot = int(raw.get("two_digit_year_pivot", TWO_DIGIT_PIVOT))
+        if not 0 <= pivot <= 99:
+            raise ValueError(f"two_digit_year_pivot must be 0..99, got {pivot}")
+        catalog.two_digit_pivot = pivot
         return catalog
 
     def get(self, model_id: str) -> ModelSpec:

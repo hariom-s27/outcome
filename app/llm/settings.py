@@ -5,6 +5,8 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass
 
+CACHE_MODES = ("readwrite", "off")
+
 
 def _float_or_none(raw: str | None) -> float | None:
     return float(raw) if raw not in (None, "") else None
@@ -19,6 +21,10 @@ class LLMSettings:
     max_usd_per_doc: float = 0.05  # P2-28 LLM_MAX_USD_PER_DOC (computed cost)
     dev_budget_usd: float | None = None  # P2-10 DEV_BUDGET_USD; set by compose.dev.yaml only
     cache_dir: str | None = None  # P2-11 LLM_CACHE_DIR; set by compose.dev.yaml only
+    # P5 D-1 LLM_CACHE_MODE: readwrite (read + write the dev cache, when cache_dir is set) |
+    # off (no cache read, no cache write, whatever cache_dir says). An explicit value, never an
+    # empty LLM_CACHE_DIR: PowerShell drops empty env vars, which would leave the cache on.
+    cache_mode: str = "readwrite"
     request_timeout_s: float = 120.0  # LLM_REQUEST_TIMEOUT_S, per HTTP attempt
     max_attempts: int = 4  # P2-06
     backoff_s: tuple[float, ...] = (1.0, 2.0, 4.0, 8.0)  # P2-06, + jitter
@@ -37,6 +43,10 @@ class LLMSettings:
             raise ValueError("max_attempts must be >= 1")
         if self.reasoning_override not in (None, "default", "none"):
             raise ValueError("LLM_REASONING_OVERRIDE must be default or none")
+        if self.cache_mode not in CACHE_MODES:
+            raise ValueError(
+                f"LLM_CACHE_MODE must be one of {CACHE_MODES}, got {self.cache_mode!r}"
+            )
 
     @property
     def slot_lease_s(self) -> float:
@@ -54,6 +64,7 @@ class LLMSettings:
             max_usd_per_doc=float(env.get("LLM_MAX_USD_PER_DOC") or 0.05),
             dev_budget_usd=_float_or_none(env.get("DEV_BUDGET_USD")),
             cache_dir=env.get("LLM_CACHE_DIR") or None,
+            cache_mode=(env.get("LLM_CACHE_MODE") or "readwrite").strip().lower(),
             request_timeout_s=float(env.get("LLM_REQUEST_TIMEOUT_S") or 120.0),
             breaker_abort=(env.get("LLM_BREAKER_ABORT") or "") in ("1", "true", "yes"),
             reasoning_override=env.get("LLM_REASONING_OVERRIDE") or None,

@@ -24,6 +24,15 @@ output_tokens:
   base: 512
   per_field: 96
   cap: 16384
+# call_cap (P5 D-4): per-document call cap for PDFs = max(LLM_MAX_CALLS_PER_DOC,
+#   calls_base + calls_per_batch x ceil(pages / 8)); 25 pages -> 12. Other file types keep
+#   LLM_MAX_CALLS_PER_DOC (8). The per-document $ fuse is unchanged.
+call_cap:
+  calls_base: 4
+  calls_per_batch: 2
+# two_digit_year_pivot (P5 D-3, DR15): fixed, never from today's date. 00..76 -> 20xx,
+#   77..99 -> 19xx; then the field's year range, one century flip, else null.
+two_digit_year_pivot: 76
 baseline: anthropic/claude-haiku-5.5
 fallback_order:
   - anthropic/claude-haiku-5.5

@@ -29,7 +29,7 @@ from typing import Any
 import httpx
 
 from app.llm.diskcache import DiskCache, request_key
-from app.llm.jsonparse import JSONParseError, parse_json_object
+from app.llm.jsonparse import JSONParseError, parse_json_object, salvage_object
 from app.llm.models import ModelCatalog, ModelSpec
 from app.llm.settings import LLMSettings
 from app.llm.store import LedgerRow, LLMStore, counted_cost
@@ -80,6 +80,7 @@ class CallContext:
     job_id: str | None  # None only in dev scripts: per-doc caps then do not apply
     deadline: float  # absolute, on the client's clock (time.time by default)
     purpose: str = "extract"
+    max_calls: int | None = None  # P5 D-4: this document's call cap; None = LLM_MAX_CALLS_PER_DOC
 
 
 @dataclass
@@ -101,6 +102,8 @@ class JSONOutcome:
     detail: str | None = None
     repaired: bool = False
     model_mismatch: bool = False
+    salvaged: tuple[str, ...] = ()  # PR-72: members that could not be parsed (dropped)
+    finish_reason: str | None = None
 
 
 @dataclass(frozen=True)
@@ -206,7 +209,8 @@ class LLMClient:
         self._sleep = sleep
         self._rng = rng or random.Random()
         self._http = httpx.Client(transport=transport, timeout=settings.request_timeout_s)
-        self._cache = DiskCache(settings.cache_dir) if settings.cache_dir else None
+        use_cache = bool(settings.cache_dir) and settings.cache_mode == "readwrite"
+        self._cache = DiskCache(settings.cache_dir) if use_cache else None  # P5 D-1
         self._holder_prefix = f"{socket.gethostname()}:{os.getpid()}"
         self.store.ensure_slots(settings.max_concurrency)
 
@@ -218,6 +222,12 @@ class LLMClient:
         self._http.close()
         self.store.close()
 
+    @property
+    def cache_mode(self) -> str:
+        """Effective cache mode: 'readwrite' only when a cache is really in use, else 'off'
+        (shipped: no cache dir -> off). Every replay is a ledger row with cache_hit = true."""
+        return "readwrite" if self._cache is not None else "off"
+
     # --- public API ---------------------------------------------------------------------
 
     def complete_json(
@@ -228,8 +238,11 @@ class LLMClient:
         *,
         max_tokens: int | None = None,
         kind_chars: dict[str, int] | None = None,
+        salvage: bool = False,
     ) -> JSONOutcome:
-        """The JSON ladder. Never raises for LLM trouble; the caller maps the outcome."""
+        """The JSON ladder. Never raises for LLM trouble; the caller maps the outcome.
+        salvage=True (PR-72): before the repair call, try the forgiving per-member parse;
+        members that do not parse are listed in `salvaged`, the others are kept."""
         spec = self.catalog.get(model)
         check_messages(messages, spec)
         mismatch = False
@@ -252,9 +265,24 @@ class LLMClient:
                 if is_truncated(res.finish_reason) and _parse_or_none(res.text) is None:
                     return JSONOutcome("unusable", reason="llm_truncated", model_mismatch=mismatch)
             try:
-                return JSONOutcome("ok", data=parse_json_object(res.text), model_mismatch=mismatch)
+                return JSONOutcome(
+                    "ok",
+                    data=parse_json_object(res.text),
+                    model_mismatch=mismatch,
+                    finish_reason=res.finish_reason,
+                )
             except JSONParseError as exc:
                 parse_error = str(exc)
+            if salvage:
+                data, bad = salvage_object(res.text)
+                if data:
+                    return JSONOutcome(
+                        "ok",
+                        data=data,
+                        model_mismatch=mismatch,
+                        salvaged=tuple(bad),
+                        finish_reason=res.finish_reason,
+                    )
             repair = self.catalog.cheapest_text_model()
             rep = self.chat(
                 replace(ctx, purpose="repair"),
@@ -400,7 +428,8 @@ class LLMClient:
             raise LLMStopped("dev_budget_reached")
         if ctx.job_id is not None:
             used = self.store.doc_usage(ctx.job_id)
-            if used.calls >= s.max_calls_per_doc or used.cost_counted >= s.max_usd_per_doc:
+            cap = ctx.max_calls if ctx.max_calls is not None else s.max_calls_per_doc
+            if used.calls >= cap or used.cost_counted >= s.max_usd_per_doc:
                 raise LLMStopped("doc_llm_cap")
         if self._time_left(ctx) <= 0:
             raise LLMStopped("deadline")

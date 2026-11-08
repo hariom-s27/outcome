@@ -8,5 +8,8 @@ services:
       LLM_CACHE_DIR: /cache/llm
       # P2-31 pilot only: default|none for every model; empty = per-model YAML setting
       LLM_REASONING_OVERRIDE: ${LLM_REASONING_OVERRIDE:-}
+      # P5 D-1: readwrite | off (off = no cache read, no cache write). Set it explicitly;
+      # never rely on an empty LLM_CACHE_DIR (PowerShell drops empty env vars).
+      LLM_CACHE_MODE: ${LLM_CACHE_MODE:-readwrite}
     volumes:
       - ./cache:/cache
