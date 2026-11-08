@@ -91,10 +91,16 @@ def test_e0_robust_defaults_to_on(compose):
     assert env["E0_ROBUST"] == "${E0_ROBUST:-1}"
 
 
-def test_pdf_table_method_defaults_to_single(compose):
-    # P9c Z-42: shipped = the v1.0 PDF table call until the grid passes its gate
+def test_pdf_table_method_defaults_to_grid(compose):
+    # P9c: shipped = the line grid (gate passed with Z-50, runs 141-143; full set run 144)
     env = _env(compose["services"]["worker"])
-    assert env["PDF_TABLE_METHOD"] == "${PDF_TABLE_METHOD:-single}"
+    assert env["PDF_TABLE_METHOD"] == "${PDF_TABLE_METHOD:-grid}"
+
+
+def test_table_cleanup_defaults_to_off(compose):
+    # P9c Z-51: shipped = no cleanup rules until their gate passes
+    env = _env(compose["services"]["worker"])
+    assert env["TABLE_CLEANUP"] == "${TABLE_CLEANUP:-0}"
 
 
 def test_two_worker_replicas_by_default(compose):
@@ -111,6 +117,7 @@ def test_settings_from_shipped_env(compose, monkeypatch):
         "SCAN_PAGE_METHOD",
         "E0_ROBUST",
         "PDF_TABLE_METHOD",
+        "TABLE_CLEANUP",
     ):
         monkeypatch.delenv(var, raising=False)
     for k, v in _resolve_empty_shell(_env(compose["services"]["worker"])).items():
@@ -127,4 +134,5 @@ def test_settings_from_shipped_env(compose, monkeypatch):
     assert Settings.from_env().sv_model is None
     assert Settings.from_env().lab_mode is False
     assert Settings.from_env().e0_robust is True  # Z-35: E0 on in the shipped config
-    assert Settings.from_env().pdf_table_method == "single"  # P9c: v1.0 PDF table call
+    assert Settings.from_env().pdf_table_method == "grid"  # P9c: grid on (gate passed)
+    assert Settings.from_env().table_cleanup is False  # P9c Z-51: off until its gate

@@ -301,10 +301,10 @@ def test_default_single_is_the_v1_call():
 
 
 @pytest.mark.parametrize(
-    "raw, method", [(None, "single"), ("", "single"), ("grid", "grid"), (" GRID ", "grid")]
+    "raw, method", [(None, "grid"), ("", "grid"), ("single", "single"), (" SINGLE ", "single")]
 )
-def test_switch_defaults_to_single(monkeypatch, raw, method):
-    assert Settings().pdf_table_method == "single"
+def test_switch_defaults_to_grid_and_single_turns_it_off(monkeypatch, raw, method):
+    assert Settings().pdf_table_method == "grid"  # P9c: default on (lab), gate passed
     if raw is None:
         monkeypatch.delenv("PDF_TABLE_METHOD", raising=False)
     else:
